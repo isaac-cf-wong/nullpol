@@ -1,4 +1,6 @@
-def antenna_pattern(detector, right_ascension, declination, polarization_angle, gpstime):
+from pycbc.detector import Detector
+
+def antenna_pattern(detector, right_ascension, declination, polarization_angle, gps_time, polarization):
     """
     Get antenna pattern for a given sky location and time.
 
@@ -12,15 +14,23 @@ def antenna_pattern(detector, right_ascension, declination, polarization_angle, 
         Declination in radians.
     polarization_angle : float
         Polarization angle in radians.
+    gps_time : float
+        GPS time.
+    polarization : array_like
+        An array of polarization modes.
 
     Returns
     -------
     antenna_pattern : array_like
         Antenna pattern for the given sky location and time.
     """
+    det = Detector(detector)
+    
+    det.antenna_pattern(right_ascension, declination, polarization_angle, gps_time, )
+    
     return None
 
-def antenna_pattern_matrix(detectors, right_ascension, declination, polarization_angle, gpstime):
+def antenna_pattern_matrix(detectors, right_ascension, declination, polarization_angle, gps_time):
     """
     Get antenna pattern matrix for a given sky location and time.
 
@@ -34,6 +44,8 @@ def antenna_pattern_matrix(detectors, right_ascension, declination, polarization
         Declination in radians.
     polarization_angle : float
         Polarization angle in radians.
+    gps_time : float
+        GPS time.
 
     Returns
     -------
