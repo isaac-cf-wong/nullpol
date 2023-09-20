@@ -1,4 +1,6 @@
 from pycbc.detector import Detector
+from lal import GreenwichMeanSiderealTime, ComputeDetAMResponseExtraModes
+import numpy as np
 
 def antenna_pattern(detector, right_ascension, declination, polarization_angle, gps_time, polarization):
     """
@@ -24,13 +26,29 @@ def antenna_pattern(detector, right_ascension, declination, polarization_angle, 
     antenna_pattern : array_like
         Antenna pattern for the given sky location and time.
     """
-    det = Detector(detector)
-    
-    det.antenna_pattern(right_ascension, declination, polarization_angle, gps_time, )
-    
-    return None
 
-def antenna_pattern_matrix(detectors, right_ascension, declination, polarization_angle, gps_time):
+    gmst = GreenwichMeanSiderealTime(gps_time)
+
+    fp, fc, fb, fl, fx, fy = ComputeDetAMResponseExtraModes(Detector(detector, gmst).response, right_ascension, declination, polarization_angle, gmst)
+    
+    antenna_pattern = []
+    if 'p' in polarization:
+        antenna_pattern.append(fp)
+    if 'c' in polarization:
+        antenna_pattern.append(fc)
+    if 'b' in polarization:
+        antenna_pattern.append(fb)
+    if 'l' in polarization:
+        antenna_pattern.append(fl)
+    if 'x' in polarization:
+        antenna_pattern.append(fx)
+    if 'y' in polarization:
+        antenna_pattern.append(fy)
+    antenna_pattern = np.array(antenna_pattern)
+    
+    return antenna_pattern
+
+def antenna_pattern_matrix(detectors, right_ascension, declination, polarization_angle, gps_time, polarization):
     """
     Get antenna pattern matrix for a given sky location and time.
 
@@ -52,5 +70,10 @@ def antenna_pattern_matrix(detectors, right_ascension, declination, polarization
     antenna_pattern_matrix : array_like
         Antenna pattern matrix for the given sky location and time.
     """
-    return None
 
+    antenna_pattern_matrix = []
+    for detector in detectors:
+        antenna_pattern_matrix.append(antenna_pattern(detector, right_ascension, declination, polarization_angle, gps_time, polarization))
+    antenna_pattern_matrix = np.array(antenna_pattern_matrix)
+    
+    return antenna_pattern_matrix
