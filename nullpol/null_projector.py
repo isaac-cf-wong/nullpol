@@ -37,7 +37,6 @@ def get_null_projector(antenna_pattern_matrix, frequency_array, psd):
         Null projector with shape (n_interferometers, n_polarization, n_freqs).
 
     """
-
     df = frequency_array[1] - frequency_array[0]
     n_freqs = len(frequency_array)
 

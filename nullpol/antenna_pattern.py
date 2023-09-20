@@ -26,7 +26,6 @@ def antenna_pattern(detector, right_ascension, declination, polarization_angle, 
     antenna_pattern : array_like
         Antenna pattern for the given sky location and time.
     """
-
     gmst = GreenwichMeanSiderealTime(gps_time)
 
     fp, fc, fb, fl, fx, fy = ComputeDetAMResponseExtraModes(Detector(detector, gmst).response, right_ascension, declination, polarization_angle, gmst)
@@ -70,7 +69,6 @@ def antenna_pattern_matrix(detectors, right_ascension, declination, polarization
     antenna_pattern_matrix : array_like
         Antenna pattern matrix for the given sky location and time.
     """
-
     antenna_pattern_matrix = []
     for detector in detectors:
         antenna_pattern_matrix.append(antenna_pattern(detector, right_ascension, declination, polarization_angle, gps_time, polarization))
