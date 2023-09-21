@@ -19,17 +19,15 @@ def get_single_freq_null_projector(antenna_pattern_matrix):
 
     return np.eye(Pgw.shape[0]) - Pgw
 
-def get_null_projector(antenna_pattern_matrix, frequency_array, psd):
+def get_null_projector(interferometers, antenna_pattern_matrix):
     """Null projector.
 
     Parameters
     ----------
+    interferometers : array_like
+        Array of bilby.gw.detector.interferometer.Interferometer objects with same frequency array.
     antenna_pattern_matrix : array_like
-        Antenna pattern matrix.
-    frequency_array : array_like
-        Frequency array of PSD.
-    psd : array_like
-        PSD.
+        Antenna pattern matrix with shape (n_interferometers, n_polarization).
 
     Returns
     -------
@@ -37,13 +35,14 @@ def get_null_projector(antenna_pattern_matrix, frequency_array, psd):
         Null projector with shape (n_interferometers, n_polarization, n_freqs).
 
     """
-    df = frequency_array[1] - frequency_array[0]
-    n_freqs = len(frequency_array)
 
-    null_projector = []
-    for i in range(n_freqs):
-        null_projector.append(get_single_freq_null_projector(antenna_pattern_matrix/np.sqrt(psd[i]/(2*df))))
-    null_projector = np.array(null_projector)
+    frequency_array = interferometers[0].frequency_array
+    psds = np.array([interferometer.power_spectral_density_array for interferometer in interferometers])
+
+    df = frequency_array[1] - frequency_array[0]
+
+    whitening_factor = np.sqrt(psds/(2*df)) # shape (n_interferometers, n_freqs)
+    null_projector = antenna_pattern_matrix[:, :, np.newaxis] / whitening_factor[:, np.newaxis, :] # shape (n_interferometers, n_polarization, n_freqs)
 
     return null_projector
 
@@ -63,4 +62,9 @@ def get_null_stream(interferometers, null_projector):
         Null stream with shape (n_interferometers, n_freqs).
 
     """
-    return null_projector @ interferometers
+    strain_data = np.array([interferometer.frequency_domain_strain for interferometer in interferometers])
+
+    null_stream = np.zeros_like(null_projector)
+    for i in range(len(null_projector.shape[2])):
+        null_stream[:, :, i] = null_projector[:, :, i] @ strain_data[:, i]
+    return null_stream
