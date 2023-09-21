@@ -2,6 +2,16 @@ from . import null_projector
 from . import antenna_pattern
 import numpy as np
 
+polarization_dict = {
+    'p': (1, 0, 0, 0, 0, 0),
+    'c': (0, 1, 0, 0, 0, 0),
+    'b': (0, 0, 1, 0, 0, 0),
+    'l': (0, 0, 0, 1, 0, 0),
+    'x': (0, 0, 0, 0, 1, 0),
+    'y': (0, 0, 0, 0, 0, 1),
+}
+
+
 class projector_generator(object):
     """Null projector generator."""
 
@@ -11,19 +21,9 @@ class projector_generator(object):
         self.parameters = parameters
         self.interferometers = waveform_arguments['interferometers']
 
-        self.polarization = np.full(6, False, dtype=bool)
-        if 'p' in self.polarization_str:
-            self.polarization[0] = True
-        if 'c' in self.polarization_str:
-            self.polarization[1] = True
-        if 'b' in self.polarization_str:
-            self.polarization[2] = True
-        if 'l' in self.polarization_str:
-            self.polarization[3] = True
-        if 'x' in self.polarization_str:
-            self.polarization[4] = True
-        if 'y' in self.polarization_str:
-            self.polarization[5] = True
+        request_pol = [polarization_dict[k] for k in self.polarization_str]
+        
+        self.polarization = np.sum(request_pol, axis=0, dtype=bool)
 
     def get_null_projector(self, interferometers, parameters):
         """Null projector.
