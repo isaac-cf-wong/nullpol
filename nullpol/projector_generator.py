@@ -6,9 +6,26 @@ class projector_generator(object):
     """Null projector generator."""
 
     def __init__(self, parameters=None, waveform_arguments=None):
-        pass
 
-    def get_null_projector(self, interferometers, parameters, polarization):
+        self.polarization_str = waveform_arguments['polarization']
+        self.parameters = parameters
+        self.interferometers = waveform_arguments['interferometers']
+
+        self.polarization = np.full(6, False, dtype=bool)
+        if 'p' in self.polarization_str:
+            self.polarization[0] = True
+        if 'c' in self.polarization_str:
+            self.polarization[1] = True
+        if 'b' in self.polarization_str:
+            self.polarization[2] = True
+        if 'l' in self.polarization_str:
+            self.polarization[3] = True
+        if 'x' in self.polarization_str:
+            self.polarization[4] = True
+        if 'y' in self.polarization_str:
+            self.polarization[5] = True
+
+    def get_null_projector(self, interferometers, parameters):
         """Null projector.
 
         Parameters
@@ -17,8 +34,6 @@ class projector_generator(object):
             Array of bilby.gw.detector.interferometer.Interferometer objects with same frequency array.
         parameters : dict
             Dictionary of waveform parameters with keys 'ra', 'dec', 'psi', 'geocent_time'.
-        polarization : array_like
-            An array of polarization modes.
 
         Returns
         -------
@@ -27,7 +42,7 @@ class projector_generator(object):
 
         """
         detectors = [interferometer.name for interferometer in interferometers]
-        antenna_pattern_matrix = (antenna_pattern.antenna_pattern_matrix(detectors, parameters['ra'], parameters['dec'], parameters['psi'], parameters['geocent_time'], polarization))
+        antenna_pattern_matrix = (antenna_pattern.antenna_pattern_matrix(detectors, parameters['ra'], parameters['dec'], parameters['psi'], parameters['geocent_time'], self.polarization))
 
         return null_projector.get_null_projector(interferometers, antenna_pattern_matrix)
     

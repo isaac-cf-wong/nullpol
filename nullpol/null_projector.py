@@ -11,7 +11,7 @@ def get_single_freq_null_projector(antenna_pattern_matrix):
     Returns
     -------
     array_like
-        Null projector with shape (n_interferometers, n_polarization).
+        Null projector with shape (n_interferometers, n_interferometers).
 
     """
     antenna_pattern_matrix_dag = antenna_pattern_matrix.conj().T
@@ -32,10 +32,9 @@ def get_null_projector(interferometers, antenna_pattern_matrix):
     Returns
     -------
     array_like
-        Null projector with shape (n_interferometers, n_polarization, n_freqs).
+        Null projector with shape (n_interferometers, n_interferometers, n_freqs).
 
     """
-
     frequency_array = interferometers[0].frequency_array
     psds = np.array([interferometer.power_spectral_density_array for interferometer in interferometers])
 
@@ -54,7 +53,7 @@ def get_null_stream(interferometers, null_projector):
     interferometers : array_like
         Array of bilby.gw.detector.interferometer.Interferometer objects.
     null_projector : array_like
-        Null projector with shape (n_interferometers, n_polarization, n_freqs).
+        Null projector with shape (n_interferometers, n_interferometers, n_freqs).
 
     Returns
     -------
@@ -63,8 +62,5 @@ def get_null_stream(interferometers, null_projector):
 
     """
     strain_data = np.array([interferometer.frequency_domain_strain for interferometer in interferometers])
-
-    null_stream = np.zeros_like(null_projector)
-    for i in range(len(null_projector.shape[2])):
-        null_stream[:, :, i] = null_projector[:, :, i] @ strain_data[:, i]
-    return null_stream
+    
+    return np.einsum('ijk, jk -> ik', null_projector, strain_data)

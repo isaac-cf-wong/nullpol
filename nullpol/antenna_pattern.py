@@ -19,7 +19,7 @@ def antenna_pattern(detector, right_ascension, declination, polarization_angle, 
     gps_time : float
         GPS time.
     polarization : array_like
-        An array of polarization modes.
+        Array of booleans for polarization modes.
 
     Returns
     -------
@@ -30,22 +30,7 @@ def antenna_pattern(detector, right_ascension, declination, polarization_angle, 
 
     fp, fc, fb, fl, fx, fy = ComputeDetAMResponseExtraModes(Detector(detector, gmst).response, right_ascension, declination, polarization_angle, gmst)
     
-    antenna_pattern = []
-    if 'p' in polarization:
-        antenna_pattern.append(fp)
-    if 'c' in polarization:
-        antenna_pattern.append(fc)
-    if 'b' in polarization:
-        antenna_pattern.append(fb)
-    if 'l' in polarization:
-        antenna_pattern.append(fl)
-    if 'x' in polarization:
-        antenna_pattern.append(fx)
-    if 'y' in polarization:
-        antenna_pattern.append(fy)
-    antenna_pattern = np.array(antenna_pattern)
-    
-    return antenna_pattern
+    return np.array([fp, fc, fb, fl, fx, fy])[polarization]
 
 def antenna_pattern_matrix(detectors, right_ascension, declination, polarization_angle, gps_time, polarization):
     """
@@ -63,6 +48,8 @@ def antenna_pattern_matrix(detectors, right_ascension, declination, polarization
         Polarization angle in radians.
     gps_time : float
         GPS time.
+    polarization : array_like
+        Array of booleans for polarization modes.
 
     Returns
     -------
