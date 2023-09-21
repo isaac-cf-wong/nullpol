@@ -56,9 +56,4 @@ def antenna_pattern_matrix(detectors, right_ascension, declination, polarization
     antenna_pattern_matrix : array_like
         Antenna pattern matrix for the given sky location and time.
     """
-    antenna_pattern_matrix = []
-    for detector in detectors:
-        antenna_pattern_matrix.append(antenna_pattern(detector, right_ascension, declination, polarization_angle, gps_time, polarization))
-    antenna_pattern_matrix = np.array(antenna_pattern_matrix)
-    
-    return antenna_pattern_matrix
+    return np.array([antenna_pattern(detector, right_ascension, declination, polarization_angle, gps_time, polarization) for detector in detectors])
