@@ -40,10 +40,9 @@ def get_null_projector(interferometers, antenna_pattern_matrix):
 
     df = frequency_array[1] - frequency_array[0]
 
-    whitening_factor = np.sqrt(psds/(2*df)) # shape (n_interferometers, n_freqs)
-    null_projector = antenna_pattern_matrix[:, :, np.newaxis] / whitening_factor[:, np.newaxis, :] # shape (n_interferometers, n_polarization, n_freqs)
+    whitening_factor = 1/np.sqrt(psds/(2*df)) # shape (n_interferometers, n_freqs)
 
-    return null_projector
+    return np.einsum('ij, ik -> ijk', antenna_pattern_matrix, whitening_factor) # shape (n_interferometers, n_polarization, n_freqs)
 
 def get_null_stream(interferometers, null_projector):
     """Null stream from interferometers.
