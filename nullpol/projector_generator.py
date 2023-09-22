@@ -20,29 +20,29 @@ class projector_generator(object):
         self.polarization_str = waveform_arguments['polarization']
         self.parameters = parameters
         self.interferometers = waveform_arguments['interferometers']
+        self.detect_names = [interferometer.name for interferometer in self.interferometers]
+        self.frequency_array = self.interferometers[0].frequency_array
+        self.psd_array = np.array([interferometer.power_spectral_density_array for interferometer in self.interferometers])
 
         request_pol = [polarization_dict[k] for k in self.polarization_str]
         
         self.polarization = np.sum(request_pol, axis=0, dtype=bool)
 
-    def get_null_projector(self, interferometers, parameters):
+    def get_null_projector(self, parameters):
         """Null projector.
 
         Parameters
         ----------
-        interferometers : array_like
-            Array of bilby.gw.detector.interferometer.Interferometer objects with same frequency array.
         parameters : dict
             Dictionary of waveform parameters with keys 'ra', 'dec', 'psi', 'geocent_time'.
 
         Returns
         -------
         array_like
-            Null projector with shape (n_interferometers, n_polarization, n_freqs).
+            Null projector with shape (n_interferometers, n_interferometers, n_freqs).
 
         """
-        detectors = [interferometer.name for interferometer in interferometers]
-        antenna_pattern_matrix = (antenna_pattern.antenna_pattern_matrix(detectors, parameters['ra'], parameters['dec'], parameters['psi'], parameters['geocent_time'], self.polarization))
+        antenna_pattern_matrix = (antenna_pattern.antenna_pattern_matrix(self.detect_names, parameters['ra'], parameters['dec'], parameters['psi'], parameters['geocent_time'], self.polarization))
 
-        return null_projector.get_null_projector(interferometers, antenna_pattern_matrix)
+        return null_projector.get_null_projector(antenna_pattern_matrix, self.frequency_array, self.psd_array)
     
