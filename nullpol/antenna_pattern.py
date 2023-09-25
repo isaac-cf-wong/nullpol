@@ -28,7 +28,7 @@ def antenna_pattern(detector, right_ascension, declination, polarization_angle, 
     """
     gmst = GreenwichMeanSiderealTime(gps_time)
 
-    f_all = ComputeDetAMResponseExtraModes(Detector(detector, gmst).response, right_ascension, declination, polarization_angle, gmst)
+    f_all = ComputeDetAMResponseExtraModes(Detector(detector, gps_time).response, right_ascension, declination, polarization_angle, gmst)
     
     return np.array(f_all)[polarization]
 
