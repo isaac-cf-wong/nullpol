@@ -23,6 +23,8 @@ class ProjectorGenerator(object):
         else:
             self.basis_input = waveform_arguments['polarization']
         self.basis = np.sum([polarization_dict[k] for k in self.basis_input], axis=0, dtype=bool)
+        self.basis_str = np.array(list(polarization_dict.keys()))[self.basis]
+        self.additional_polarization_str = np.array(list(polarization_dict.keys()))[self.polarization][~self.basis[self.polarization]]
 
         self.interferometers = waveform_arguments['interferometers']
         self.detector_names = [interferometer.name for interferometer in self.interferometers]
@@ -43,12 +45,10 @@ class ProjectorGenerator(object):
         array_like
             Amplitude and phase factor matrix with shape (n_polarization-n_basis, n_basis, 2).
         """
-        basis_str = np.array(list(polarization_dict.keys()))[self.basis]
-        additional_polarization_str = np.array(list(polarization_dict.keys()))[self.polarization][~self.basis[self.polarization]]
         amp_phase_factor = np.zeros((self.polarization.sum()-self.basis.sum(), self.basis.sum(), 2))
 
-        for i, additional_polarization in enumerate(additional_polarization_str):
-            for j, basis in enumerate(basis_str):
+        for i, additional_polarization in enumerate(self.additional_polarization_str):
+            for j, basis in enumerate(self.basis_str):
                 amp_phase_factor[i, j, 0] = parameters['amp_' + basis + additional_polarization]
                 amp_phase_factor[i, j, 1] = parameters['phase_' + basis + additional_polarization]
 
