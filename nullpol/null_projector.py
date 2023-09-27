@@ -12,7 +12,6 @@ def get_null_projector(antenna_pattern_matrix):
     -------
     array_like
         Null projector with shape (n_interferometers, n_interferometers, n_freqs).
-
     """
     antenna_pattern_matrix_dag = antenna_pattern_matrix.conj().transpose(1, 0, 2) # shape (n_basis, n_interferometers, n_freqs)
 
@@ -40,6 +39,5 @@ def get_null_stream(strain_data_array, null_projector):
     -------
     array_like
         Null stream with shape (n_interferometers, n_freqs).
-
     """
     return np.einsum('ijk, jk -> ik', null_projector, strain_data_array)
