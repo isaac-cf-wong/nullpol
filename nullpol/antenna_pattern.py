@@ -58,7 +58,7 @@ def get_antenna_pattern_matrix(detectors, right_ascension, declination, polariza
     """
     return np.array([get_antenna_pattern(detector, right_ascension, declination, polarization_angle, gps_time, polarization) for detector in detectors])
 
-def whiten_antenna_pattern_matrix(antenna_pattern_matrix, frequency_array, psds):
+def whiten_antenna_pattern_matrix(antenna_pattern_matrix, frequency_array, psds, minimum_frequency, maximum_frequency):
     """
     Whiten antenna pattern matrix.
 
@@ -76,6 +76,8 @@ def whiten_antenna_pattern_matrix(antenna_pattern_matrix, frequency_array, psds)
     whitened_antenna_pattern_matrix : array_like
         Whitened antenna pattern matrix with shape (n_interferometers, n_polarization, n_freqs).
     """
+    psds = psds[:, (frequency_array >= minimum_frequency) & (frequency_array <= maximum_frequency)] # shape (n_interferometers, n_freqs)
+    frequency_array = frequency_array[(frequency_array >= minimum_frequency) & (frequency_array <= maximum_frequency)] # shape (n_freqs)
     df = frequency_array[1] - frequency_array[0]
 
     whitening_factor = 1/np.sqrt(psds/(2*df)) # shape (n_interferometers, n_freqs)
