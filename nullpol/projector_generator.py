@@ -22,9 +22,9 @@ class ProjectorGenerator(object):
             self.basis_input = waveform_arguments['basis']
         else:
             self.basis_input = waveform_arguments['polarization']
-        self.basis = np.sum([polarization_dict[k] for k in self.basis_input], axis=0, dtype=bool)
-        self.basis_str = np.array(list(polarization_dict.keys()))[self.basis]
-        self.additional_polarization_str = np.array(list(polarization_dict.keys()))[self.polarization][~self.basis[self.polarization]]
+        self.basis = np.sum([polarization_dict[k] for k in self.basis_input], axis=0, dtype=bool)[self.polarization]
+        self.basis_str = np.array(list(polarization_dict.keys()))[self.polarization][self.basis]
+        self.additional_polarization_str = np.array(list(polarization_dict.keys()))[self.polarization][~self.basis]
 
         self.interferometers = waveform_arguments['interferometers']
         self.detector_names = [interferometer.name for interferometer in self.interferometers]

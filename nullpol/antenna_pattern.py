@@ -101,6 +101,6 @@ def change_basis(whitened_antenna_pattern_matrix, basis, amp_phase_factor):
         Whitened antenna pattern matrix with shape (n_interferometers, n_basis, n_freqs).
     """
     multiplicative_factor = amp_phase_factor[:, :, 0] + 1j * amp_phase_factor[:, :, 1] # shape (n_polarization-n_basis, n_basis)
-    additional_terms = np.einsum('ijk, jl -> ilk', whitened_antenna_pattern_matrix[:, ~basis, :], multiplicative_factor) # shape (n_interferometers, n_basis, n_freqs)
+    additional_terms = np.einsum('ijk, jl -> ilk', whitened_antenna_pattern_matrix[:, np.invert(basis), :], multiplicative_factor) # shape (n_interferometers, n_basis, n_freqs)
     
     return whitened_antenna_pattern_matrix[:, basis, :] + additional_terms # shape (n_interferometers, n_basis, n_freqs)
