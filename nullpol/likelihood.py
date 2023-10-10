@@ -1,7 +1,7 @@
 import numpy as np
 from bilby.core.likelihood import Likelihood
 
-from .null_projector import get_null_projector
+from .null_projector import get_null_projector, get_null_stream, get_null_energy
 from .detector.networks import *
 
 
@@ -15,6 +15,7 @@ class NullStreamLikelihood(Likelihood):
         self.interferometers = bilby.detector.networks.InterferometerList(interferometers)
         self.projector_generator = projector_generator
         self.priors = priors
+        self.analysis_domain = analysis_domain
 
     def __repr__(self):
         return None
@@ -26,8 +27,15 @@ class NullStreamLikelihood(Likelihood):
         -------
         float: The log likelihood value
         """
-        Pnull = self.projector_generator.projector(self.parameters)
-        null_stream = get_null_stream(self.interferometers, Pnull)
+        null_projector = self.projector_generator.projector(self.parameters)
+        null_stream = get_null_stream(interferometers=self.interferometers,
+                                      null_projector=null_projector,
+                                      ra=self.parameters['ra'],
+                                      dec=self.parameters['dec'],
+                                      gps_time=self.parameters['geocent_time'],
+                                      minimum_frequency=self.interferometers[0].minimum_frequency,
+                                      maximum_frequency=self.interferometers[0].maximum_frequency
+                                      )
         null_energy = get_null_energy(null_stream)
         # This is the Gaussian likelihood
         log_likelihood = -0.5 * null_energy
