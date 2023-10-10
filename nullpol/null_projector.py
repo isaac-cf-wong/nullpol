@@ -52,7 +52,7 @@ def get_null_stream(interferometers, null_projector, ra, dec, gps_time, minimum_
     """
     frequency_array = interferometers[0].frequency_array
 
-    strain_data_array = interferometers.frequency_domain_strain_array[:, (frequency_array >= minimum_frequency) & (frequency_array <= maximum_frequency)]
+    strain_data_array = interferometers.whitened_frequency_domain_strain_array[:, (frequency_array >= minimum_frequency) & (frequency_array <= maximum_frequency)]
     frequency_array = frequency_array[(frequency_array >= minimum_frequency) & (frequency_array <= maximum_frequency)]
 
     time_shift = np.conj(np.array([np.exp(-1.j*np.pi*2.*frequency_array*interferometer.time_delay_from_geocenter(ra, dec, gps_time)) for interferometer in interferometers]))
