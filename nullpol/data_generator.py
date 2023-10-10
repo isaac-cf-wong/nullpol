@@ -202,6 +202,6 @@ class DataGenerator:
 
     def generate_injection(self, parameters):
         self.injection_parameters = parameters
-        self._set_interometers_from_injection_in_gaussian_noise()
+        self._set_interferometers_from_injection_in_gaussian_noise()
 
         return self.interferometers
