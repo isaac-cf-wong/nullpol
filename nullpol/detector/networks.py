@@ -38,9 +38,24 @@ def time_frequency_domain_strain_array(self):
 
     return self._time_frequency_domain_strain_array
 
+@property
+def whitened_frequency_domain_strain_array(self):
+    if self._whitened_frequency_domain_strain_array is None:
+        nifo = len(self)
+        nfreq = len(self[0].frequency_domain_strain)
+        self._whitened_frequency_domain_strain_array = np.zeros((nifo, nfreq), dtype=self[0].frequency_domain_strain[0].dtype)
+
+        for i in range(nifo):
+            self._whitened_frequency_domain_strain_array[i,:] = self[i].whitened_frequency_domain_strain[:]
+
+    return self._whitened_frequency_domain_strain_array
+
+
 bilby.gw.detector.InterferometerList._time_domain_strain_array = None
 bilby.gw.detector.InterferometerList.time_domain_strain_array = time_domain_strain_array
 bilby.gw.detector.InterferometerList._frequency_domain_strain_array = None
 bilby.gw.detector.InterferometerList.frequency_domain_strain_array = frequency_domain_strain_array
 bilby.gw.detector.InterferometerList._time_frequency_domain_strain_array = None
 bilby.gw.detector.InterferometerList.time_frequency_domain_strain_array = time_frequency_domain_strain_array
+bilby.gw.detector.InterferometerList._whitened_frequency_domain_strain_array = None
+bilby.gw.detector.InterferometerList.whitened_frequency_domain_strain_array = whitened_frequency_domain_strain_array
