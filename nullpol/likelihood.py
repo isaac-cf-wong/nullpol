@@ -1,7 +1,7 @@
 import numpy as np
 from bilby.core.likelihood import Likelihood
 
-from .null_projector import get_null_projector, get_null_stream, get_null_energy
+from .null_projector import get_null_stream, get_null_energy
 from .detector.networks import *
 
 
@@ -27,7 +27,7 @@ class NullStreamLikelihood(Likelihood):
         -------
         float: The log likelihood value
         """
-        null_projector = self.projector_generator.projector(self.parameters)
+        null_projector = self.projector_generator.null_projector(self.parameters)
         null_stream = get_null_stream(interferometers=self.interferometers,
                                       null_projector=null_projector,
                                       ra=self.parameters['ra'],

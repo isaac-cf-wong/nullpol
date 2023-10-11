@@ -33,7 +33,7 @@ class ProjectorGenerator(object):
         self.minimum_frequency = waveform_arguments['minimum_frequency']
         self.maximum_frequency = waveform_arguments['maximum_frequency']
 
-    def get_amp_phase_factor_matrix(self, parameters):
+    def _get_amp_phase_factor_matrix(self, parameters):
         """
         Get amplitude and phase factor matrix.
 
@@ -56,7 +56,7 @@ class ProjectorGenerator(object):
 
         return amp_phase_factor
 
-    def get_null_projector(self, parameters):
+    def null_projector(self, parameters):
         """Null projector.
 
         Parameters
@@ -72,7 +72,7 @@ class ProjectorGenerator(object):
         """
         antenna_pattern_matrix = (antenna_pattern.get_antenna_pattern_matrix(self.detector_names, parameters['ra'], parameters['dec'], parameters['psi'], parameters['geocent_time'], self.polarization))
         whitened_antenna_pattern_matrix = antenna_pattern.whiten_antenna_pattern_matrix(antenna_pattern_matrix, self.frequency_array, self.psd_array, self.minimum_frequency, self.maximum_frequency)
-        self.amp_phase_factor = self.get_amp_phase_factor_matrix(parameters)
+        self.amp_phase_factor = self._get_amp_phase_factor_matrix(parameters)
         whitened_antenna_pattern_matrix_new_basis = antenna_pattern.change_basis(whitened_antenna_pattern_matrix, self.basis, self.amp_phase_factor)
 
         return null_projector.get_null_projector(whitened_antenna_pattern_matrix_new_basis)
