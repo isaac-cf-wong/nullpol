@@ -16,6 +16,8 @@ class NullStreamLikelihood(Likelihood):
         self.projector_generator = projector_generator
         self.priors = priors
         self.analysis_domain = analysis_domain
+        self._marginalized_parameters = dict()
+        self.parameters = dict()
 
     def __repr__(self):
         return None
@@ -42,3 +44,4 @@ class NullStreamLikelihood(Likelihood):
         # Should we always use the chi2 likelihood?
 
         return log_likelihood
+
