@@ -12,7 +12,7 @@ class NullStreamLikelihood(Likelihood):
     def __init__(self, interferometers, projector_generator,
                  priors=None, analysis_domain="frequency",
                  reference_frame="sky", time_reference="geocenter"):
-        self.interferometers = bilby.detector.networks.InterferometerList(interferometers)
+        self.interferometers = bilby.gw.detector.networks.InterferometerList(interferometers)
         self.projector_generator = projector_generator
         self.priors = priors
         self.analysis_domain = analysis_domain
