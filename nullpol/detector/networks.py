@@ -46,7 +46,9 @@ def whitened_frequency_domain_strain_array(self):
         self._whitened_frequency_domain_strain_array = np.zeros((nifo, nfreq), dtype=self[0].frequency_domain_strain[0].dtype)
 
         for i in range(nifo):
-            self._whitened_frequency_domain_strain_array[i,:] = self[i].whitened_frequency_domain_strain[:]
+            df = self[i].frequency_array[1] - self[i].frequency_array[0]
+            whitening_factor = 1/np.sqrt(self[i].power_spectral_density_array/(2*df))
+            self._whitened_frequency_domain_strain_array[i,:] = self[i].frequency_domain_strain*whitening_factor
 
     return self._whitened_frequency_domain_strain_array
 
