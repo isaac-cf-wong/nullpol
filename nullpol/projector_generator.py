@@ -29,7 +29,7 @@ class ProjectorGenerator(object):
         self.interferometers = waveform_arguments['interferometers']
         self.detector_names = [interferometer.name for interferometer in self.interferometers]
         self.frequency_array = self.interferometers[0].frequency_array
-        self.psd_array = np.array([interferometer.power_spectral_density_array for interferometer in self.interferometers])
+        self.psd_array = np.array([np.interp(self.frequency_array, interferometer.power_spectral_density.frequency_array, interferometer.power_spectral_density.psd_array) for interferometer in self.interferometers])
         self.minimum_frequency = waveform_arguments['minimum_frequency']
         self.maximum_frequency = waveform_arguments['maximum_frequency']
 
