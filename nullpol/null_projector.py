@@ -31,7 +31,7 @@ def get_null_stream(interferometers, null_projector, ra, dec, gps_time, minimum_
     Parameters
     ----------
     interferometers : list
-        List of interferometers.
+        List of bilby.gw.detector.Interferometer.
     null_projector : array_like
         Null projector with shape (n_interferometers, n_interferometers, n_freqs).
     ra : float

@@ -1,15 +1,13 @@
-from pycbc.detector import Detector
-from lal import GreenwichMeanSiderealTime, ComputeDetAMResponseExtraModes
 import numpy as np
 
-def get_antenna_pattern(detector, right_ascension, declination, polarization_angle, gps_time, polarization):
+def get_antenna_pattern(interferometer, right_ascension, declination, polarization_angle, gps_time, polarization):
     """
-    Get antenna pattern for a given sky location and time.
+    Get antenna pattern for a given interferometer at a specific sky location and time.
 
     Parameters
     ----------
-    detector : str
-        Detector name.
+    interferometer : bibly.gw.detector.Interferometer
+        Interferometer.
     right_ascension : float
         Right ascension in radians.
     declination : float
@@ -26,20 +24,18 @@ def get_antenna_pattern(detector, right_ascension, declination, polarization_ang
     antenna_pattern : array_like
         Antenna pattern for the given sky location and time with shape (n_polarization).
     """
-    gmst = GreenwichMeanSiderealTime(gps_time)
+    polarization_name_list = np.array(['plus', 'cross', 'breathing', 'longitudinal', 'x', 'y'])
 
-    f_all = ComputeDetAMResponseExtraModes(Detector(detector, gps_time).response, right_ascension, declination, polarization_angle, gmst)
-    
-    return np.array(f_all)[polarization]
+    return np.array([interferometer.antenna_pattern(right_ascension, declination, gps_time, polarization_angle, polarization_name) for polarization_name in polarization_name_list[polarization]])
 
-def get_antenna_pattern_matrix(detectors, right_ascension, declination, polarization_angle, gps_time, polarization):
+def get_antenna_pattern_matrix(interferometers, right_ascension, declination, polarization_angle, gps_time, polarization):
     """
     Get antenna pattern matrix for a given sky location and time.
 
     Parameters
     ----------
-    detectors : list
-        List of detector names.
+    interferometers : list
+        List of bilby.gw.detector.Interferometer.
     right_ascension : float
         Right ascension in radians.
     declination : float
@@ -56,7 +52,7 @@ def get_antenna_pattern_matrix(detectors, right_ascension, declination, polariza
     antenna_pattern_matrix : array_like
         Antenna pattern matrix for the given sky location and time with shape (n_interferometers, n_polarization).
     """
-    return np.array([get_antenna_pattern(detector, right_ascension, declination, polarization_angle, gps_time, polarization) for detector in detectors])
+    return np.array([get_antenna_pattern(interferometer, right_ascension, declination, polarization_angle, gps_time, polarization) for interferometer in interferometers])
 
 def whiten_antenna_pattern_matrix(antenna_pattern_matrix, frequency_array, psds, minimum_frequency, maximum_frequency):
     """

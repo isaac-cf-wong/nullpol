@@ -27,7 +27,6 @@ class ProjectorGenerator(object):
         self.additional_polarization_str = np.array(list(polarization_dict.keys()))[self.polarization][~self.basis]
 
         self.interferometers = waveform_arguments['interferometers']
-        self.detector_names = [interferometer.name for interferometer in self.interferometers]
         self.frequency_array = self.interferometers[0].frequency_array
         self.psd_array = np.array([np.interp(self.frequency_array, interferometer.power_spectral_density.frequency_array, interferometer.power_spectral_density.psd_array) for interferometer in self.interferometers])
         self.minimum_frequency = waveform_arguments['minimum_frequency']
@@ -70,7 +69,7 @@ class ProjectorGenerator(object):
             Null projector with shape (n_interferometers, n_interferometers, n_freqs).
 
         """
-        antenna_pattern_matrix = (antenna_pattern.get_antenna_pattern_matrix(self.detector_names, parameters['ra'], parameters['dec'], parameters['psi'], parameters['geocent_time'], self.polarization))
+        antenna_pattern_matrix = antenna_pattern.get_antenna_pattern_matrix(self.interferometers, parameters['ra'], parameters['dec'], parameters['psi'], parameters['geocent_time'], self.polarization)
         whitened_antenna_pattern_matrix = antenna_pattern.whiten_antenna_pattern_matrix(antenna_pattern_matrix, self.frequency_array, self.psd_array, self.minimum_frequency, self.maximum_frequency)
         self.amp_phase_factor = self._get_amp_phase_factor_matrix(parameters)
         whitened_antenna_pattern_matrix_new_basis = antenna_pattern.change_basis(whitened_antenna_pattern_matrix, self.basis, self.amp_phase_factor)
