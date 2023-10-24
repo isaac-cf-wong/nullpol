@@ -14,7 +14,7 @@ class NullStreamChi2Likelihood(NullStreamLikelihood):
     def __init__(self, interferometers, projector_generator,
                  priors=None, analysis_domain="frequency",
                  reference_frame="sky", time_reference="geocenter"):
-        super(NullStreamLikelihood, self).__init__(interferometers=interferometers,
+        super().__init__(interferometers=interferometers,
                                                    projector_generator=projector_generator,
                                                    priors=priors,
                                                    analysis_domain=analysis_domain,
