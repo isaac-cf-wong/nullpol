@@ -26,7 +26,7 @@ def get_antenna_pattern(interferometer, right_ascension, declination, polarizati
     """
     polarization_name_list = np.array(['plus', 'cross', 'breathing', 'longitudinal', 'x', 'y'])
 
-    return np.array([interferometer.antenna_response(right_ascension, declination, gps_time, polarization_angle, polarization_name) for polarization_name in polarization_name_list[polarization]])
+    return np.array([interferometer.antenna_response(right_ascension, declination, gps_time, polarization_angle, str(polarization_name)) for polarization_name in polarization_name_list[polarization]])
 
 def get_antenna_pattern_matrix(interferometers, right_ascension, declination, polarization_angle, gps_time, polarization):
     """
