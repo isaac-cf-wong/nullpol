@@ -1,6 +1,7 @@
 import numpy as np
 from bilby.core.likelihood import Likelihood
 import scipy.stats
+import numpy as np
 from .null_projector import get_null_stream, get_null_energy
 from .likelihood import NullStreamLikelihood
 from .detector.networks import *
@@ -20,7 +21,8 @@ class NullStreamChi2Likelihood(NullStreamLikelihood):
                                                    reference_frame=reference_frame,
                                                    time_reference=time_reference)
         ifo = self.interferometers[0]
-        self._DoF = int((ifo.maximum_frequency - ifo.minimum_frequency) * ifo.duration) * 2
+        dim = len(self.interferometers) - np.sum(self.projector_generator.basis)
+        self._DoF = int((ifo.maximum_frequency - ifo.minimum_frequency) * ifo.duration) * 2 * dim
 
     def __repr__(self):
         return None
