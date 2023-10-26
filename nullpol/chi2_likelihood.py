@@ -20,9 +20,8 @@ class NullStreamChi2Likelihood(NullStreamLikelihood):
                                                    analysis_domain=analysis_domain,
                                                    reference_frame=reference_frame,
                                                    time_reference=time_reference)
-        ifo = self.interferometers[0]
         dim = len(self.interferometers) - np.sum(self.projector_generator.basis)
-        self._DoF = int((ifo.maximum_frequency - ifo.minimum_frequency) * ifo.duration) * 2 * dim
+        self._DoF = int((self.projector_generator.maximum_frequency - self.projector_generator.minimum_frequency) * self.interferometers[0].duration) * 2 * dim
 
     def __repr__(self):
         return None
