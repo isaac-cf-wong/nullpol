@@ -35,8 +35,8 @@ class NullStreamLikelihood(Likelihood):
                                       ra=self.parameters['ra'],
                                       dec=self.parameters['dec'],
                                       gps_time=self.parameters['geocent_time'],
-                                      minimum_frequency=self.interferometers[0].minimum_frequency,
-                                      maximum_frequency=self.interferometers[0].maximum_frequency
+                                      minimum_frequency=self.projector_generator.minimum_frequency,
+                                      maximum_frequency=self.projector_generator.maximum_frequency,
                                       )
         null_energy = get_null_energy(null_stream)
         # This is the Gaussian likelihood
