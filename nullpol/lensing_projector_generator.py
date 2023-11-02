@@ -32,7 +32,9 @@ class StrongLensingProjectorGenerator(ProjectorGenerator):
         antenna_pattern_matrix_second = antenna_pattern.get_antenna_pattern_matrix(self.interferometers, parameters['ra'], parameters['dec'], parameters['psi'], parameters['geocent_time_2'], self.polarization)
         whitened_antenna_pattern_matrix_second = antenna_pattern.whiten_antenna_pattern_matrix(antenna_pattern_matrix_second, self.frequency_array, self.psd_array_second_image, self.minimum_frequency, self.maximum_frequency)
 
-        lensing_factor = parameters['amp_lensing'] * np.exp(1j * parameters['phase_lensing'] + 2 * np.pi * 1j * (parameters['geocent_time_2'] - parameters['geocent_time']) * self.frequency_array) # shape (n_freqs)
+        frequency_array = self.frequency_array[(self.frequency_array >= self.minimum_frequency) & (self.frequency_array <= self.maximum_frequency)]
+        time_delay = parameters['geocent_time_2'] - parameters['geocent_time']
+        lensing_factor = parameters['amp_lensing'] * np.exp(1j *parameters['phase_lensing'] + 2 * np.pi * 1j * time_delay * frequency_array) # shape (n_freqs)
         
         whitened_antenna_pattern_matrix = np.concatenate((whitened_antenna_pattern_matrix_first, np.einsum('ijk, k -> ijk', whitened_antenna_pattern_matrix_second, lensing_factor)), axis=0) # shape (n_interferometers * 2, n_polarization, n_freqs)
 
