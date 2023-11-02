@@ -44,4 +44,3 @@ class NullStreamLikelihood(Likelihood):
         # Should we always use the chi2 likelihood?
 
         return log_likelihood
-

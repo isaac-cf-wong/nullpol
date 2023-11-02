@@ -10,7 +10,6 @@ from bilby_pipe.utils import is_a_power_of_2
 from .logging import logger
 from .detector.networks import *
 
-
 class DataGenerator:
     def __init__(self,
                  detectors,

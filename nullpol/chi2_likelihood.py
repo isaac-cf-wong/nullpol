@@ -46,4 +46,3 @@ class NullStreamChi2Likelihood(NullStreamLikelihood):
         log_likelihood = scipy.stats.chi2.logpdf(2*null_energy, df=self._DoF)
 
         return log_likelihood
-
