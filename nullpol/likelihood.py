@@ -1,6 +1,7 @@
 import numpy as np
 from bilby.core.likelihood import Likelihood
-
+import scipy.stats
+import numpy as np
 from .null_projector import get_null_stream, get_null_energy
 from .detector.networks import *
 
@@ -18,6 +19,8 @@ class NullStreamLikelihood(Likelihood):
         self.analysis_domain = analysis_domain
         self._marginalized_parameters = dict()
         self.parameters = dict()
+        dim = len(self.interferometers) - np.sum(self.projector_generator.basis)
+        self._DoF = int((self.projector_generator.maximum_frequency - self.projector_generator.minimum_frequency) * self.interferometers[0].duration) * 2 * dim
 
     def __repr__(self):
         return None
@@ -39,8 +42,6 @@ class NullStreamLikelihood(Likelihood):
                                       maximum_frequency=self.projector_generator.maximum_frequency,
                                       )
         null_energy = get_null_energy(null_stream)
-        # This is the Gaussian likelihood
-        log_likelihood = -0.5 * null_energy
-        # Should we always use the chi2 likelihood?
+        log_likelihood = scipy.stats.chi2.logpdf(2*null_energy, df=self._DoF)
 
         return log_likelihood
