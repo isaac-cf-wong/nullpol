@@ -7,8 +7,8 @@ class LensingProjectorGenerator(ProjectorGenerator):
     """Null projector generator for strong lensing with 2 images."""
 
     def __init__(self, parameters=None, waveform_arguments=None):
-        self.frequency_array = self.interferometers[0].frequency_array
         self.interferometers_1 = waveform_arguments['interferometers_1']
+        self.frequency_array = self.interferometers_1[0].frequency_array
         self.psd_array_1 = np.array([np.interp(self.frequency_array, interferometer.power_spectral_density.frequency_array, interferometer.power_spectral_density.psd_array) for interferometer in self.interferometers_1])
 
         self.interferometers_2 = waveform_arguments['interferometers_2']
