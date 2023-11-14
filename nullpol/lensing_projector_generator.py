@@ -39,7 +39,7 @@ class LensingProjectorGenerator(ProjectorGenerator):
 
         frequency_array = self.frequency_array[(self.frequency_array >= self.minimum_frequency) & (self.frequency_array <= self.maximum_frequency)]
         time_delay = parameters['geocent_time_2'] - self.interferometers_2.start_time - parameters['geocent_time_1'] + self.interferometers_1.start_time
-        lensing_factor = parameters['amp_lensing'] * np.exp(1j * np.pi * parameters['phase_lensing'] + 2 * np.pi * 1j * time_delay * frequency_array) # shape (n_freqs)
+        lensing_factor = parameters['amp_lensing'] * np.exp(-1j * np.pi * parameters['phase_lensing'] + 2 * np.pi * 1j * time_delay * frequency_array) # shape (n_freqs)
         
         whitened_antenna_pattern_matrix = np.concatenate((whitened_antenna_pattern_matrix_1, np.einsum('ijk, k -> ijk', whitened_antenna_pattern_matrix_2, lensing_factor)), axis=0) # shape (n_interferometers * 2, n_polarization, n_freqs)
 
