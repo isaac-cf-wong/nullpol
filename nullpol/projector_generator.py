@@ -14,7 +14,7 @@ polarization_dict = {
 class ProjectorGenerator(object):
     """Null projector generator."""
 
-    def __init__(self, parameters=None, waveform_arguments=None):
+    def __init__(self, parameters=None, waveform_arguments=None, **kwargs):
         self.polarization_input = waveform_arguments['polarization']
         self.polarization = np.sum([polarization_dict[k] for k in self.polarization_input], axis=0, dtype=bool)
 
