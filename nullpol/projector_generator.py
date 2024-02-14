@@ -16,21 +16,39 @@ class ProjectorGenerator(object):
 
     def __init__(self, parameters=None, waveform_arguments=None, **kwargs):
         self.polarization_input = waveform_arguments['polarization']
+        if not self.polarization_input:
+            raise ValueError('Polarization modes must be specified.')
         self.polarization = np.sum([polarization_dict[k] for k in self.polarization_input], axis=0, dtype=bool)
 
-        if 'basis' in waveform_arguments: # if basis is not specified, use all polarization modes as basis
+        if 'basis' in waveform_arguments:
             self.basis_input = waveform_arguments['basis']
+            if not self.basis_input:
+                raise ValueError('Basis polarization modes must be specified.')
+            if not all([p in self.polarization_input for p in self.basis_input]):
+                raise ValueError('Basis polarization modes must be in the polarization modes.')
         else:
-            self.basis_input = waveform_arguments['polarization']
+            self.basis_input = self.polarization_input # if basis is not specified, use all polarization modes as basis
         self.basis = np.sum([polarization_dict[k] for k in self.basis_input], axis=0, dtype=bool)[self.polarization]
         self.basis_str = np.array(list(polarization_dict.keys()))[self.polarization][self.basis]
         self.additional_polarization_str = np.array(list(polarization_dict.keys()))[self.polarization][~self.basis]
 
         self.interferometers = waveform_arguments['interferometers']
+        if len(self.interferometers) > np.sum(self.basis):
+            raise ValueError('Number of interferometers must be less than or equal to the number of basis polarization modes.')
+        delta_f = self.interferometers[0].frequency_array[1] - self.interferometers[0].frequency_array[0]
+        if not all([interferometer.frequency_array[1] - interferometer.frequency_array[0] == delta_f for interferometer in self.interferometers[1:]]):
+            raise ValueError('All interferometers must have the same delta_f.')
         self.frequency_array = self.interferometers[0].frequency_array
         self.psd_array = np.array([np.interp(self.frequency_array, interferometer.power_spectral_density.frequency_array, interferometer.power_spectral_density.psd_array) for interferometer in self.interferometers])
         self.minimum_frequency = waveform_arguments['minimum_frequency']
+        if not all([interferometer.frequency_array[0] <= self.minimum_frequency for interferometer in self.interferometers]):
+            raise ValueError('minimum_frequency must be greater than or equal to the minimum frequency of all interferometers.')
         self.maximum_frequency = waveform_arguments['maximum_frequency']
+        if not all([interferometer.frequency_array[-1] >= self.maximum_frequency for interferometer in self.interferometers]):
+            raise ValueError('maximum_frequency must be less than or equal to the maximum frequency of all interferometers.')
+        # check if maximum_frequency is less than the Nyquist frequency
+        if not all([interferometer.sampling_frequency >= 2*self.maximum_frequency for interferometer in self.interferometers]):
+            raise ValueError('maximum_frequency must be less than or equal to the Nyquist frequency of all interferometers.')
 
     def _get_amp_phase_factor_matrix(self, parameters):
         """
