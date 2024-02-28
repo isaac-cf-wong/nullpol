@@ -11,12 +11,24 @@ class LensingNullStreamLikelihood(NullStreamLikelihood):
     """A null stream likelihood object
 
     """
-    def __init__(self, interferometers, projector_generator,
+    def __init__(self, interferometers, waveform_generator=None, projector_generator=None,
                  priors=None, analysis_domain="frequency",
                  reference_frame="sky", time_reference="geocenter"):
-        super().__init__(interferometers[0]+interferometers[1], projector_generator, priors, analysis_domain, reference_frame, time_reference)
+        
+        if projector_generator is not None:
+            self.projector_generator = projector_generator
+        else:
+            self.projector_generator = waveform_generator
+
+        super().__init__(interferometers[0]+interferometers[1], waveform_generator, projector_generator, priors, analysis_domain, reference_frame, time_reference)
+
         self.interferometers_1 = interferometers[0]
         self.interferometers_2 = interferometers[1]
+        if self.interferometers_1.start_time > self.interferometers_2.start_time:
+            raise ValueError('The start time of interferometers_1 must be earlier than the start time of interferometers_2.')
+        self.psd_array_1 = np.array([np.interp(self.frequency_array, interferometer.power_spectral_density.frequency_array, interferometer.power_spectral_density.psd_array) for interferometer in self.interferometers_1])
+        self.psd_array_2 = np.array([np.interp(self.frequency_array, interferometer.power_spectral_density.frequency_array, interferometer.power_spectral_density.psd_array) for interferometer in self.interferometers_2])
+
     def __repr__(self):
         return None
 
@@ -27,7 +39,7 @@ class LensingNullStreamLikelihood(NullStreamLikelihood):
         -------
         float: The log likelihood value
         """
-        null_projector = self.projector_generator.null_projector(self.parameters)
+        null_projector = self.projector_generator.null_projector(self.parameters, self.interferometers_1, self.interferometers_2, self.frequency_array, self.psd_array_1, self.psd_array_2)
         null_stream = get_lensing_null_stream(interferometers_1=self.interferometers_1,
                                               interferometers_2=self.interferometers_2,
                                               null_projector=null_projector,

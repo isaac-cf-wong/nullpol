@@ -32,23 +32,8 @@ class ProjectorGenerator(object):
         self.basis_str = np.array(list(polarization_dict.keys()))[self.polarization][self.basis]
         self.additional_polarization_str = np.array(list(polarization_dict.keys()))[self.polarization][~self.basis]
 
-        self.interferometers = waveform_arguments['interferometers']
-        if len(self.interferometers) > np.sum(self.basis):
-            raise ValueError('Number of interferometers must be less than or equal to the number of basis polarization modes.')
-        delta_f = self.interferometers[0].frequency_array[1] - self.interferometers[0].frequency_array[0]
-        if not all([interferometer.frequency_array[1] - interferometer.frequency_array[0] == delta_f for interferometer in self.interferometers[1:]]):
-            raise ValueError('All interferometers must have the same delta_f.')
-        self.frequency_array = self.interferometers[0].frequency_array
-        self.psd_array = np.array([np.interp(self.frequency_array, interferometer.power_spectral_density.frequency_array, interferometer.power_spectral_density.psd_array) for interferometer in self.interferometers])
         self.minimum_frequency = waveform_arguments['minimum_frequency']
-        if not all([interferometer.frequency_array[0] <= self.minimum_frequency for interferometer in self.interferometers]):
-            raise ValueError('minimum_frequency must be greater than or equal to the minimum frequency of all interferometers.')
         self.maximum_frequency = waveform_arguments['maximum_frequency']
-        if not all([interferometer.frequency_array[-1] >= self.maximum_frequency for interferometer in self.interferometers]):
-            raise ValueError('maximum_frequency must be less than or equal to the maximum frequency of all interferometers.')
-        # check if maximum_frequency is less than the Nyquist frequency
-        if not all([interferometer.sampling_frequency >= 2*self.maximum_frequency for interferometer in self.interferometers]):
-            raise ValueError('maximum_frequency must be less than or equal to the Nyquist frequency of all interferometers.')
 
     def _get_amp_phase_factor_matrix(self, parameters):
         """
@@ -73,13 +58,19 @@ class ProjectorGenerator(object):
 
         return amp_phase_factor
 
-    def null_projector(self, parameters):
+    def null_projector(self, parameters, interferometers, frequency_array, psd_array):
         """Null projector.
 
         Parameters
         ----------
         parameters : dict
             Dictionary of waveform parameters with keys 'ra', 'dec', 'psi', 'geocent_time'.
+        interferometers : list
+            List of bilby.gw.detector.Interferometer.
+        frequency_array : array_like
+            Frequency array with shape (n_freqs).
+        psd_array : array_like
+            Power spectral density with shape (n_interferometers, n_freqs).
 
         Returns
         -------
@@ -87,8 +78,8 @@ class ProjectorGenerator(object):
             Null projector with shape (n_interferometers, n_interferometers, n_freqs).
 
         """
-        antenna_pattern_matrix = antenna_pattern.get_antenna_pattern_matrix(self.interferometers, parameters['ra'], parameters['dec'], parameters['psi'], parameters['geocent_time'], self.polarization)
-        whitened_antenna_pattern_matrix = antenna_pattern.whiten_antenna_pattern_matrix(antenna_pattern_matrix, self.frequency_array, self.psd_array, self.minimum_frequency, self.maximum_frequency)
+        antenna_pattern_matrix = antenna_pattern.get_antenna_pattern_matrix(interferometers, parameters['ra'], parameters['dec'], parameters['psi'], parameters['geocent_time'], self.polarization)
+        whitened_antenna_pattern_matrix = antenna_pattern.whiten_antenna_pattern_matrix(antenna_pattern_matrix, frequency_array, psd_array, self.minimum_frequency, self.maximum_frequency)
         self.amp_phase_factor = self._get_amp_phase_factor_matrix(parameters)
         whitened_antenna_pattern_matrix_new_basis = antenna_pattern.change_basis(whitened_antenna_pattern_matrix, self.basis, self.amp_phase_factor)
 
