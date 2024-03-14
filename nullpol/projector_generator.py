@@ -32,9 +32,6 @@ class ProjectorGenerator(object):
         self.basis_str = np.array(list(polarization_dict.keys()))[self.polarization][self.basis]
         self.additional_polarization_str = np.array(list(polarization_dict.keys()))[self.polarization][~self.basis]
 
-        self.minimum_frequency = waveform_arguments['minimum_frequency']
-        self.maximum_frequency = waveform_arguments['maximum_frequency']
-
     def _get_amp_phase_factor_matrix(self, parameters):
         """
         Get amplitude and phase factor matrix.
@@ -79,7 +76,7 @@ class ProjectorGenerator(object):
 
         """
         antenna_pattern_matrix = antenna_pattern.get_antenna_pattern_matrix(interferometers, parameters['ra'], parameters['dec'], parameters['psi'], parameters['geocent_time'], self.polarization)
-        whitened_antenna_pattern_matrix = antenna_pattern.whiten_antenna_pattern_matrix(antenna_pattern_matrix, frequency_array, psd_array, self.minimum_frequency, self.maximum_frequency)
+        whitened_antenna_pattern_matrix = antenna_pattern.whiten_antenna_pattern_matrix(antenna_pattern_matrix, frequency_array, psd_array, np.max([interferometer.minimum_frequency for interferometer in interferometers]), np.min([interferometer.maximum_frequency for interferometer in interferometers]))
         self.amp_phase_factor = self._get_amp_phase_factor_matrix(parameters)
         whitened_antenna_pattern_matrix_new_basis = antenna_pattern.change_basis(whitened_antenna_pattern_matrix, self.basis, self.amp_phase_factor)
 
