@@ -57,7 +57,7 @@ class NullStreamLikelihood(Likelihood):
         -------
         float: The log likelihood value
         """
-        null_projector = self.projector_generator.null_projector(self.parameters, self.interferometers, self.frequency_array, self.psd_array, self.frequency_mask)
+        null_projector = self.projector_generator.null_projector(self.parameters, self.interferometers, self.frequency_array, self.psd_array)
         null_stream = get_null_stream(interferometers=self.interferometers,
                                       null_projector=null_projector,
                                       ra=self.parameters['ra'],
