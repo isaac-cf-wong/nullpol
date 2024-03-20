@@ -85,7 +85,7 @@ class ProjectorGenerator(object):
         self.amp_phase_factor = self._get_amp_phase_factor_matrix(parameters)
         whitened_antenna_pattern_matrix_new_basis = antenna_pattern.change_basis(whitened_antenna_pattern_matrix, self.basis, self.amp_phase_factor)
 
-        calibration = np.array([interferometer.calibration_model.get_calibration_factor(frequency_array, prefix='recalib_{}_'.format(self.name), **parameters) for interferometer in interferometers])
+        calibration = np.array([interferometer.calibration_model.get_calibration_factor(frequency_array, prefix='recalib_{}_'.format(interferometer.name), **parameters) for interferometer in interferometers])
         whitened_antenna_pattern_matrix_new_basis_calibrated = np.einsum('ijk, ik -> ijk', whitened_antenna_pattern_matrix_new_basis, calibration)
 
         return null_projector.get_null_projector(whitened_antenna_pattern_matrix_new_basis_calibrated)
