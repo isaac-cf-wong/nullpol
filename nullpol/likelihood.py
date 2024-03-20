@@ -26,8 +26,10 @@ class NullStreamLikelihood(Likelihood):
         self._marginalized_parameters = dict()
         self.parameters = dict()
 
+        self.minimum_frequency = np.max([interferometer.minimum_frequency for interferometer in interferometers])
+        self.maximum_frequency = np.min([interferometer.maximum_frequency for interferometer in interferometers])
         dim = len(self.interferometers) - np.sum(self.projector_generator.basis)
-        self._DoF = int((self.projector_generator.maximum_frequency - self.projector_generator.minimum_frequency) * self.interferometers[0].duration) * 2 * dim
+        self._DoF = int((self.maximum_frequency - self.minimum_frequency) * self.interferometers[0].duration) * 2 * dim
 
         self.psd_array = np.array([np.interp(interferometers[0].frequency_array, interferometer.power_spectral_density.frequency_array, interferometer.power_spectral_density.psd_array) for interferometer in self.interferometers])
 
@@ -37,13 +39,8 @@ class NullStreamLikelihood(Likelihood):
         if not all([interferometer.frequency_array[1] - interferometer.frequency_array[0] == delta_f for interferometer in self.interferometers[1:]]):
             raise ValueError('All interferometers must have the same delta_f.')
         self.frequency_array = self.interferometers[0].frequency_array
-        if not all([interferometer.frequency_array[0] <= self.projector_generator.minimum_frequency for interferometer in self.interferometers]):
-            raise ValueError('minimum_frequency must be greater than or equal to the minimum frequency of all interferometers.')
-        if not all([interferometer.frequency_array[-1] >= self.projector_generator.maximum_frequency for interferometer in self.interferometers]):
-            raise ValueError('maximum_frequency must be less than or equal to the maximum frequency of all interferometers.')
-        # check if maximum_frequency is less than the Nyquist frequency
-        if not all([interferometer.sampling_frequency >= 2*self.projector_generator.maximum_frequency for interferometer in self.interferometers]):
-            raise ValueError('maximum_frequency must be less than or equal to the Nyquist frequency of all interferometers.')
+        if not all([interferometer.sampling_frequency >= 2*self.maximum_frequency for interferometer in self.interferometers]):
+            raise ValueError('maximum_frequency of all interferometers must be less than or equal to the Nyquist frequency.')
 
     def __repr__(self):
         return None
@@ -55,14 +52,14 @@ class NullStreamLikelihood(Likelihood):
         -------
         float: The log likelihood value
         """
-        null_projector = self.projector_generator.null_projector(self.parameters, self.interferometers, self.frequency_array, self.psd_array)
+        null_projector = self.projector_generator.null_projector(self.parameters, self.interferometers, self.frequency_array, self.psd_array, self.minimum_frequency, self.maximum_frequency)
         null_stream = get_null_stream(interferometers=self.interferometers,
                                       null_projector=null_projector,
                                       ra=self.parameters['ra'],
                                       dec=self.parameters['dec'],
                                       gps_time=self.parameters['geocent_time'],
-                                      minimum_frequency=self.projector_generator.minimum_frequency,
-                                      maximum_frequency=self.projector_generator.maximum_frequency,
+                                      minimum_frequency=self.minimum_frequency,
+                                      maximum_frequency=self.maximum_frequency,
                                       )
         null_energy = get_null_energy(null_stream)
         log_likelihood = scipy.stats.chi2.logpdf(2*null_energy, df=self._DoF)
