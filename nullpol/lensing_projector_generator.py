@@ -10,7 +10,7 @@ class LensingProjectorGenerator(ProjectorGenerator):
 
         super().__init__(parameters, waveform_arguments)
 
-    def null_projector(self, parameters, interferometers_1, interferometers_2, frequency_array, psd_array_1, psd_array_2, minimum_frequency, maximum_frequency):
+    def null_projector(self, parameters, interferometers_1, interferometers_2, frequency_array, psd_array_1, psd_array_2):
         """Null projector for strong lensing with 2 images.
 
         Parameters
@@ -27,10 +27,6 @@ class LensingProjectorGenerator(ProjectorGenerator):
             Power spectral density array for the interferometers of the first image with shape (n_interferometers, n_freqs).
         psd_array_2 : array_like
             Power spectral density array for the interferometers of the second image with shape (n_interferometers, n_freqs).
-        minimum_frequency : float
-            Minimum frequency.
-        maximum_frequency : float
-            Maximum frequency.
 
         Returns
         -------
@@ -39,12 +35,11 @@ class LensingProjectorGenerator(ProjectorGenerator):
 
         """
         antenna_pattern_matrix_1 = antenna_pattern.get_antenna_pattern_matrix(interferometers_1, parameters['ra'], parameters['dec'], parameters['psi'], parameters['geocent_time_1'], self.polarization)
-        whitened_antenna_pattern_matrix_1 = antenna_pattern.whiten_antenna_pattern_matrix(antenna_pattern_matrix_1, frequency_array, psd_array_1, minimum_frequency, maximum_frequency)
+        whitened_antenna_pattern_matrix_1 = antenna_pattern.whiten_antenna_pattern_matrix(antenna_pattern_matrix_1, frequency_array, psd_array_1)
         
         antenna_pattern_matrix_2 = antenna_pattern.get_antenna_pattern_matrix(interferometers_2, parameters['ra'], parameters['dec'], parameters['psi'], parameters['geocent_time_2'], self.polarization)
-        whitened_antenna_pattern_matrix_2 = antenna_pattern.whiten_antenna_pattern_matrix(antenna_pattern_matrix_2, frequency_array, psd_array_2, minimum_frequency, maximum_frequency)
+        whitened_antenna_pattern_matrix_2 = antenna_pattern.whiten_antenna_pattern_matrix(antenna_pattern_matrix_2, frequency_array, psd_array_2)
 
-        frequency_array = frequency_array[(frequency_array >= self.minimum_frequency) & (frequency_array <= self.maximum_frequency)]
         time_delay = parameters['geocent_time_2'] - interferometers_2.start_time - parameters['geocent_time_1'] + interferometers_1.start_time
         lensing_factor = parameters['amp_lensing'] * np.exp(-1j * np.pi * parameters['phase_lensing'] + 2 * np.pi * 1j * time_delay * frequency_array) # shape (n_freqs)
         

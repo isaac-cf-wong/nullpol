@@ -24,8 +24,10 @@ class LensingNullStreamLikelihood(NullStreamLikelihood):
 
         self.interferometers_1 = interferometers[0]
         self.interferometers_2 = interferometers[1]
+
         if self.interferometers_1.start_time > self.interferometers_2.start_time:
             raise ValueError('The start time of interferometers_1 must be earlier than the start time of interferometers_2.')
+        
         self.psd_array_1 = np.array([np.interp(self.frequency_array, interferometer.power_spectral_density.frequency_array, interferometer.power_spectral_density.psd_array) for interferometer in self.interferometers_1])
         self.psd_array_2 = np.array([np.interp(self.frequency_array, interferometer.power_spectral_density.frequency_array, interferometer.power_spectral_density.psd_array) for interferometer in self.interferometers_2])
 
@@ -39,7 +41,7 @@ class LensingNullStreamLikelihood(NullStreamLikelihood):
         -------
         float: The log likelihood value
         """
-        null_projector = self.projector_generator.null_projector(self.parameters, self.interferometers_1, self.interferometers_2, self.frequency_array, self.psd_array_1, self.psd_array_2, self.minimum_frequency, self.maximum_frequency)
+        null_projector = self.projector_generator.null_projector(self.parameters, self.interferometers_1, self.interferometers_2, self.frequency_array, self.psd_array_1, self.psd_array_2)
         null_stream = get_lensing_null_stream(interferometers_1=self.interferometers_1,
                                               interferometers_2=self.interferometers_2,
                                               null_projector=null_projector,
@@ -47,8 +49,8 @@ class LensingNullStreamLikelihood(NullStreamLikelihood):
                                               dec=self.parameters['dec'],
                                               gps_time_1=self.parameters['geocent_time_1'],
                                               gps_time_2=self.parameters['geocent_time_2'],
-                                              minimum_frequency=self.minimum_frequency,
-                                              maximum_frequency=self.maximum_frequency,
+                                              frequency_array = self.frequency_array,
+                                              frequency_mask = self.frequency_mask
                                               )
         null_energy = get_null_energy(null_stream)
         log_likelihood = scipy.stats.chi2.logpdf(2*null_energy, df=self._DoF)

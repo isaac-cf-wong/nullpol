@@ -55,7 +55,7 @@ class ProjectorGenerator(object):
 
         return amp_phase_factor
 
-    def null_projector(self, parameters, interferometers, frequency_array, psd_array, minimum_frequency, maximum_frequency):
+    def null_projector(self, parameters, interferometers, frequency_array, psd_array):
         """Null projector.
 
         Parameters
@@ -68,10 +68,6 @@ class ProjectorGenerator(object):
             Frequency array with shape (n_freqs).
         psd_array : array_like
             Power spectral density with shape (n_interferometers, n_freqs).
-        minimum_frequency : float
-            Minimum frequency.
-        maximum_frequency : float
-            Maximum frequency.
 
         Returns
         -------
@@ -80,7 +76,7 @@ class ProjectorGenerator(object):
 
         """
         antenna_pattern_matrix = antenna_pattern.get_antenna_pattern_matrix(interferometers, parameters['ra'], parameters['dec'], parameters['psi'], parameters['geocent_time'], self.polarization)
-        whitened_antenna_pattern_matrix = antenna_pattern.whiten_antenna_pattern_matrix(antenna_pattern_matrix, frequency_array, psd_array, minimum_frequency, maximum_frequency)
+        whitened_antenna_pattern_matrix = antenna_pattern.whiten_antenna_pattern_matrix(antenna_pattern_matrix, frequency_array, psd_array)
         
         self.amp_phase_factor = self._get_amp_phase_factor_matrix(parameters)
         whitened_antenna_pattern_matrix_new_basis = antenna_pattern.change_basis(whitened_antenna_pattern_matrix, self.basis, self.amp_phase_factor)

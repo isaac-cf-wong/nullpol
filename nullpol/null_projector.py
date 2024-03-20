@@ -25,7 +25,7 @@ def get_null_projector(antenna_pattern_matrix):
 
     return np.array([np.eye(Pgw.shape[0])]*Pgw.shape[2]).T - Pgw
 
-def get_null_stream(interferometers, null_projector, ra, dec, gps_time, minimum_frequency, maximum_frequency):
+def get_null_stream(interferometers, null_projector, ra, dec, gps_time, frequency_array, frequency_mask):
     """Null stream from interferometers.
 
     Parameters
@@ -40,20 +40,17 @@ def get_null_stream(interferometers, null_projector, ra, dec, gps_time, minimum_
         Declination in radians.
     gps_time : float
         GPS time.
-    minimum_frequency : float
-        Minimum frequency.
-    maximum_frequency : float
-        Maximum frequency.
+    frequency_array : array_like
+        Frequency array with shape (n_freqs).
+    frequency_mask : array_like
+        Frequency mask with shape (n_freqs).
 
     Returns
     -------
     array_like
         Null stream with shape (n_interferometers, n_freqs).
     """
-    frequency_array = interferometers[0].frequency_array
-
-    strain_data_array = interferometers.whitened_frequency_domain_strain_array[:, (frequency_array >= minimum_frequency) & (frequency_array <= maximum_frequency)]
-    frequency_array = frequency_array[(frequency_array >= minimum_frequency) & (frequency_array <= maximum_frequency)]
+    strain_data_array = interferometers.whitened_frequency_domain_strain_array[:, frequency_mask]
 
     time_shift = np.conj(np.array([np.exp(-1.j*np.pi*2.*frequency_array*interferometer.time_delay_from_geocenter(ra, dec, gps_time)) for interferometer in interferometers]))
 
