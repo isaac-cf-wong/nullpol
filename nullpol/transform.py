@@ -6,11 +6,21 @@
 ###################################################################
 import numpy as np
 from scipy.special import betainc
-# Plotting for inspection
-import matplotlib.pyplot as plt
 
-def frequency_domain_wavelet(frequency_array, bandwidth_of_top_flat_region, total_bandwidth, sharpness):
-    output = np.zeros_like(frequency_array)
+
+def compute_frequency_domain_wavelet(frequency_array, bandwidth_of_top_flat_region, total_bandwidth, sharpness, dtype=float):
+    """Compute frequency domain wavelet.
+
+    Args:
+        frequency_array (array-like): An array of frequencies
+        bandwidth_of_top_flat_region (float): Bandwidth of the top flat region in Hz
+        total_bandwidth (float): Total bandwidth in Hz
+        sharpness (float): Sharpness of the wavelet
+
+    Returns:
+        numpy array: An array of the frequency domain wavelet
+    """
+    output = np.zeros_like(frequency_array, dtype=dtype)
     bandwidth_of_transition_region = total_bandwidth - bandwidth_of_top_flat_region
     domega = 2 * np.pi * total_bandwidth
     normalization_factor = 1 / np.sqrt(domega)
@@ -28,11 +38,107 @@ def frequency_domain_wavelet(frequency_array, bandwidth_of_top_flat_region, tota
     output[k_transition] = normalization_factor*np.cos(betainc(sharpness, sharpness, (k_transition - k_half_top_bandwidth) / k_bandwidth_of_transition_region)*np.pi/2)
     return output
 
-def time_domain_wavelet(time_array, bandwidth_of_top_flat_region, total_bandwidth, sharpness):
-    frequency_array = np.fft.rfftfreq(len(time_array), time_array[1] - time_array[0])
-    frequency_domain_wavelet_array = frequency_domain_wavelet(frequency_array, bandwidth_of_top_flat_region, total_bandwidth, sharpness)
+def compute_time_domain_wavelet(time_array, bandwidth_of_top_flat_region, total_bandwidth, sharpness, precision=6):
+    delta_t = time_array[1] - time_array[0]
+    frequency_array = np.fft.rfftfreq(len(time_array), delta_t)
+    frequency_domain_wavelet_array = compute_frequency_domain_wavelet(frequency_array, bandwidth_of_top_flat_region, total_bandwidth, sharpness)
     time_domain_wavelet_array = np.fft.irfft(frequency_domain_wavelet_array)
-    return time_domain_wavelet_array
+    # Normalize the time domain wavelet
+    # The sum of the wavelet squared is 1.
+    time_domain_wavelet_array *= np.sqrt(2 * np.pi / delta_t)
+    # Find the safe truncation length
+    tlen = len(time_domain_wavelet_array)
+    energy = np.cumsum(time_domain_wavelet_array[:tlen//2]**2)
+    idx = np.argmax(-np.log10(1 - energy/energy[-1])>=precision)
+    return time_domain_wavelet_array, idx
+
+def __compute_Xn(time_domain_data,
+                 time_domain_wavelet,
+                 n_idx,
+                 M,
+                 wavelet_time_idx_cutoff):
+    """Compute the Xn vector.
+
+    Args:
+        time_domain_data (array-like): Array of the time domain data
+        time_domain_wavelet (array-like): Array of the time domain wavelet
+        n_idx (int): Time index of the Xn vector
+        M (int): Number of frequency bins in the time-frequency representation
+        wavelet_time_idx_cutoff (int): Time index of the cutoff of the wavelet
+
+    Returns:
+        _type_: _description_
+    """
+    M_times_2 = M*2
+    output = np.zeros(M_times_2, dtype=time_domain_data.dtype)
+    tlen_data = len(time_domain_data)
+    tlen_wavelet = len(time_domain_wavelet)
+    for i in range(M_times_2):
+        # Find the minimum k
+        k_min = int((-wavelet_time_idx_cutoff-i)/M_times_2)
+        k_max = int((wavelet_time_idx_cutoff+1-i)/M_times_2)
+        for k in range(k_min, k_max):
+            wavelet_idx = k*M_times_2+i
+            data_idx = wavelet_idx + n_idx*M
+            output[i] += time_domain_data[data_idx%tlen_data]*time_domain_wavelet[wavelet_idx%tlen_wavelet]
+    return output
+
+
+def compute_time_frequency_transform_c(time_domain_data,
+                                       sampling_rate,
+                                       bandwidth_of_top_flat_region,
+                                       total_bandwidth,
+                                       sharpness):
+    tlen = len(time_domain_data)
+    if tlen%2 != 0:
+        raise ValueError(f'Length of time_domain_data = {tlen} has to be even')
+    # The maximum frequency
+    fhigh = sampling_rate / 2
+    # Number of frequency bins
+    M = int(fhigh / total_bandwidth)
+    if M%2 != 0:
+        raise ValueError(f'sampling_rate / 2 divided by the total_bandwith is {M} has to be even')
+    # Number of frequency indices
+    M_length = M+1
+    # Number of time indices
+    n_length = int(tlen / M)
+    # Construct the time domain wavelet
+    time_array = np.arange(0, tlen) / sampling_rate
+    time_domain_wavelet, wavelet_time_idx_cutoff = compute_time_domain_wavelet(time_array,
+                                                                               bandwidth_of_top_flat_region,
+                                                                               total_bandwidth,
+                                                                               sharpness,
+                                                                               precision=6)
+    output_0 = np.zeros(n_length)
+    output_M = np.zeros(n_length)
+    output_n = np.zeros((n_length, M_length))
+    for i in range(n_length):
+        # Compute the Xn vector
+        Xn = __compute_Xn(time_domain_data,
+                          time_domain_wavelet,
+                          i,
+                          M,
+                          wavelet_time_idx_cutoff)
+        # Perform the inverse transform
+        Xnf = np.conj(np.fft.rfft(Xn))
+        # Copy the DC component
+        output_0[i] = np.real(Xnf[0])
+        output_M[i] = np.real(Xnf[M])
+        # Copy the other components
+        for m in range(1,M):
+            if (m+i)%2 == 0:
+                output_n[i, m] = np.real(Xnf[m])
+            else:
+                output_n[i, m] = -np.imag(Xnf[m])
+    # Multiply output by the scaling
+    scaling = np.sqrt(M) / sampling_rate
+    output_0 *= scaling
+    output_M *= scaling
+    output_n *= (scaling * np.sqrt(2))
+    # Compute the TF sampling times and TF sampling frequencies
+    tf_sampling_times = np.arange(n_length) * M / sampling_rate
+    tf_sampling_frequencies = np.arange(M_length) * total_bandwidth
+    return output_0, output_M, output_n, tf_sampling_times, tf_sampling_frequencies
 
 def time_frequency_transform(time_domain_strain,
                              sampling_rate,
@@ -60,7 +166,7 @@ def time_frequency_transform(time_domain_strain,
     Xf = np.zeros((ntime, nfreq), dtype=complex)
     # Construct the wavelet
     time_array = np.arange(0, tlen) / sampling_rate
-    wavelet = time_domain_wavelet(time_array, bandwidth_of_top_flat_region, total_bandwidth, sharpness)
+    wavelet, t_cutoff = compute_time_domain_wavelet(time_array, bandwidth_of_top_flat_region, total_bandwidth, sharpness)
     # Construct the X vector
     X = np.zeros((ntime, 2*kmax))
     Xf = np.zeros((ntime, nfreq), dtype=complex)
@@ -86,3 +192,24 @@ def time_frequency_transform(time_domain_strain,
             else:
                 output_k[n,k-1] = -np.imag(output_k[n,k-1])
     return output_0, output_kmax, output_k
+
+def compute_time_delay_filter(time_delay,
+                              tlen,
+                              sampling_rate,
+                              bandwidth_of_top_flat_region,
+                              total_bandwidth,
+                              sharpness):
+    if tlen%2 != 0:
+        raise ValueError(f'Length of time_domain_data = {tlen} has to be even')
+    # The maximum frequency
+    fhigh = sampling_rate / 2
+    # Number of frequency bins
+    M = int(fhigh / total_bandwidth)
+    if M%2 != 0:
+        raise ValueError(f'sampling_rate / 2 divided by the total_bandwith is {M} has to be even')
+    # Number of frequency indices
+    M_length = M+1
+    # Number of time indices
+    n_length = int(tlen / M)
+    # The output filter
+    output = 
