@@ -6,6 +6,7 @@
 ###################################################################
 import numpy as np
 from scipy.special import betainc
+import scipy.integrate as integrate
 
 
 def compute_frequency_domain_wavelet(frequency_array, bandwidth_of_top_flat_region, total_bandwidth, sharpness, dtype=float):
@@ -199,10 +200,35 @@ def compute_time_delay_filter(time_delay,
                               bandwidth_of_top_flat_region,
                               total_bandwidth,
                               sharpness):
+    def compute_frequency_domain_wavelet_single_frequency(f, bandwidth_of_top_flat_region, total_bandwidth, sharpness):
+        scaling = 1 / np.sqrt(total_bandwidth * 2 * np.pi)
+        f_abs = np.abs(f)
+        if f_abs < bandwidth_of_top_flat_region/2:
+            return scaling
+        elif f_abs <= total_bandwidth - bandwidth_of_top_flat_region/2:
+            half_bandwidth_of_top_flat_region = bandwidth_of_top_flat_region/2
+            return scaling * np.cos(betainc(sharpness, sharpness, (f_abs-half_bandwidth_of_top_flat_region)/(total_bandwidth-bandwidth_of_top_flat_region))*np.pi/2)
+        else:
+            return 0.
+        
+    def compute_T1l_integrand(f, bandwidth_of_top_flat_region, total_bandwidth, sharpness,
+                             M, l, delta_t, time_delay):
+        fwavelet = compute_frequency_domain_wavelet_single_frequency(f, bandwidth_of_top_flat_region, total_bandwidth, sharpness)
+        return np.exp(1.j*2*np.pi*f*(M*l*delta_t + time_delay))*fwavelet**2
+
+    def compute_T2l_integrand(f, bandwidth_of_top_flat_region, total_bandwidth, sharpness,
+                              M, l, delta_t, time_delay, domega):
+        # Since fwavelet is real, do not need to take the conjugate of fwavelet1.
+        fwavelet1 = compute_frequency_domain_wavelet_single_frequency(f-domega/2, bandwidth_of_top_flat_region, total_bandwidth, sharpness)
+        fwavelet2 = compute_frequency_domain_wavelet_single_frequency(f+domega/2, bandwidth_of_top_flat_region, total_bandwidth, sharpness)
+        return np.exp(1.j*2*np.pi*f*(M*l*delta_t + time_delay))*fwavelet1*fwavelet2
+
     if tlen%2 != 0:
         raise ValueError(f'Length of time_domain_data = {tlen} has to be even')
     # The maximum frequency
     fhigh = sampling_rate / 2
+    # The sampling interval
+    delta_t = 1 / sampling_rate
     # Number of frequency bins
     M = int(fhigh / total_bandwidth)
     if M%2 != 0:
@@ -211,5 +237,63 @@ def compute_time_delay_filter(time_delay,
     M_length = M+1
     # Number of time indices
     n_length = int(tlen / M)
+    # Compute the domega
+    domega = 2 * np.pi * total_bandwidth
+    # Compute the frequency array
+    frequency_array = np.fft.rfftfreq(tlen, delta_t)
+    # Compute the wavelet
+    fwavelet = compute_frequency_domain_wavelet(frequency_array, bandwidth_of_top_flat_region, total_bandwidth, sharpness, dtype=float)
+    # Compute the wavelet squared
+    fwavelet2 = fwavelet**2
     # The output filter
-    output = 
+    output = np.zeros((n_length, M_length, n_length, M_length))
+    # Upper bound of the integral
+    fhigh = total_bandwidth - bandwidth_of_top_flat_region/2
+    # Lower bound of the integral
+    flow = -fhigh    
+    for n1 in range(n_length):
+        for n2 in range(n_length):
+            for m in range(M_length):
+                l = n2 - n1
+                # Compute the T integral for the 0th component
+                T1l = integrate.quad(compute_T1l_integrand, flow, fhigh,
+                                     args=(bandwidth_of_top_flat_region,
+                                           total_bandwidth,
+                                           sharpness,
+                                           M, l,
+                                           delta_t,
+                                           time_delay),
+                                           complex_func=True)[0]*2*np.pi
+                # Compute the T integral for the +-1 th components
+                T2l = integrate.quad(compute_T2l_integrand, flow, fhigh,
+                                     args=(bandwidth_of_top_flat_region,
+                                           total_bandwidth,
+                                           sharpness,
+                                           M, l,
+                                           delta_t,
+                                           time_delay,
+                                           domega),
+                                           complex_func=True)[0]*2*np.pi
+                if l%2 == 0:
+                    Cl = 1
+                    Clp1 = 1.j
+                else:
+                    Cl = 1.j
+                    Clp1 = 1
+                # The 0th component
+                output[n1, m, n2, m] = (-1)**(l*n1)*np.real(np.conj(Cl)*np.exp(1.j*m*domega*time_delay)*T1l)
+                # The -1th component
+                output[n1, m, n2, m-1] = (-1)**(n1+m)*(-1)**(l*n1) * np.real(np.conj(Clp1)*np.exp(1.j*(m-0.5)*domega*time_delay)*(-1.j)**(l)*T2l)
+                # The +1th component
+                output[n1, m, n2, (m+1)%M_length] = (-1)**(n1+m)*(-1)**(l*n1) * np.real(np.conj(Clp1)*np.exp(1.j*(m+0.5)*domega*time_delay)*(+1.j)**(l)*T2l)
+                if m == 0 or m == M:
+                    output[n1, m, n2, m-1] *= np.sqrt(2)
+                    output[n1, m, n2, (m+1)%M_length] *= np.sqrt(2)
+                elif m+1 == M:
+                    output[n1, m, n2, m+1] *= np.sqrt(2)
+                elif m-1 == M:
+                    output[n1, m, n2, m-1] *= np.sqrt(2)
+    return output
+
+def apply_time_delay_filter(wnm, time_delay_filter):
+    return np.einsum('lk,nmlk->nm', wnm, time_delay_filter)
