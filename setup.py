@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 
 from setuptools import setup
+from Cython.Distutils import Extension
+from Cython.Distutils import build_ext
+import cython_gsl
 import sys
 import os
+import numpy as np
 
 python_version = sys.version_info
 
@@ -40,12 +44,22 @@ def readfile(filename):
 
 long_description = get_long_description()
 
+extensions  = [
+    Extension("nullpol.transform",
+              ["nullpol/transform.pyx"],
+              include_dirs=[cython_gsl.get_cython_include_dir(),
+                            np.get_include()],
+              libraries=cython_gsl.get_libraries(),
+              library_dirs=[cython_gsl.get_library_dir()],
+    )
+]
+
 setup(
     name="nullpol",
     description="Polarization test",
     long_description=long_description,
     long_description_content_type="text/x-rst",
-    author="Isaac Wong, Thomas Ng",
+    author="Isaac Wong, Thomas Ng, Balázs Cirok",
     license="MIT",
     packages=[
         "nullpol",
@@ -54,6 +68,7 @@ setup(
     package_dir={"nullpol": "nullpol"},
     python_requires=">=3.8",
     install_requires=get_requirements(),
+    ext_modules=extensions,
     classifiers=[
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",

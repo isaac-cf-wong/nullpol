@@ -132,7 +132,7 @@ def compute_time_frequency_transform_c(time_domain_data,
             else:
                 output_n[i, m] = -np.imag(Xnf[m])
     # Multiply output by the scaling
-    scaling = np.sqrt(M) / sampling_rate
+    scaling = np.sqrt(M/sampling_rate*8)
     output_0 *= scaling
     output_M *= scaling
     output_n *= (scaling * np.sqrt(2))
