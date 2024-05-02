@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=40.6.0", "wheel", "Cython", "CythonGSL", "numpy"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nullpol"
+version = "0.1.0"
+description = "A package to perform model-independent polarization test of gravitational-wave signals"
+authors = [{name="Isaac C.F. Wong",email="chunfung.wong@kuleuven.be"},
+           {name="Thomas Ng"},
+           {name="Balázs Cirok"}]
+license = {file="LICENSE"}
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3.8",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "numpy>=1.18.1",
+    "CythonGSL"
+]
+[tool.setuptools.packages]
+find = {}
+
+[tool.cython]
+language_level = 3

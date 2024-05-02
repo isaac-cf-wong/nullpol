@@ -73,7 +73,32 @@ cpdef int find_time_domain_wavelet_cutoff_time(np.ndarray[np.float64_t,ndim=1] t
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef compute_time_frequency_transform(np.ndarray time_domain_strain,
+cpdef np.ndarray[np.float64_t,ndim=1] get_Xn(np.ndarray[np.float64_t,ndim=1] time_domain_strain,
+                                           int n,
+                                           int M,
+                                           np.ndarray[np.float64_t,ndim=1] time_domain_wavelet,
+                                           int kmax):
+    cdef int M_times_2 = M*2
+    cdef np.ndarray[np.float64_t,ndim=1] out = np.zeros(M_times_2,dtype=np.float64)
+    cdef int length_of_strain = time_domain_strain.shape[0]
+    cdef int length_of_wavelet = time_domain_wavelet.shape[0]
+    cdef int i, k, wavelet_idx, strain_idx
+    for i in range(M_times_2):
+        for k in range(-kmax, kmax+1):
+            wavelet_idx = 2*k*M+i
+            if wavelet_idx>=-kmax and wavelet_idx<kmax+1:
+                strain_idx = wavelet_idx+n*M
+                # Periodic boundary condition
+                if wavelet_idx<0 or wavelet_idx>=length_of_wavelet:
+                    wavelet_idx = ((wavelet_idx%length_of_wavelet)+length_of_wavelet)%length_of_wavelet
+                if strain_idx<0 or strain_idx>=length_of_strain:
+                    strain_idx = ((strain_idx%length_of_strain)+length_of_strain)%length_of_strain
+                out[i] += time_domain_strain[strain_idx]*time_domain_wavelet[wavelet_idx]
+    return out
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cpdef compute_time_frequency_transform(np.ndarray[np.float64_t,ndim=1] time_domain_strain,
                                        double sampling_rate,
                                        double bandwidth_of_top_flat_region,
                                        double total_bandwidth,
@@ -97,11 +122,15 @@ cpdef compute_time_frequency_transform(np.ndarray time_domain_strain,
     cdef int nfreq = kmax+1
     # Number of time components
     cdef int ntime = int(tlen/kmax)
-    cdef np.ndarray[np.float64_t,ndim=2] X = np.zeros((ntime,2*kmax), dtype=np.float64)
-    cdef np.ndarray[np.complex128_t,ndim=2] Xf = np.empty((ntime, nfreq), dtype=np.complex128)
+    # The Xn vector
+    cdef np.ndarray[np.float64_t,ndim=2] Xn = np.zeros((ntime,kmax*2),dtype=np.float64)
+    # The Fourier transform of the Xn vector
+    cdef np.ndarray[np.complex128_t,ndim=2] Xnf
+
     cdef int X_kmax_plus_one = int(tlen/2/kmax)
     # Construct the time domain wavelet
     cdef np.ndarray[np.float64_t,ndim=1] time_array = np.arange(0,tlen) / sampling_rate
+    # The time domain wavelet
     cdef np.ndarray[np.float64_t,ndim=1] time_domain_wavelet = compute_time_domain_wavelet(time_array,
                                                                                            bandwidth_of_top_flat_region,
                                                                                            total_bandwidth,
@@ -111,7 +140,102 @@ cpdef compute_time_frequency_transform(np.ndarray time_domain_strain,
                                                                             precision)
     # Output array
     cdef np.ndarray[np.float64_t,ndim=2] output = np.zeros((ntime,nfreq),dtype=np.float64)
-    cdef int i
+    cdef int i, m
+    for i in range(ntime):
+        Xn[i,:] = get_Xn(time_domain_strain, i, kmax, time_domain_wavelet, wavelet_time_idx_cutoff)
+    # Perform Fourier transform
+    Xnf = np.fft.ifft(Xn)
+    # Copy the components to the output
+    for i in range(ntime):
+        for m in range(1,kmax):
+            if (m+i)%2==0:
+                output[i,m] = Xnf[i,m].real
+            else:
+                output[i,m] = -Xnf[i,m].imag
+    """
     for i in range(ntime):
         # Compute the Xn vector
-        pass
+        Xn = get_Xn(time_domain_strain, i, kmax, time_domain_wavelet, wavelet_time_idx_cutoff)
+        # Perform Fourier transform
+        Xnf = np.fft.ifft(Xn)
+        # Copy the components to the output
+        for m in range(1,kmax):
+            if (m+i)%2 ==0:
+                output[i,m] = Xnf[m].real
+            else:
+                output[i,m] = -Xnf[m].imag
+    """
+
+    # Normalize the output
+    output = output * (np.sqrt(1. / sampling_rate * kmax)*kmax*8)
+    return output
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cpdef np.ndarray[np.float64_t,ndim=1] compute_sampling_time_array(double sampling_rate,
+                                                                  double total_bandwidth,
+                                                                  double start_time,
+                                                                  int tlen):
+    cdef double sampling_interval = 1. / sampling_rate
+    cdef int kmax = int(sampling_rate/2/total_bandwidth)
+    cdef double interval = sampling_interval * kmax
+    cdef int ntime = int(tlen/kmax)
+    cdef double end_time = start_time + sampling_interval * tlen
+    return np.arange(start_time, end_time, interval)
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cpdef np.ndarray[np.float64_t,ndim=1] compute_sampling_frequency_array(double sampling_rate,
+                                                                       double total_bandwidth):
+    return np.arange(0., sampling_rate/2+total_bandwidth, total_bandwidth)
+
+cpdef compute_inverse_time_frequency_transform(np.ndarray[np.float64_t,ndim=2] time_frequency_domain_strain,
+                                               double sampling_rate,
+                                               double bandwidth_of_top_flat_region,
+                                               double total_bandwidth,
+                                               double sharpness,
+                                               double precision=6):
+    # Assumed n_length is even
+    cdef int n_length = time_frequency_domain_strain.shape[0]
+    cdef int m_length = time_frequency_domain_strain.shape[1]
+    cdef int n_length_2 = n_length // 2
+    cdef int M = m_length-1
+    cdef double fhigh = total_bandwidth*M
+    cdef int length = n_length*M
+    cdef int k_length = length // 2 + 1
+    # Time resolution in time domain
+    cdef double delta_t = 0.5 / fhigh
+    cdef double scaling = np.sqrt(4. * np.pi * total_bandwidth)/delta_t
+    # Compute the sampling frequency array
+    cdef np.ndarray[np.float64_t,ndim=1] freqs = np.fft.rfftfreq(length,1. / sampling_rate)
+    cdef int i,j,k                         
+    cdef complex coef                                                  
+    cdef double freq_shift
+    cdef double SQRT_2 = np.sqrt(2.)
+    cdef np.ndarray[np.float64_t,ndim=1] phif_plus, phif_minus
+    # The output
+    cdef np.ndarray[np.complex128_t,ndim=1] output_f = np.zeros(k_length,dtype=np.complex128)
+    cdef np.ndarray[np.float64_t,ndim=1] output
+    # The DC and Nyquist components are taken to be zero
+    for j in range(1,m_length-1):
+        freq_shift = total_bandwidth*j
+        phif_plus = compute_frequency_domain_wavelet(freqs+freq_shift,
+                                                     bandwidth_of_top_flat_region,
+                                                     total_bandwidth,
+                                                     sharpness)
+        phif_minus = compute_frequency_domain_wavelet(freqs-freq_shift,
+                                                      bandwidth_of_top_flat_region,
+                                                      total_bandwidth,
+                                                      sharpness)
+        for i in range(n_length):
+            if (i+j)%2 == 0:
+                coef = 1.
+            else:
+                coef = 1.j
+            for k in range(k_length):
+                output_f[k] += (np.conj(coef)*phif_plus[k]+coef*phif_minus[k])*np.exp(-1.j*np.pi*i*freqs[k]/total_bandwidth)/SQRT_2*time_frequency_domain_strain[i,j];
+    # Rescale the output
+    output_f *= scaling
+    # Perform inverse transform
+    output = np.fft.irfft(output_f)
+    return output  

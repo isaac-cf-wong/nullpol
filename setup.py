@@ -2,7 +2,7 @@
 
 from setuptools import setup
 from Cython.Distutils import Extension
-from Cython.Distutils import build_ext
+from Cython.Build import cythonize
 import cython_gsl
 import sys
 import os
@@ -45,8 +45,36 @@ def readfile(filename):
 long_description = get_long_description()
 
 extensions  = [
-    Extension("nullpol.transform",
-              ["nullpol/transform.pyx"],
+    Extension("nullpol.wdm.inverse_wavelet_freq_funcs",
+              ["nullpol/wdm/inverse_wavelet_freq_funcs.pyx"],
+              include_dirs=[cython_gsl.get_cython_include_dir(),
+                            np.get_include()],
+              libraries=cython_gsl.get_libraries(),
+              library_dirs=[cython_gsl.get_library_dir()],
+    ),
+    Extension("nullpol.wdm.inverse_wavelet_time_funcs",
+              ["nullpol/wdm/inverse_wavelet_time_funcs.pyx"],
+              include_dirs=[cython_gsl.get_cython_include_dir(),
+                            np.get_include()],
+              libraries=cython_gsl.get_libraries(),
+              library_dirs=[cython_gsl.get_library_dir()],
+    ),
+    Extension("nullpol.wdm.transform_freq_funcs",
+              ["nullpol/wdm/transform_freq_funcs.pyx"],
+              include_dirs=[cython_gsl.get_cython_include_dir(),
+                            np.get_include()],
+              libraries=cython_gsl.get_libraries(),
+              library_dirs=[cython_gsl.get_library_dir()],
+    ),
+    Extension("nullpol.wdm.transform_time_funcs",
+              ["nullpol/wdm/transform_time_funcs.pyx"],
+              include_dirs=[cython_gsl.get_cython_include_dir(),
+                            np.get_include()],
+              libraries=cython_gsl.get_libraries(),
+              library_dirs=[cython_gsl.get_library_dir()],
+    ),
+    Extension("nullpol.wdm.wavelet_transform",
+              ["nullpol/wdm/wavelet_transform.pyx"],
               include_dirs=[cython_gsl.get_cython_include_dir(),
                             np.get_include()],
               libraries=cython_gsl.get_libraries(),
@@ -60,20 +88,11 @@ setup(
     long_description=long_description,
     long_description_content_type="text/x-rst",
     author="Isaac Wong, Thomas Ng, Balázs Cirok",
-    license="MIT",
     packages=[
         "nullpol",
         "nullpol.detector"
     ],
     package_dir={"nullpol": "nullpol"},
-    python_requires=">=3.8",
-    install_requires=get_requirements(),
-    ext_modules=extensions,
-    classifiers=[
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
-        "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent",
-    ],
+    ext_modules=cythonize(extensions, language_level="3"),
 )
 
