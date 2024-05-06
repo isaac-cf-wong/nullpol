@@ -37,7 +37,7 @@ cpdef void unpack_time_wave_helper_compact(int n,
                                            int Nt,
                                            int K,
                                            np.ndarray[np.float64_t,ndim=1] phis,
-                                           np.ndarray[np.float64_t,ndim=1] fft_fin,
+                                           np.ndarray[np.complex128_t,ndim=1] fft_fin,
                                            np.ndarray[np.float64_t,ndim=1] res):
     """helper for time domain wavelet transform to unpack wavelet domain coefficients
     in compact representation where cosine and sine parts are real and imaginary parts"""
@@ -68,7 +68,7 @@ cpdef void unpack_time_wave_helper_compact(int n,
 cpdef void pack_wave_time_helper(int n,
                                  int Nf,
                                  int Nt,
-                                 np.ndarray[np.float64_t,ndim=1] wave_in,
+                                 np.ndarray[np.float64_t,ndim=2] wave_in,
                                  np.ndarray[np.complex128_t,ndim=1] afins):
     """helper for time domain transform to pack wavelet domain coefficients"""
     if n%2==0:
@@ -102,7 +102,7 @@ cpdef void pack_wave_time_helper(int n,
 cpdef void pack_wave_time_helper_compact(int n,
                                          int Nf,
                                          int Nt,
-                                         np.ndarray[np.float64_t,ndim=1] wave_in,
+                                         np.ndarray[np.float64_t,ndim=2] wave_in,
                                          np.ndarray[np.complex128_t,ndim=1] afins):
     """helper for time domain transform to pack wavelet domain coefficients
     in packed representation with odd and even coefficients in real and imaginary pars"""
@@ -122,7 +122,7 @@ cpdef void pack_wave_time_helper_compact(int n,
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef np.ndarray[np.float64_t,ndim=1] inverse_wavelet_time_helper_fast(np.ndarray[np.float64_t,ndim=1] wave_in,
+cpdef np.ndarray[np.float64_t,ndim=1] inverse_wavelet_time_helper_fast(np.ndarray[np.float64_t,ndim=2] wave_in,
                                                                        np.ndarray[np.float64_t,ndim=1] phi,
                                                                        int Nf,
                                                                        int Nt,

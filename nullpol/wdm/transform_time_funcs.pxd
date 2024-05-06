@@ -11,15 +11,15 @@ cpdef void assign_wdata(int i,
 cpdef void pack_wave(int i,
                      int mult,
                      int Nf,
-                     np.ndarray[np.float64_t,ndim=1] wdata_trans,
-                     np.ndarray[np.float64_t,ndim=1] wave)
+                     np.ndarray[np.complex128_t,ndim=1] wdata_trans,
+                     np.ndarray[np.float64_t,ndim=2] wave)
 
-cpdef np.ndarray[np.float64_t,ndim=1] transform_wavelet_time_helper(np.ndarray[np.float64_t,ndim=1]data,
+cpdef np.ndarray[np.float64_t,ndim=2] transform_wavelet_time_helper(np.ndarray[np.float64_t,ndim=1]data,
                                                                     int Nf,
                                                                     int Nt,
                                                                     np.ndarray[np.float64_t,ndim=1] phi,
                                                                     int mult)
 
 cpdef np.ndarray[np.float64_t,ndim=1] phi_vec(int Nf,
-                                              double nx=4.,
-                                              int mult=16)                                                                                                                                                               
+                                              double nx,
+                                              int mult)

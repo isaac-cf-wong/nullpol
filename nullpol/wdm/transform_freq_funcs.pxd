@@ -2,7 +2,7 @@ cimport numpy as np
 
 cpdef np.ndarray[np.float64_t,ndim=1] phitilde_vec(np.ndarray[np.float64_t,ndim=1] om,
                                                    int Nf,
-                                                   double nx=4.)
+                                                   double nx)
 
 cpdef np.ndarray[np.float64_t,ndim=1] phitilde_vec_norm(int Nf,
                                                         int Nt,

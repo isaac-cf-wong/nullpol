@@ -8,7 +8,7 @@ from cython_gsl cimport gsl_sf_beta_inc
 @cython.wraparound(False)
 cpdef np.ndarray[np.float64_t,ndim=1] phitilde_vec(np.ndarray[np.float64_t,ndim=1] om,
                                                    int Nf,
-                                                   double nx=4.):
+                                                   double nx):
     """compute phitilde, om i array, nx is filter steepness, defaults to 4."""
     cdef double OM = np.pi  #Nyquist angular frequency
     cdef double DOM = OM/Nf #2 pi times DF

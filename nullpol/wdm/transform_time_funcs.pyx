@@ -2,7 +2,6 @@ import numpy as np
 cimport numpy as np
 cimport cython
 from nullpol.wdm.transform_freq_funcs import phitilde_vec
-import nullpol.wdm.fft_funcs as fft
 
 
 @cython.boundscheck(False)
@@ -34,8 +33,8 @@ cpdef void assign_wdata(int i,
 cpdef void pack_wave(int i,
                      int mult,
                      int Nf,
-                     np.ndarray[np.float64_t,ndim=1] wdata_trans,
-                     np.ndarray[np.float64_t,ndim=1] wave):
+                     np.ndarray[np.complex128_t,ndim=1] wdata_trans,
+                     np.ndarray[np.float64_t,ndim=2] wave):
     """pack fftd wdata into wave array"""
     if i%2==0 and i<wave.shape[0]-1:
         #m=0 value at even Nt and
@@ -50,7 +49,7 @@ cpdef void pack_wave(int i,
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef np.ndarray[np.float64_t,ndim=1] transform_wavelet_time_helper(np.ndarray[np.float64_t,ndim=1]data,
+cpdef np.ndarray[np.float64_t,ndim=2] transform_wavelet_time_helper(np.ndarray[np.float64_t,ndim=1]data,
                                                                     int Nf,
                                                                     int Nt,
                                                                     np.ndarray[np.float64_t,ndim=1] phi,
@@ -67,7 +66,7 @@ cpdef np.ndarray[np.float64_t,ndim=1] transform_wavelet_time_helper(np.ndarray[n
     # windowed data packets
     cdef np.ndarray[np.float64_t,ndim=1] wdata = np.zeros(K,dtype=np.float64)
 
-    cdef np.ndarray[np.float_t,ndim=1] wave = np.zeros((Nt,Nf),dtype=np.float64)  # wavelet wavepacket transform of the signal
+    cdef np.ndarray[np.float_t,ndim=2] wave = np.zeros((Nt,Nf),dtype=np.float64)  # wavelet wavepacket transform of the signal
     cdef np.ndarray[np.float_t,ndim=1] data_pad = np.zeros(ND+K,dtype=np.float64)
     data_pad[:ND] = data
     data_pad[ND:ND+K] = data[:K]
@@ -75,7 +74,7 @@ cpdef np.ndarray[np.float64_t,ndim=1] transform_wavelet_time_helper(np.ndarray[n
 
     for i in range(0,Nt):
         assign_wdata(i,K,ND,Nf,wdata,data_pad,phi)
-        wdata_trans = fft.rfft(wdata,K)
+        wdata_trans = np.fft.rfft(wdata,K)
         pack_wave(i,mult,Nf,wdata_trans,wave)
 
     return wave
@@ -83,8 +82,8 @@ cpdef np.ndarray[np.float64_t,ndim=1] transform_wavelet_time_helper(np.ndarray[n
 @cython.boundscheck(False)
 @cython.wraparound(False)
 cpdef np.ndarray[np.float64_t,ndim=1] phi_vec(int Nf,
-                                              double nx=4.,
-                                              int mult=16):
+                                              double nx,
+                                              int mult):
     """get time domain phi as fourier transform of phitilde_vec"""
     #TODO fix mult
 
@@ -105,7 +104,7 @@ cpdef np.ndarray[np.float64_t,ndim=1] phi_vec(int Nf,
     DX[1:half_K+1] = phitilde_vec(dom*np.arange(1,half_K+1),Nf,nx)
     # negative frequencies
     DX[half_K+1:] = phitilde_vec(-dom*np.arange(half_K-1,0,-1),Nf,nx)
-    DX = fft.ifft(DX,K)*K
+    DX = np.fft.ifft(DX,K)*K
 
     cdef np.ndarray[np.float64_t,ndim=1] phi = np.zeros(K,dtype=np.float64)
     phi[0:half_K] = np.real(DX[half_K:K])
