@@ -36,7 +36,7 @@ def clustering(time_freq_transformed, threshold=10):
     Returns
     -------
     numpy.ndarray
-        A mask with the largest cluster.
+        A mask with the largest cluster in shape (n_time, n_freq).
     """
     # threshold the data
     mask = time_freq_transformed > np.percentile(time_freq_transformed, threshold)
