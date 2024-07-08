@@ -14,15 +14,19 @@ def _get_neighbours(i, j, mask):
 # Depth-first search
 def _dfs(i, j, mask, visited):
     stack = [(i, j)]
-    visited[i, j] = 1
+    cluster = []
     while stack:
         i, j = stack.pop()
-        for x, y in _get_neighbours(i, j, mask):
-            if mask[x, y] and not visited[x, y]:
-                visited[x, y] = 1
-                stack.append((x, y))
+        if visited[i, j]:
+            continue
+        visited[i, j] = 1
+        cluster.append((i, j))
+        for neighbour in _get_neighbours(i, j, mask):
+            if mask[neighbour[0], neighbour[1]]:
+                stack.append(neighbour)
+    return cluster
 
-def clustering(time_freq_transformed, threshold=10):
+def clustering(time_freq_transformed, threshold=90):
     """
     Clusters the time-frequency transformed data and returns a mask with the largest cluster.
 
@@ -47,13 +51,7 @@ def clustering(time_freq_transformed, threshold=10):
     for i in range(mask.shape[0]):
         for j in range(mask.shape[1]):
             if mask[i, j] and not visited[i, j]:
-                cluster = []
-                _dfs(i, j, mask, visited)
-                for i in range(mask.shape[0]):
-                    for j in range(mask.shape[1]):
-                        if visited[i, j]:
-                            cluster.append((i, j))
-                clusters.append(cluster)
+                clusters.append(_dfs(i, j, mask, visited))
 
     # return a mask with the largest cluster
     largest_cluster = max(clusters, key=len)
