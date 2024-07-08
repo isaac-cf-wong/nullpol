@@ -62,7 +62,7 @@ cpdef void tukey(np.ndarray[np.float64_t,ndim=1] data,
             f_mult = 0.5*(1.+np.cos(np.pi*(i/imin-1.)))
         if i>imax:
             f_mult = 0.5*(1.+np.cos(np.pi/Nwin*(i-imax)))
-        data[i] *= f_mult     
+        data[i] *= f_mult
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -70,7 +70,7 @@ cpdef void DX_assign_loop(int m,
                           int Nt,
                           int Nf,
                           np.ndarray[np.complex128_t,ndim=1] DX,
-                          np.ndarray[np.float64_t,ndim=1] data,
+                          np.ndarray[np.complex128_t,ndim=1] data,
                           np.ndarray[np.float64_t,ndim=1] phif):
     """helper for assigning DX in the main loop"""
     cdef int i_base = Nt//2
@@ -102,7 +102,7 @@ cpdef void DX_unpack_loop(int m,
                           int Nt,
                           int Nf,
                           np.ndarray[np.complex128_t,ndim=1] DX_trans,
-                          np.ndarray[np.float64_t,ndim=1] wave):
+                          np.ndarray[np.float64_t,ndim=2] wave):
     """helper for unpacking fftd DX in main loop"""
     cdef int n
     if m==0:
@@ -125,12 +125,12 @@ cpdef void DX_unpack_loop(int m,
                 else:
                     wave[n,m] = np.real(DX_trans[n])
 
-cpdef np.ndarray[np.float64_t,ndim=1] transform_wavelet_freq_helper(np.ndarray[np.float64_t,ndim=1] data,
+cpdef np.ndarray[np.float64_t,ndim=1] transform_wavelet_freq_helper(np.ndarray[np.complex128_t,ndim=1] data,
                                                                     int Nf,
                                                                     int Nt,
                                                                     np.ndarray[np.float64_t,ndim=1] phif):
     """helper to do the wavelet transform using the fast wavelet domain transform"""
-    cdef np.ndarray[np.float64_t,ndim=1] wave = np.zeros((Nt,Nf),dtype=np.float64) # wavelet wavepacket transform of the signal
+    cdef np.ndarray[np.float64_t,ndim=2] wave = np.zeros((Nt,Nf),dtype=np.float64) # wavelet wavepacket transform of the signal
 
     cdef np.ndarray[np.complex128_t,ndim=1] DX = np.zeros(Nt,dtype=np.complex128)
     cdef int m
@@ -139,4 +139,4 @@ cpdef np.ndarray[np.float64_t,ndim=1] transform_wavelet_freq_helper(np.ndarray[n
         DX_assign_loop(m,Nt,Nf,DX,data,phif)
         DX_trans = np.fft.ifft(DX,Nt)
         DX_unpack_loop(m,Nt,Nf,DX_trans,wave)
-    return wave          
+    return wave

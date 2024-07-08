@@ -27,8 +27,8 @@ cpdef np.ndarray[np.float64_t,ndim=2] transform_wavelet_freq_time(np.ndarray[np.
                                                                   int Nf,
                                                                   int Nt,
                                                                   double nx)
-                                                                  
-cpdef np.ndarray[np.float64_t,ndim=2] transform_wavelet_freq(np.ndarray[np.float64_t,ndim=1] data,
+
+cpdef np.ndarray[np.float64_t,ndim=2] transform_wavelet_freq(np.ndarray[np.complex128_t,ndim=1] data,
                                                              int Nf,
                                                              int Nt,
-                                                             double nx)                                                                                                                                                                                                                                                                                                                      
+                                                             double nx)

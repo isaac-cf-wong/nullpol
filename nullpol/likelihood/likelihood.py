@@ -2,8 +2,8 @@ import numpy as np
 from bilby.core.likelihood import Likelihood
 import scipy.stats
 import numpy as np
-from .null_projector import get_null_stream, get_null_energy
-from .detector.networks import *
+from nullpol.null_projector import get_null_stream, get_null_energy
+from nullpol.detector.networks import *
 
 
 class NullStreamLikelihood(Likelihood):

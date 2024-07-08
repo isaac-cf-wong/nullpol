@@ -37,7 +37,7 @@ cpdef np.ndarray[np.complex128_t,ndim=1] inverse_wavelet_freq(np.ndarray[np.floa
                                                             double nx):
     """inverse wavelet transform to freq domain signal"""
     cdef np.ndarray[np.float64_t,ndim=1] phif = phitilde_vec_norm(Nf,Nt,nx)
-    return inverse_wavelet_freq_helper_fast(wave_in,phif,Nf,Nt)    
+    return inverse_wavelet_freq_helper_fast(wave_in,phif,Nf,Nt)
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -53,7 +53,7 @@ cpdef np.ndarray[np.float64_t,ndim=2] transform_wavelet_time(np.ndarray[np.float
     cdef np.ndarray[np.float64_t,ndim=1] phi = phi_vec(Nf,nx,mult_)
     cdef np.ndarray[np.float64_t,ndim=2] wave = transform_wavelet_time_helper(data,Nf,Nt,phi,mult_)
 
-    return wave    
+    return wave
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -68,7 +68,7 @@ cpdef np.ndarray[np.float64_t,ndim=2] transform_wavelet_freq_time(np.ndarray[np.
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef np.ndarray[np.float64_t,ndim=2] transform_wavelet_freq(np.ndarray[np.float64_t,ndim=1] data,
+cpdef np.ndarray[np.float64_t,ndim=2] transform_wavelet_freq(np.ndarray[np.complex128_t,ndim=1] data,
                                                              int Nf,
                                                              int Nt,
                                                              double nx):

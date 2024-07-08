@@ -1,5 +1,5 @@
 import bilby
-from .detector.networks import *
-from .likelihood import *
-from .projector_generator import *
-from .prior import *
+from nullpol.detector.networks import *
+from nullpol.likelihood import *
+from nullpol.projector_generator import *
+from nullpol.prior import *
