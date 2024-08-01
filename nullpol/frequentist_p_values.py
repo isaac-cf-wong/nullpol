@@ -7,7 +7,7 @@ from ligo.skymap.io.fits import read_sky_map
 from ligo.skymap.postprocess.crossmatch import crossmatch
 
 
-def p_null_energy_method(ifos, ra_true, dec_true, psi, geocent_time):
+def p_null_energy_method(ifos, minimum_frequency, ra_true, dec_true, psi, geocent_time):
     """
     Get p-value using the "null energy method" described in:
     Pang et al. (2020) "Generic searches for alternative
@@ -18,6 +18,8 @@ def p_null_energy_method(ifos, ra_true, dec_true, psi, geocent_time):
     -----------
     ifos: 'bilby.gw.detector.networks.InterferometerList'
         List of interferometers.
+    minimum_frequency: float
+        Minimum frequency.
     ra_true: float in the range (0, 2pi)
         True value of right ascension in radians (known from EM counterpart).
     dec_true: float in the range (-pi/2, pi/2)
@@ -31,8 +33,7 @@ def p_null_energy_method(ifos, ra_true, dec_true, psi, geocent_time):
     -------
     p_value: float in the range (0, 1)
         The p-value to the "tensor-only" hypothesis.
-    """ 
-    minimum_frequency = ifos[0].minimum_freqency
+    """
     maximum_frequency = ifos[0].maximum_frequency
     frequency_array = ifos[0].frequency_array
     psds = np.array([ifo.power_spectral_density_array for ifo in ifos])
@@ -54,7 +55,7 @@ def p_null_energy_method(ifos, ra_true, dec_true, psi, geocent_time):
         maximum_frequency=maximum_frequency,
     )
     
-    null_projector = get_null_projector(F_matrix_true_whitened)
+    null_projector_true = get_null_projector(F_matrix_true_whitened)
     
     null_stream_true = get_null_stream(
         interferometers=ifos,
@@ -78,7 +79,8 @@ def p_null_energy_method(ifos, ra_true, dec_true, psi, geocent_time):
     
     return p_value
 
-#########################################################################################################
+
+
 
 # Generating ".fits" file:
 # https://lscsoft.docs.ligo.org/bilby/api/bilby.gw.result.CompactBinaryCoalescenceResult.html#bilby.gw.result.CompactBinaryCoalescenceResult.plot_skymap
@@ -119,7 +121,8 @@ def p_sky_map_method(true_sky_pos, path_to_fits):
     
     return p_value
 
-#########################################################################################################
+
+
 
 def get_p_combined(p_values):
     """
