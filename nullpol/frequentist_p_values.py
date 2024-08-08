@@ -1,10 +1,15 @@
+import argparse
 import numpy as np
+import pandas as pd
 from scipy.stats import chi2
 from nullpol.nullpol.null_projector import *
 from nullpol.nullpol.antenna_pattern import *
 from astropy.coordinates import SkyCoord
 from ligo.skymap.io.fits import read_sky_map
 from ligo.skymap.postprocess.crossmatch import crossmatch
+
+
+""" SEE BELOW FOR INSTRUCTIONS IN LAUNCHING IN THE TERMINAL """
 
 
 def p_null_energy_method(ifos, minimum_frequency, ra_true, dec_true, psi, geocent_time):
@@ -81,7 +86,6 @@ def p_null_energy_method(ifos, minimum_frequency, ra_true, dec_true, psi, geocen
 
 
 
-
 # Generating ".fits" file:
 # https://lscsoft.docs.ligo.org/bilby/api/bilby.gw.result.CompactBinaryCoalescenceResult.html#bilby.gw.result.CompactBinaryCoalescenceResult.plot_skymap
 
@@ -109,18 +113,17 @@ def p_sky_map_method(true_sky_pos, path_to_fits):
         specified by the posteriors from parameter estimation.
     """
     if isinstance(true_sky_pos, dict):
-        unit = true_sky_pos["unit"] if "unit" in true_sky_pos.keys() else "rad"
+        unit = true_sky_pos['unit'] if 'unit' in true_sky_pos.keys() else 'rad'
         # If not specified, we're assuming both angles are given in radians (see line above).
-        true_sky_pos = SkyCoord(true_sky_pos["ra"], true_sky_pos["dec"], unit=unit)
+        true_sky_pos = SkyCoord(true_sky_pos['ra'], true_sky_pos['dec'], unit=unit)
     elif not isinstance(true_sky_pos, astropy.coordinates.sky_coordinate.SkyCoord):
-        print("The argument 'true_sky_pos' must either be a dictionary or of the type 'astropy.coordinates.sky_coordinate.SkyCoord'.")
+        print('The argument "true_sky_pos" must either be a dictionary or of the type "astropy.coordinates.sky_coordinate.SkyCoord".')
     
     skymap = read_sky_map(path_to_fits, moc=True)
     
     p_value = 1 - crossmatch(skymap, true_sky_pos).searched_prob
     
     return p_value
-
 
 
 
@@ -141,7 +144,7 @@ def get_p_combined(p_values):
     if isinstance(p_values, list):
         p_values = np.asarray(p_values)
     elif not isinstance(p_values, np.ndarray):
-        raise TypeError("The argument 'p_values' must either be a list or a numpy array.")
+        raise TypeError('The argument "p_values" must either be a list or a numpy array.')
     N = p_values.shape[0]
     dof = 2 * N # Chi square distribution's degree of freedom.
     
@@ -151,3 +154,32 @@ def get_p_combined(p_values):
     p_combined = chi2.sf(test_statistic, dof)
 
     return p_combined
+
+
+
+if __name__ == "__main__":
+    
+    parser = argparse.ArgumentParser(description='Frequentist test for non-tensorial polarizations (using the null energy method).')
+
+    parser.add_argument('-ifos', '--interferometers', type=str, help='Path to pickle file containing InterferometerList.')
+    parser.add_argument('-minfreq', '--minimum_frequency', type=float, help='Minimum frequency in Hz.')
+    parser.add_argument('-ra', '--ra_true', type=float, help='True value of right ascension in radians (known from EM counterpart).')
+    parser.add_argument('-dec', '--dec_true', type=float, help='True value of declination angle in radians (known from EM counterpart).')
+    parser.add_argument('-psi', '--psi', type=float, help='Polarization angle of signal in radians.')
+    parser.add_argument('-time', '--geocent_time', type=float, help='Geocent time of signal.')
+
+    args = parser.parse_args()
+
+    path_to_ifos = args.interferometers
+    minimum_frequency = args.minimum_frequency
+    ra_true = args.ra_true
+    dec_true = args.dec_true
+    psi = args.psi
+    geocent_time = args.geocent_time
+    
+    ifos = pd.read_pickle(path_to_ifos)
+    
+    p_value = p_null_energy_method(ifos, minimum_frequency, ra_true, dec_true, psi, geocent_time)
+    
+    print("\np-value:", p_value, "\n")
+    
