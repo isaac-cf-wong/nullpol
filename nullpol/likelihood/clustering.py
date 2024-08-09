@@ -1,5 +1,5 @@
 import numpy as np
-from nullcal.clustering import clustering
+from nullpol.clustering import clustering
 
 
 def clustering(interferometers, padding_time, padding_freq, threshold):

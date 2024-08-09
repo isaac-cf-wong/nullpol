@@ -1,6 +1,6 @@
 import numpy as np
 import bilby
-from null.wdm.wavelet_transform import (transform_wavelet_freq,
+from nullpol.wdm.wavelet_transform import (transform_wavelet_freq,
                                         transform_wavelet_freq_quadrature)
 
 @property
