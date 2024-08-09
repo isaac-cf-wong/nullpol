@@ -32,3 +32,19 @@ cpdef np.ndarray[np.float64_t,ndim=2] transform_wavelet_freq(np.ndarray[np.compl
                                                              int Nf,
                                                              int Nt,
                                                              double nx)
+
+# cpdef np.ndarray[np.float64_t,ndim=2] transform_wavelet_time_quadrature(np.ndarray[np.float64_t,ndim=1] data,
+#                                                                         int Nf,
+#                                                                         int Nt,
+#                                                                         double nx,
+#                                                                         int mult)
+
+cpdef np.ndarray[np.float64_t,ndim=2] transform_wavelet_freq_time_quadrature(np.ndarray[np.float64_t,ndim=1] data,
+                                                                             int Nf,
+                                                                             int Nt,
+                                                                             double nx)
+
+cpdef np.ndarray[np.float64_t,ndim=2] transform_wavelet_freq_quadrature(np.ndarray[np.complex128_t,ndim=1] data,
+                                                                        int Nf,
+                                                                        int Nt,
+                                                                        double nx)

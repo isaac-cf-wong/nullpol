@@ -125,6 +125,35 @@ cpdef void DX_unpack_loop(int m,
                 else:
                     wave[n,m] = np.real(DX_trans[n])
 
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cpdef void DX_unpack_loop_quadrature(int m,
+                                     int Nt,
+                                     int Nf,
+                                     np.ndarray[np.complex128_t,ndim=1] DX_trans,
+                                     np.ndarray[np.float64_t,ndim=2] wave):
+    """helper for unpacking fftd DX in main loop"""
+    cdef int n
+    if m==0:
+        #half of lowest and highest frequency bin pixels are redundant, so store them in even and odd components of m=0 respectively
+        for n in range(0,Nt,2):
+            wave[n,0] = np.real(DX_trans[n+1]*np.sqrt(2))
+    elif m==Nf:
+        for n in range(0,Nt,2):
+            wave[n+1,0] = np.real(DX_trans[n+1]*np.sqrt(2))
+    else:
+        for n in range(0,Nt):
+            if m%2:
+                if (n+m)%2:
+                    wave[n,m] = np.real(DX_trans[n])
+                else:
+                    wave[n,m] = -np.imag(DX_trans[n])
+            else:
+                if (n+m)%2:
+                    wave[n,m] = np.real(DX_trans[n])
+                else:
+                    wave[n,m] = np.imag(DX_trans[n])
+
 cpdef np.ndarray[np.float64_t,ndim=1] transform_wavelet_freq_helper(np.ndarray[np.complex128_t,ndim=1] data,
                                                                     int Nf,
                                                                     int Nt,
@@ -140,3 +169,21 @@ cpdef np.ndarray[np.float64_t,ndim=1] transform_wavelet_freq_helper(np.ndarray[n
         DX_trans = np.fft.ifft(DX,Nt)
         DX_unpack_loop(m,Nt,Nf,DX_trans,wave)
     return wave
+
+cpdef np.ndarray[np.float64_t,ndim=1] transform_wavelet_freq_quadrature_helper(np.ndarray[np.complex128_t,ndim=1] data,
+                                                                               int Nf,
+                                                                               int Nt,
+                                                                               np.ndarray[np.float64_t,ndim=1] phif):
+    """helper to do the wavelet transform using the fast wavelet domain transform"""
+    #cdef np.ndarray[np.float64_t,ndim=2] wave = np.zeros((Nt,Nf),dtype=np.float64) # wavelet wavepacket transform of the signal
+    cdef np.ndarray[np.float64_t,ndim=2] wave_q = np.zeros((Nt,Nf),dtype=np.float64) # quadrature wavelet wavepacket transform of the signal
+
+    cdef np.ndarray[np.complex128_t,ndim=1] DX = np.zeros(Nt,dtype=np.complex128)
+    cdef int m
+    cdef np.ndarray[np.complex128_t,ndim=1] DX_trans
+    for m in range(0,Nf+1):
+        DX_assign_loop(m,Nt,Nf,DX,data,phif)
+        DX_trans = np.fft.ifft(DX,Nt)
+        #DX_unpack_loop(m,Nt,Nf,DX_trans,wave)
+        DX_unpack_loop_quadrature(m,Nt,Nf,DX_trans,wave_q)
+    return wave_q

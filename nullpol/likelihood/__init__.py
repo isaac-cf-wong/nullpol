@@ -1,1 +1,1 @@
-from nullpol.likelihood.likelihood import *
+from nullpol.likelihood.chi2_likelihood import *
