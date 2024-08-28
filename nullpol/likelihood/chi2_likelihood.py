@@ -2,7 +2,8 @@ import numpy as np
 from bilby.core.likelihood import Likelihood
 import scipy.stats
 import numpy as np
-from nullpol.null_projector import get_null_stream, get_null_energy
+from nullpol.time_shift import time_shift
+from nullpol.null_stream import get_null_stream, get_null_energy
 from nullpol.detector.networks import *
 
 
@@ -58,14 +59,15 @@ class NullStreamLikelihood(Likelihood):
         float: The log likelihood value
         """
         null_projector = self.projector_generator.null_projector(self.parameters, self.interferometers, self.frequency_array, self.psd_array)
-        null_stream = get_null_stream(interferometers=self.interferometers,
-                                      null_projector=null_projector,
-                                      ra=self.parameters['ra'],
-                                      dec=self.parameters['dec'],
-                                      gps_time=self.parameters['geocent_time'],
-                                      frequency_array = self.frequency_array,
-                                      frequency_mask = self.frequency_mask
-                                      )
+        null_stream = get_null_stream(null_projector=null_projector,
+                                      time_shifted_strain_data_array=time_shift(interferometers=self.interferometers,
+                                                                                ra=self.parameters['ra'],
+                                                                                dec=self.parameters['dec'],
+                                                                                gps_time=self.parameters['geocent_time'],
+                                                                                frequency_array = self.frequency_array,
+                                                                                frequency_mask = self.frequency_mask
+                                                                                )
+                                        )
         null_energy = get_null_energy(null_stream)
         log_likelihood = scipy.stats.chi2.logpdf(2*null_energy, df=self._DoF)
 
