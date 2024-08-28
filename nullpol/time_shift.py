@@ -21,7 +21,7 @@ def time_shift(interferometers, ra, dec, gps_time, frequency_array, frequency_ma
     Returns
     -------
     array_like
-        Time shifted strain data array with shape (n_interferometers, n_freqs).
+        Time-shifted whitened frequency domain strain array with shape (n_interferometers, n_freqs).
         n_freqs is the number of frequency bins after applying the frequency mask.
     """
     strain_data_array = interferometers.whitened_frequency_domain_strain_array[:, frequency_mask]

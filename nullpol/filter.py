@@ -26,32 +26,28 @@ def _dfs(i, j, mask, visited):
                 stack.append(neighbour)
     return cluster
 
-def clustering(time_freq_transformed, dt, df, padding_time=0.1, padding_freq=10, threshold=90):
+def clustering(filter, dt, df, padding_time=0.1, padding_freq=10, **kwargs):
     """
-    Filter the time-frequency transformed data with a threshold and return the largest cluster with a padding.
+    Find the largest cluster in the filter.
 
     Parameters
     ----------
-    time_freq_transformed : numpy.ndarray
-        Time-frequency transformed data in shape (n_time, n_freq).
-    threshold : float, optional
-        The threshold for the filtering. Default is 90.
+    filter : numpy.ndarray
+        A binary mask in shape (n_time, n_freq).
     dt : float
         The time resolution in seconds.
     df : float
         The frequency resolution in Hz.
     padding_time : float, optional
-        The padding in time in seconds. Default is 0.1.
+        The padding in time direction in seconds. Default is 0.1.
     padding_freq : float, optional
-        The padding in frequency in Hz. Default is 10.
+        The padding in frequency direction in Hz. Default is 10.
 
     Returns
     -------
     numpy.ndarray
         A mask with the largest cluster in shape (n_time, n_freq).
     """
-    # threshold the data
-    filter = time_freq_transformed > np.percentile(time_freq_transformed, threshold)
 
     # find clusters
     visited = np.zeros(filter.shape, dtype=np.uint8)
@@ -77,3 +73,28 @@ def clustering(time_freq_transformed, dt, df, padding_time=0.1, padding_freq=10,
                     mask[i + x, j + y] = 1
     
     return mask
+
+def get_high_pass_filter(time_freq_transformed, threshold=90, **kwargs):
+    """
+    Filter the time-frequency transformed data with a threshold.
+
+    Parameters
+    ----------
+    time_freq_transformed : numpy.ndarray
+        Time-frequency transformed data in shape (n_time, n_freq).
+    threshold : float, optional
+        The threshold for the filtering. Default is 90.
+    dt : float
+        The time resolution in seconds.
+    df : float
+        The frequency resolution in Hz.
+
+    Returns
+    -------
+    numpy.ndarray
+        A mask with the largest cluster in shape (n_time, n_freq).
+    """
+    # threshold the data
+    filter = time_freq_transformed > np.percentile(time_freq_transformed, threshold)
+
+    return filter
