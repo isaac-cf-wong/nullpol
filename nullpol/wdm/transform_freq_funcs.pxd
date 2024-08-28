@@ -31,12 +31,12 @@ cpdef void DX_unpack_loop_quadrature(int m,
                                      np.ndarray[np.complex128_t,ndim=1] DX_trans,
                                      np.ndarray[np.float64_t,ndim=2] wave)
 
-cpdef np.ndarray[np.float64_t,ndim=1] transform_wavelet_freq_helper(np.ndarray[np.complex128_t,ndim=1] data,
+cpdef np.ndarray[np.float64_t,ndim=2] transform_wavelet_freq_helper(np.ndarray[np.complex128_t,ndim=1] data,
                                                                     int Nf,
                                                                     int Nt,
                                                                     np.ndarray[np.float64_t,ndim=1] phif)
 
-cpdef np.ndarray[np.float64_t,ndim=1] transform_wavelet_freq_quadrature_helper(np.ndarray[np.complex128_t,ndim=1] data,
+cpdef np.ndarray[np.float64_t,ndim=2] transform_wavelet_freq_quadrature_helper(np.ndarray[np.complex128_t,ndim=1] data,
                                                                                int Nf,
                                                                                int Nt,
                                                                                np.ndarray[np.float64_t,ndim=1] phif)
