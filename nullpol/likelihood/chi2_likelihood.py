@@ -54,18 +54,18 @@ class NullStreamLikelihood(Likelihood):
                 self.nx = kwargs.pop('nx')
             except KeyError:
                 raise ValueError('nx must be provided for time-frequency analysis.')
-            strains = [time_shift(interferometers=self.interferometers,
-                                     ra=ra,
-                                     dec=dec,
+            # transform_wavelet_freq(strain, Nf, Nt, nx) only takes 2D array as input, so we need to loop over the first two dimensions
+            energy_map_max = np.zeros((self.interferometers[0].Nt, self.interferometers[0].Nf))
+            for _ in range(10000):
+                strain = time_shift(interferometers=self.interferometers,
+                                     ra=self.priors['ra'].sample(),
+                                     dec=self.priors['dec'].sample(),
                                      gps_time=self.interferometers[0].start_time+self.interferometers[0].duration, # take the end time of the interferometer as the reference time
                                      frequency_array=self.frequency_array,
                                      frequency_mask=self.frequency_mask
-                                     ) for ra, dec in zip(self.priors['ra'].sample(10000), self.priors['dec'].sample(10000))] # shape (10000, n_interferometers, n_freqs)
-            # transform_wavelet_freq(strain, Nf, Nt, nx) only takes 2D array as input, so we need to loop over the first two dimensions
-            energy_map_max = np.zeros((self.interferometers[0].Nt, self.interferometers[0].Nf))
-            for i in range(10000):
+                                     ) # shape (n_interferometers, n_freqs)
                 for j in range(len(self.interferometers)):
-                    energy_map = transform_wavelet_freq(strains[i][j], self.interferometers[j].Nf, self.interferometers[j].Nt, nx=self.nx)
+                    energy_map = transform_wavelet_freq(strain[j], self.interferometers[j].Nf, self.interferometers[j].Nt, nx=self.nx)
                     energy_map_max = np.fmax(energy_map_max, energy_map)
 
             dt = self.interferometers[0].duration / self.interferometers[0].Nt
