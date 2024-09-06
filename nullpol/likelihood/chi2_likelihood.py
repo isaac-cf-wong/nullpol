@@ -2,6 +2,7 @@ import numpy as np
 from bilby.core.likelihood import Likelihood
 import scipy.stats
 import numpy as np
+from tqdm import tqdm
 from nullpol.time_shift import time_shift
 from nullpol.wdm.wavelet_transform import transform_wavelet_freq
 from nullpol.filter import clustering, get_high_pass_filter
@@ -14,7 +15,7 @@ class NullStreamLikelihood(Likelihood):
 
     """
     def __init__(self, interferometers, waveform_generator=None, projector_generator=None,
-                 priors=None, analysis_domain="frequency",
+                 priors=None, analysis_domain="frequency", time_frequency_analysis_arguments={},
                  reference_frame="sky", time_reference="geocenter", **kwargs):
         
         self.interferometers = bilby.gw.detector.networks.InterferometerList(interferometers)
@@ -51,12 +52,18 @@ class NullStreamLikelihood(Likelihood):
 
         if self.analysis_domain == "time_frequency":
             try:
-                self.nx = kwargs.pop('nx')
+                self.nx = time_frequency_analysis_arguments['nx']
+                self.df = time_frequency_analysis_arguments['df']
             except KeyError:
-                raise ValueError('nx must be provided for time-frequency analysis.')
+                raise ValueError('nx and df must be provided for time-frequency analysis.')
+            
+            for ifo in self.interferometers:
+                ifo.strain_data.nx = self.nx
+                ifo.strain_data.time_frequency_bandwidth = self.df
+
             # transform_wavelet_freq(strain, Nf, Nt, nx) only takes 2D array as input, so we need to loop over the first two dimensions
             energy_map_max = np.zeros((self.interferometers[0].Nt, self.interferometers[0].Nf))
-            for _ in range(10000):
+            for _ in tqdm(range(1000), desc='Generating energy map'):
                 strain = time_shift(interferometers=self.interferometers,
                                      ra=self.priors['ra'].sample(),
                                      dec=self.priors['dec'].sample(),
@@ -68,9 +75,8 @@ class NullStreamLikelihood(Likelihood):
                     energy_map = transform_wavelet_freq(strain[j], self.interferometers[j].Nf, self.interferometers[j].Nt, nx=self.nx)
                     energy_map_max = np.fmax(energy_map_max, energy_map)
 
-            dt = self.interferometers[0].duration / self.interferometers[0].Nt
-            df = self.interferometers[0].sampling_frequency / 2 / self.interferometers[0].Nf
-            self.time_frequency_filter = clustering(get_high_pass_filter(energy_map_max, **kwargs), dt, df, **kwargs)
+            self.dt = self.interferometers[0].duration / self.interferometers[0].Nt
+            self.time_frequency_filter = clustering(get_high_pass_filter(energy_map_max, **time_frequency_analysis_arguments), self.dt, **time_frequency_analysis_arguments)
             self._DoF = np.sum(self.time_frequency_filter) * dim
 
             self.log_likelihood = self.log_likelihood_time_freq

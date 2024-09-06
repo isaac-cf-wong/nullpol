@@ -11,7 +11,7 @@ def time_frequency_bandwidth(self):
 def time_frequency_bandwidth(self, value):
     self._time_frequency_bandwidth = value
     self._Nf = int(self.sampling_frequency / 2 / value)
-    self._Nt = int(len(self) / self._Nf)
+    self._Nt = int(len(self.time_array) / self._Nf)
 
 @property
 def Nf(self):
