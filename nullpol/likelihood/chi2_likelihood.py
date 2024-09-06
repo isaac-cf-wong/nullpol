@@ -56,6 +56,10 @@ class NullStreamLikelihood(Likelihood):
                 self.df = time_frequency_analysis_arguments['df']
             except KeyError:
                 raise ValueError('nx and df must be provided for time-frequency analysis.')
+
+            # Check if all interferometers have the same frequency array
+            if not all([np.array_equal(interferometer.frequency_array, self.interferometers[0].frequency_array) for interferometer in self.interferometers[1:]]):
+                raise ValueError('All interferometers must have the same frequency array for time-frequency analysis.')
             
             for ifo in self.interferometers:
                 ifo.strain_data.nx = self.nx
@@ -64,12 +68,13 @@ class NullStreamLikelihood(Likelihood):
             # transform_wavelet_freq(strain, Nf, Nt, nx) only takes 2D array as input, so we need to loop over the first two dimensions
             energy_map_max = np.zeros((self.interferometers[0].Nt, self.interferometers[0].Nf))
             for _ in tqdm(range(1000), desc='Generating energy map'):
+                strain_data_array = interferometers.whitened_frequency_domain_strain_array
                 strain = time_shift(interferometers=self.interferometers,
                                      ra=self.priors['ra'].sample(),
                                      dec=self.priors['dec'].sample(),
                                      gps_time=self.interferometers[0].start_time+self.interferometers[0].duration, # take the end time of the interferometer as the reference time
-                                     frequency_array=self.frequency_array,
-                                     frequency_mask=self.frequency_mask
+                                     frequency_array=interferometers[0].frequency_array, # use the full frequency array
+                                     strain_data_array=strain_data_array
                                      ) # shape (n_interferometers, n_freqs)
                 for j in range(len(self.interferometers)):
                     energy_map = transform_wavelet_freq(strain[j], self.interferometers[j].Nf, self.interferometers[j].Nt, nx=self.nx) ** 2 + transform_wavelet_freq_quadrature(strain[j], self.interferometers[j].Nf, self.interferometers[j].Nt, nx=self.nx) ** 2
@@ -100,13 +105,14 @@ class NullStreamLikelihood(Likelihood):
         float: The log likelihood value
         """
         null_projector = self.projector_generator.null_projector(self.parameters, self.interferometers, self.frequency_array, self.psd_array)
+        strain_data_array = self.interferometers.whitened_frequency_domain_strain_array[:, self.frequency_mask]
         null_stream = get_null_stream(null_projector=null_projector,
                                       time_shifted_strain_data_array=time_shift(interferometers=self.interferometers,
                                                                                 ra=self.parameters['ra'],
                                                                                 dec=self.parameters['dec'],
                                                                                 gps_time=self.parameters['geocent_time'],
                                                                                 frequency_array = self.frequency_array,
-                                                                                frequency_mask = self.frequency_mask
+                                                                                strain_data_array = strain_data_array
                                                                                 )
                                         )
         null_energy = get_null_energy(null_stream)
@@ -122,13 +128,14 @@ class NullStreamLikelihood(Likelihood):
         float: The log likelihood value
         """
         null_projector = self.projector_generator.null_projector(self.parameters, self.interferometers, self.frequency_array, self.psd_array)
+        strain_data_array = self.interferometers.whitened_frequency_domain_strain_array[:, self.frequency_mask]
         null_stream_freq = get_null_stream(null_projector=null_projector,
                                       time_shifted_strain_data_array=time_shift(interferometers=self.interferometers,
                                                                                 ra=self.parameters['ra'],
                                                                                 dec=self.parameters['dec'],
                                                                                 gps_time=self.parameters['geocent_time'],
                                                                                 frequency_array = self.frequency_array,
-                                                                                frequency_mask = self.frequency_mask
+                                                                                strain_data_array = strain_data_array
                                                                                 )
                                         )
         null_stream_time_freq = transform_wavelet_freq(null_stream_freq, self.interferometers[0].Nf, self.interferometers[0].Nt, nx=self.nx)
