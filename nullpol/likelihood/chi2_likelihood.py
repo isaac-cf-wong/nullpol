@@ -74,6 +74,7 @@ class NullStreamLikelihood(Likelihood):
                 for j in range(len(self.interferometers)):
                     energy_map = transform_wavelet_freq(strain[j], self.interferometers[j].Nf, self.interferometers[j].Nt, nx=self.nx)
                     energy_map_max = np.fmax(energy_map_max, energy_map)
+            self.energy_map_max = energy_map_max
 
             self.dt = self.interferometers[0].duration / self.interferometers[0].Nt
             self.time_frequency_filter = clustering(get_high_pass_filter(energy_map_max, **time_frequency_analysis_arguments), self.dt, **time_frequency_analysis_arguments)
