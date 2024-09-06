@@ -4,7 +4,7 @@ import scipy.stats
 import numpy as np
 from tqdm import tqdm
 from nullpol.time_shift import time_shift
-from nullpol.wdm.wavelet_transform import transform_wavelet_freq
+from nullpol.wdm.wavelet_transform import transform_wavelet_freq, transform_wavelet_freq_quadrature
 from nullpol.filter import clustering, get_high_pass_filter
 from nullpol.null_stream import get_null_stream, get_null_energy
 from nullpol.detector.networks import *
@@ -72,7 +72,7 @@ class NullStreamLikelihood(Likelihood):
                                      frequency_mask=self.frequency_mask
                                      ) # shape (n_interferometers, n_freqs)
                 for j in range(len(self.interferometers)):
-                    energy_map = transform_wavelet_freq(strain[j], self.interferometers[j].Nf, self.interferometers[j].Nt, nx=self.nx)
+                    energy_map = transform_wavelet_freq(strain[j], self.interferometers[j].Nf, self.interferometers[j].Nt, nx=self.nx) ** 2 + transform_wavelet_freq_quadrature(strain[j], self.interferometers[j].Nf, self.interferometers[j].Nt, nx=self.nx) ** 2
                     energy_map_max = np.fmax(energy_map_max, energy_map)
             self.energy_map_max = energy_map_max
 
