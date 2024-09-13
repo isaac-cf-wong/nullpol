@@ -42,7 +42,7 @@ basic-3.10:
   script:
     - python -m pip install .
     - *list-env
-    - pytest --cov=nullpol --durations 10
+    - pytest test/ --cov=nullpol --durations 10
 
 python-3.10:
   <<: *unit-test
