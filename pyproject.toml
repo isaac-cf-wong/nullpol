@@ -22,6 +22,7 @@ dependencies = [
     "pytest",
     "pytest-cov",
     "bilby",
+    "astropy",
 ]
 [tool.setuptools.packages]
 find = {}
