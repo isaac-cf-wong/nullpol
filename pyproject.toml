@@ -22,6 +22,8 @@ dependencies = [
     "pytest",
     "pytest-cov",
     "bilby",
+    "astropy",
+    "ligo.skymap",
 ]
 [tool.setuptools.packages]
 find = {}
