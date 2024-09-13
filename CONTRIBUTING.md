@@ -17,10 +17,17 @@ git clone git@git.ligo.org:bayesian-null-stream/nullpol.git
 cd nullpol
 ```
 
+#### 3. Create an issue
+- Create an issue to explain the proposal of the code changes
+- Depending on the nature of the proposal, specify it as a prefix in the title with the format: "<prefix>: <description>"
+  - A new feature: feature
+  - A bugfix: bugfix
+  - An optimization of the codes: optimize
+
 #### 3. Create a New Branch:
 - Create a new branch for you changes:
 ```bash
-git checkout -b feature/your-feature-name
+git checkout -b <id of the issue>-<prefix>-<description>
 ```
 
 ### 2. Making Changes
