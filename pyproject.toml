@@ -20,7 +20,8 @@ dependencies = [
     "numpy>=1.18.1",
     "CythonGSL",
     "pytest",
-    "pytest-cov"
+    "pytest-cov",
+    "bilby",
 ]
 [tool.setuptools.packages]
 find = {}
