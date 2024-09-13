@@ -22,6 +22,8 @@ stages:
   image: python
   script:
     - python -m pip install .
+    - mkdir temp_test_dir
+    - cd temp_test_dir
     - *list-env
     - python -c "import nullpol"
     - python -c "import nullpol.likelihood"
