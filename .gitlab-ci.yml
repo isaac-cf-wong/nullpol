@@ -1,3 +1,8 @@
+before_script:
+  # Install system dependencies
+  - apt-get update
+  - apt-get install -y libgsl-dev  # Install GSL and its development headers
+
 stages:
   - initial
   - test
