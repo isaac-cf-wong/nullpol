@@ -18,7 +18,9 @@ classifiers = [
 ]
 dependencies = [
     "numpy>=1.18.1",
-    "CythonGSL"
+    "CythonGSL",
+    "pytest",
+    "pytest-cov"
 ]
 [tool.setuptools.packages]
 find = {}
