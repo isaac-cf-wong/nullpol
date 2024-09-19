@@ -82,7 +82,7 @@ extensions  = [
                             np.get_include()],
               libraries=cython_gsl.get_libraries(),
               library_dirs=[cython_gsl.get_library_dir()],
-    )
+    ),
     Extension("nullpol.time_frequency_transform.inverse_wavelet_freq_funcs",
               ["nullpol/time_frequency_transform/inverse_wavelet_freq_funcs.pyx"],
               include_dirs=[cython_gsl.get_cython_include_dir(),
