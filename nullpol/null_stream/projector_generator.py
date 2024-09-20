@@ -1,5 +1,5 @@
 from nullpol.null_stream.null_projector import get_null_projector
-from nullpol.detector.antenna_pattern import get_antenna_pattern_matrix, whiten_antenna_pattern_matrix, change_basis
+from nullpol.null_stream.antenna_pattern import get_antenna_pattern_matrix, whiten_antenna_pattern_matrix, change_basis
 import numpy as np
 
 polarization_dict = {
