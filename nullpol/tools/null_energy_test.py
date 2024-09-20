@@ -1,12 +1,14 @@
-import argparse
+from argparse import ArgumentParser
 import numpy as np
 import pandas as pd
 from scipy.stats import chi2
-from nullpol.null_projector import *
-from nullpol.antenna_pattern import *
 from astropy.coordinates import SkyCoord
 from ligo.skymap.io.fits import read_sky_map
 from ligo.skymap.postprocess.crossmatch import crossmatch
+
+from nullpol.null_stream import get_null_stream, get_null_energy
+from nullpol.antenna_pattern import get_antenna_pattern_matrix, whiten_antenna_pattern_matrix
+from nullpol.null_projector import get_null_projector
 
 
 """ SEE BELOW FOR INSTRUCTIONS IN LAUNCHING IN THE TERMINAL """
@@ -116,7 +118,7 @@ def p_sky_map_method(true_sky_pos, path_to_fits):
         unit = true_sky_pos['unit'] if 'unit' in true_sky_pos.keys() else 'rad'
         # If not specified, we're assuming both angles are given in radians (see line above).
         true_sky_pos = SkyCoord(true_sky_pos['ra'], true_sky_pos['dec'], unit=unit)
-    elif not isinstance(true_sky_pos, astropy.coordinates.sky_coordinate.SkyCoord):
+    elif not isinstance(true_sky_pos, SkyCoord):
         print('The argument "true_sky_pos" must either be a dictionary or of the type "astropy.coordinates.sky_coordinate.SkyCoord".')
     
     skymap = read_sky_map(path_to_fits, moc=True)
@@ -159,7 +161,7 @@ def get_p_combined(p_values):
 
 def main():
     
-    parser = argparse.ArgumentParser(description='Frequentist test for non-tensorial polarizations (using the null energy method).')
+    parser = ArgumentParser(description='Frequentist test for non-tensorial polarizations (using the null energy method).')
 
     parser.add_argument('-ifos', '--interferometers', type=str, help='Path to pickle file containing InterferometerList.')
     parser.add_argument('-minfreq', '--minimum_frequency', type=float, help='Minimum frequency in Hz.')
