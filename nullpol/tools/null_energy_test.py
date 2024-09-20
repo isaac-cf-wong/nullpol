@@ -7,7 +7,7 @@ from ligo.skymap.io.fits import read_sky_map
 from ligo.skymap.postprocess.crossmatch import crossmatch
 
 from nullpol.null_stream.null_stream import get_null_stream, get_null_energy
-from nullpol.antenna_pattern import get_antenna_pattern_matrix, whiten_antenna_pattern_matrix
+from nullpol.detector.antenna_pattern import get_antenna_pattern_matrix, whiten_antenna_pattern_matrix
 from nullpol.null_stream.null_projector import get_null_projector
 
 
