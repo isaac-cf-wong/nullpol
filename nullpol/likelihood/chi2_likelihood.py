@@ -6,7 +6,7 @@ from tqdm import tqdm
 from nullpol.time_shift import time_shift
 from nullpol.wdm.wavelet_transform import transform_wavelet_freq, transform_wavelet_freq_quadrature
 from nullpol.filter import clustering, get_high_pass_filter
-from nullpol.null_stream import get_null_stream, get_null_energy
+from nullpol.null_stream.null_stream import get_null_stream, get_null_energy
 from nullpol.detector.networks import *
 
 
