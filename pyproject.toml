@@ -21,6 +21,7 @@ dependencies = [
     "CythonGSL",
     "pytest",
     "pytest-cov",
+    "pytest-cython",
     "bilby",
     "astropy",
     "ligo.skymap",

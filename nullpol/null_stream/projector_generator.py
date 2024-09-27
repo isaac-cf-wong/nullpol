@@ -1,5 +1,5 @@
-from . import null_projector
-from . import antenna_pattern
+from nullpol.null_stream.null_projector import get_null_projector
+from nullpol.detector.antenna_pattern import get_antenna_pattern_matrix, whiten_antenna_pattern_matrix, change_basis
 import numpy as np
 
 polarization_dict = {
@@ -75,13 +75,13 @@ class ProjectorGenerator(object):
             Null projector with shape (n_interferometers, n_interferometers, n_freqs).
 
         """
-        antenna_pattern_matrix = antenna_pattern.get_antenna_pattern_matrix(interferometers, parameters['ra'], parameters['dec'], parameters['psi'], parameters['geocent_time'], self.polarization)
-        whitened_antenna_pattern_matrix = antenna_pattern.whiten_antenna_pattern_matrix(antenna_pattern_matrix, frequency_array, psd_array)
+        antenna_pattern_matrix = get_antenna_pattern_matrix(interferometers, parameters['ra'], parameters['dec'], parameters['psi'], parameters['geocent_time'], self.polarization)
+        whitened_antenna_pattern_matrix = whiten_antenna_pattern_matrix(antenna_pattern_matrix, frequency_array, psd_array)
         
         self.amp_phase_factor = self._get_amp_phase_factor_matrix(parameters)
-        whitened_antenna_pattern_matrix_new_basis = antenna_pattern.change_basis(whitened_antenna_pattern_matrix, self.basis, self.amp_phase_factor)
+        whitened_antenna_pattern_matrix_new_basis = change_basis(whitened_antenna_pattern_matrix, self.basis, self.amp_phase_factor)
 
         calibration = np.array([interferometer.calibration_model.get_calibration_factor(frequency_array, prefix='recalib_{}_'.format(interferometer.name), **parameters) for interferometer in interferometers])
         whitened_antenna_pattern_matrix_new_basis_calibrated = np.einsum('ijk, ik -> ijk', whitened_antenna_pattern_matrix_new_basis, calibration)
 
-        return null_projector.get_null_projector(whitened_antenna_pattern_matrix_new_basis_calibrated)
+        return get_null_projector(whitened_antenna_pattern_matrix_new_basis_calibrated)
