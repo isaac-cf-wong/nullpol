@@ -2,7 +2,7 @@ from pycbc.psd import EinsteinTelescopeP1600143
 from pycbc.noise import noise_from_psd
 import numpy as np
 import scipy.stats
-from nullcal.time_frequency_transform import (transform_wavelet_freq_time, 
+from nullpol.time_frequency_transform import (transform_wavelet_freq_time,
                                               transform_wavelet_freq,
                                               transform_wavelet_freq_time_quadrature,
                                               transform_wavelet_time,
