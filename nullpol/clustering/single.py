@@ -75,8 +75,8 @@ def clustering(filter, dt, df, padding_time=0.1, padding_freq=10, **kwargs):
     
     return mask
 
-def single_clustering_by_quantile(interferometers, frequency_resolution, quantile, padding_time=0.05, padding_freq=0., minimum_frequency=None, maximum_frequency=None):
-    time_frequency_map = construct_time_frequency_map(interferometers, frequency_resolution)
+def single_clustering_by_quantile(interferometers, frequency_resolution, nx, quantile, padding_time=0.05, padding_freq=0., minimum_frequency=None, maximum_frequency=None):
+    time_frequency_map = construct_time_frequency_map(interferometers, nx, frequency_resolution)
     # Zero the components beyond the frequency range
     if minimum_frequency is not None:
         freq_low_idx = int(np.ceil(minimum_frequency / frequency_resolution))
