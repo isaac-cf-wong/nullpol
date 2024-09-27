@@ -1,4 +1,9 @@
-from nullpol.time_frequency_transform import (transform_wavelet_freq_time, 
+from pycbc.psd import EinsteinTelescopeP1600143
+from pycbc.noise import noise_from_psd
+import numpy as np
+import scipy.stats
+from nullpol.time_frequency_transform import (transform_wavelet_freq_time,
+                                              transform_wavelet_freq,
                                               transform_wavelet_freq_time_quadrature,
                                               transform_wavelet_time,
                                               inverse_wavelet_time,
@@ -53,6 +58,30 @@ class TestWaveletTransform(unittest.TestCase):
         data_w = transform_wavelet_freq_time(data, Nf, Nt, nx)
         data_rec = inverse_wavelet_freq_time(data_w, Nf, Nt, nx)
         self.assertTrue(np.allclose(data, data_rec))
+
+    def test_standard_gaussian(self):
+        seed = 12
+        seglen = 16
+        srate = 4096
+        tlen = seglen * srate
+        delta_f = 1 / seglen
+        flen = tlen // 2 + 1
+        freq_low = 50
+        tf_df = 16
+        Nf = int(srate / 2 / tf_df)
+        Nt = int(tlen / Nf)
+        nx = 4
+        freq_low_idx = int(np.ceil(freq_low / tf_df))
+
+        psd = EinsteinTelescopeP1600143(flen, delta_f, freq_low)
+
+        noise = noise_from_psd(tlen, 1. / srate, psd, seed=seed)
+        # Whiten the noise frequency series.
+        whitened_noise_freq = np.divide((np.fft.rfft(noise.numpy()) / srate), np.sqrt(psd.numpy() / 2 / delta_f), where=psd != 0)
+        # Transform to time frequency domain
+        whitened_noise_time_freq = transform_wavelet_freq(whitened_noise_freq, Nf, Nt, nx)
+        ks_statistic, p_value = scipy.stats.kstest(whitened_noise_time_freq[:,freq_low_idx:-1].flatten(), 'norm')
+        self.assertGreater(p_value, 0.05, "The output does not follow a standard Gaussian distribution.")
 
 if __name__ == '__main__':
     unittest.main()
