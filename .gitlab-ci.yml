@@ -41,6 +41,7 @@ basic-3.10:
   stage: test
   script:
     - python -m pip install .
+    - pip install -r test_requirements.txt
     - CYTHON_COVERAGE=1 python setup.py build_ext --inplace
     - *list-env
     - pytest --doctest-cython --cov=nullpol --durations 10
