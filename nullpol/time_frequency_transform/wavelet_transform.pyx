@@ -28,7 +28,9 @@ cpdef np.ndarray[np.float64_t,ndim=1] inverse_wavelet_time(np.ndarray[np.float64
     cdef int mult_ = np.min((mult,Nt//2)) #make sure K isn't bigger than ND
     cdef np.ndarray[np.float64_t,ndim=1] phi = phi_vec(Nf,nx=nx,mult=mult_)/2
 
-    return inverse_wavelet_time_helper_fast(wave_in,phi,Nf,Nt,mult_)
+    cdef np.ndarray[np.float64_t,ndim=1] output = inverse_wavelet_time_helper_fast(wave_in,phi,Nf,Nt,mult_)
+    cdef double scaling = 1. / np.sqrt(output.shape[0])
+    return output * scaling
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -68,7 +70,10 @@ cpdef np.ndarray[np.complex128_t,ndim=1] inverse_wavelet_freq(np.ndarray[np.floa
         1D numpy array: Data in time domain.
     """
     cdef np.ndarray[np.float64_t,ndim=1] phif = phitilde_vec_norm(Nf,Nt,nx)
-    return inverse_wavelet_freq_helper_fast(wave_in,phif,Nf,Nt)
+    cdef np.ndarray[np.complex128_t,ndim=1] output = inverse_wavelet_freq_helper_fast(wave_in,phif,Nf,Nt)
+    # Assume the length of the timeseries is even.
+    cdef double scaling = 1. / np.sqrt((output.shape[0] - 1) * 2)
+    return output * scaling
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -93,7 +98,8 @@ cpdef np.ndarray[np.float64_t,ndim=2] transform_wavelet_time(np.ndarray[np.float
     """
     cdef int mult_ = np.min((mult,Nt//2)) #make sure K isn't bigger than ND
     cdef np.ndarray[np.float64_t,ndim=1] phi = phi_vec(Nf,nx,mult_)
-    cdef np.ndarray[np.float64_t,ndim=2] wave = transform_wavelet_time_helper(data,Nf,Nt,phi,mult_)
+    cdef double scaling = np.sqrt(data.shape[0])
+    cdef np.ndarray[np.float64_t,ndim=2] wave = transform_wavelet_time_helper(data,Nf,Nt,phi,mult_) * scaling
 
     return wave
 
@@ -115,7 +121,6 @@ cpdef np.ndarray[np.float64_t,ndim=2] transform_wavelet_freq_time(np.ndarray[np.
         2D numpy array: Data in wavelet domain.
     """
     cdef np.ndarray[np.complex128_t,ndim=1] data_fft = np.fft.rfft(data)
-
     return transform_wavelet_freq(data_fft,Nf,Nt,nx)
 
 @cython.boundscheck(False)
@@ -136,7 +141,9 @@ cpdef np.ndarray[np.float64_t,ndim=2] transform_wavelet_freq(np.ndarray[np.compl
         2D numpy array: Data in wavelet domain.
     """
     cdef np.ndarray[np.float64_t,ndim=1] phif = 2/Nf*phitilde_vec_norm(Nf,Nt,nx)
-    return transform_wavelet_freq_helper(data,Nf,Nt,phif)
+    # Assume the length of the timeseries is even,
+    cdef double scaling = np.sqrt((data.shape[0] - 1) * 2)
+    return transform_wavelet_freq_helper(data,Nf,Nt,phif) * scaling
 
 #@cython.boundscheck(False)
 #@cython.wraparound(False)
@@ -172,7 +179,6 @@ cpdef np.ndarray[np.float64_t,ndim=2] transform_wavelet_freq_time_quadrature(np.
         2D numpy array: Data in wavelet domain.
     """
     cdef np.ndarray[np.complex128_t,ndim=1] data_fft = np.fft.rfft(data)
-
     return transform_wavelet_freq_quadrature(data_fft,Nf,Nt,nx)
 
 @cython.boundscheck(False)
@@ -193,4 +199,6 @@ cpdef np.ndarray[np.float64_t,ndim=2] transform_wavelet_freq_quadrature(np.ndarr
         2D numpy array: Data in wavelet domain.
     """
     cdef np.ndarray[np.float64_t,ndim=1] phif = 2/Nf*phitilde_vec_norm(Nf,Nt,nx)
-    return transform_wavelet_freq_quadrature_helper(data,Nf,Nt,phif)
+    # Assume the length of the timeseries is even,
+    cdef double scaling = np.sqrt((data.shape[0] - 1) * 2)
+    return transform_wavelet_freq_quadrature_helper(data,Nf,Nt,phif) * scaling
