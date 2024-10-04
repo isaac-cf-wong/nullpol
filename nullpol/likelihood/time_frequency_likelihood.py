@@ -13,7 +13,7 @@ class TimeFrequencyLikelihood(Likelihood):
     def __init__(self, interferometers, waveform_generator=None, projector_generator=None,
                  priors=None, time_frequency_analysis_arguments={},
                  time_frequency_filter=None,
-                 reference_frame="sky", time_reference="geocenter", **kwargs):
+                 reference_frame="sky", time_reference="geocenter", *args, **kwargs):
         self.interferometers = bilby.gw.detector.networks.InterferometerList(interferometers)
 
         if projector_generator is not None:
