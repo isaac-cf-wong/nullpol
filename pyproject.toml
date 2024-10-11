@@ -24,7 +24,8 @@ dependencies = [
     "ligo.skymap",
     "numba",
     "scipy",
-    "ConfigArgParse"
+    "ConfigArgParse",
+    "pycbc"
 ]
 [tool.setuptools.packages]
 find = {}
