@@ -19,12 +19,14 @@ classifiers = [
 dependencies = [
     "numpy>=1.18.1",
     "CythonGSL",
-    "pytest",
-    "pytest-cov",
-    "pytest-cython",
     "bilby",
     "astropy",
     "ligo.skymap",
+    "numba",
+    "scipy",
+    "ConfigArgParse",
+    "pycbc",
+    "gwpy"
 ]
 [tool.setuptools.packages]
 find = {}
@@ -33,4 +35,5 @@ find = {}
 language_level = 3
 
 [project.scripts]
-nullpol_null_energy_test = "nullpol.tools.null_energy_test:main"
+nullpol-null-energy-test = "nullpol.tools.null_energy_test:main"
+nullpol-create-injection = "nullpol.tools.create_injection:main"

@@ -1,0 +1,17 @@
+[
+    {"mass_1": 36.0,
+     "mass_2": 29.0,
+     "a_1": 0.0,
+     "a_2": 0.0,
+     "tilt_1": 0.0,
+     "tilt_2": 0.0,
+     "phi_12": 0.0,
+     "phi_jl": 0.0,
+     "luminosity_distance": 500.0,
+     "theta_jn": 0.0,
+     "psi": 0.0,
+     "phase": 0.0,
+     "geocent_time": 8,
+     "ra": 0.0,
+     "dec": 0.0}
+]
