@@ -142,6 +142,8 @@ class TestCreateInjection(unittest.TestCase):
         with tempfile.NamedTemporaryFile(suffix='.ini', delete=False) as temp_config_file:
             config_file_path = temp_config_file.name
         example_signal_parameters_create_injection_path = pkg_resources.resource_filename('nullpol.tools', 'example_signal_parameters_create_injection.json')
+        current_dir = os.path.dirname(__file__)
+        mock_psd_path = os.path.join(current_dir, 'mock_psd.txt')
         with mock.patch('sys.argv', ['nullpol-create-injection',
                                      '--generate-config', config_file_path,
                                      '--signal-parameters', example_signal_parameters_create_injection_path,
@@ -150,7 +152,7 @@ class TestCreateInjection(unittest.TestCase):
                                      '--start-time', '2024',
                                      '--duration', '16',
                                      '--detectors', 'H1, L1, V1',
-                                     '--psds', json.dumps('{"H1": "mock_psd.txt", "L1": "mock_psd.txt", "V1": "mock_psd.txt"}')]):
+                                     '--psds', json.dumps(f'{{"H1": "{mock_psd_path}", "L1": "{mock_psd_path}", "V1": "{mock_psd_path}"}}')]):
             try:
                 main()
             except SystemExit as e:

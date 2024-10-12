@@ -25,7 +25,8 @@ dependencies = [
     "numba",
     "scipy",
     "ConfigArgParse",
-    "pycbc"
+    "pycbc",
+    "gwpy"
 ]
 [tool.setuptools.packages]
 find = {}
