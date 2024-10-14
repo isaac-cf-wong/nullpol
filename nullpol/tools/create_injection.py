@@ -102,7 +102,7 @@ def main():
     else:
         logger.info('frequency-domain-source-model is not provided. Not injecting signals from source model.')
         waveform_generator = None
-    
+
     # Create noise from PSD
     interferometers.set_strain_data_from_power_spectral_densities(
         sampling_frequency=args.sampling_frequency,
@@ -159,13 +159,13 @@ def main():
             new_psd = interferometer.power_spectral_density.get_power_spectral_density_array(interferometer.frequency_array) * np.abs(calibration_error)
 
             # Save the PSD to disk.
-            np.savetxt(outdir/f'{interferometer.name}:{args.label}-{args.start_time}-{args.duration}-psd.dat',
+            np.savetxt(outdir/f'{interferometer.name}-{args.label}-{args.start_time}-{args.duration}-psd.dat',
                        np.array(
                            [interferometer.frequency_array,
                             new_psd]
                        ).T)
 
-    # Write the strain data    
+    # Write the strain data
     for interferometer in interferometers:
         ts = interferometer.strain_data.to_pycbc_timeseries()
         output_path = str(outdir/f'{interferometer.name}-{args.label}-{args.start_time}-{args.duration}.gwf')
