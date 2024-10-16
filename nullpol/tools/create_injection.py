@@ -153,10 +153,10 @@ def main():
             calibration_error = calibration_error_interp(interferometer.frequency_array)
 
             # Multiply the error to the frequency domain strain.
-            interferometer.strain_data.freqency_domain_strain *= calibration_error
+            interferometer.strain_data.freqency_domain_strain /= calibration_error
 
             # Update the noise PSD
-            new_psd = interferometer.power_spectral_density.get_power_spectral_density_array(interferometer.frequency_array) * np.abs(calibration_error)
+            new_psd = interferometer.power_spectral_density.get_power_spectral_density_array(interferometer.frequency_array) / np.abs(calibration_error)**2
 
             # Save the PSD to disk.
             np.savetxt(outdir/f'{interferometer.name}-{args.label}-{args.start_time}-{args.duration}-psd.dat',
