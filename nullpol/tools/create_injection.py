@@ -9,7 +9,6 @@ from pycbc.frame import write_frame
 from bilby.gw.waveform_generator import WaveformGenerator
 from bilby.gw.detector import InterferometerList
 from bilby.gw.detector import PowerSpectralDensity
-import re
 from ..utility import logger
 
 def import_function(path):
