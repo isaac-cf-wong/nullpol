@@ -1,0 +1,5 @@
+name: nullpol
+channels:
+  - conda-forge
+dependencies:
+  - gsl
