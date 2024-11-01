@@ -37,3 +37,4 @@ language_level = 3
 [project.scripts]
 nullpol-null-energy-test = "nullpol.tools.null_energy_test:main"
 nullpol-create-injection = "nullpol.tools.create_injection:main"
+nullpol-create-time-frequency-filter-from-sample = "nullpol.tools.create_time_frequency_filter_from_sample:main"

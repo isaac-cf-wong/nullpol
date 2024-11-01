@@ -1,0 +1,69 @@
+import unittest
+from unittest import mock
+import tempfile
+import os
+import pkg_resources
+import json
+from nullpol.tools.create_time_frequency_filter_from_sample import main
+
+class TestCreateTimeFrequencyFilterFromSample(unittest.TestCase):
+    def test_generate_config(self):
+        # Create a temporary config file path
+        with tempfile.NamedTemporaryFile(suffix='.ini', delete=False) as temp_config_file:
+            config_file_path = temp_config_file.name
+        with mock.patch('sys.argv', ['nullpol-create-time-frequency-filter-from-sample', '--generate-config', config_file_path]):
+            try:
+                main()
+            except SystemExit as e:
+                self.assertEqual(e.code, 0)  # Ensure that it exited with code 0
+
+        # Check that the config file was generated
+        self.assertTrue(os.path.exists(config_file_path))
+
+        # Verify the contents of the generated config file
+        with open(config_file_path, 'r') as f:
+            generated_content = f.read()
+
+        # Load the default config file
+        default_config_file_path = pkg_resources.resource_filename('nullpol.tools', 'default_config_create_time_frequency_filter_from_sample.ini')
+        with open(default_config_file_path, 'r') as f:
+            default_generated_content = f.read()
+
+        # Clean up the temporary config file
+        os.remove(config_file_path)
+
+        # Compare the content of both files
+        self.assertEqual(generated_content.strip(), default_generated_content.strip())
+
+    def test_create_time_frequency_filter(self):
+        # Create a temporary config file path
+        with tempfile.NamedTemporaryFile(suffix='.ini', delete=True) as temp_config_file:
+            config_file_path = temp_config_file.name
+            with tempfile.NamedTemporaryFile(suffix='.npy', delete=False) as temp_time_frequency_filter_file:
+                time_frequency_filter_file_path = temp_time_frequency_filter_file.name
+                example_signal_parameters_create_injection_path = pkg_resources.resource_filename('nullpol.tools', 'example_signal_parameters_create_injection.json')
+                current_dir = os.path.dirname(__file__)
+                mock_psd_path = os.path.join(current_dir, 'mock_psd.txt')
+                with mock.patch('sys.argv', ['nullpol-create-time-frequency-filter-from-sample',
+                                             '--generate-config', config_file_path,
+                                             '--output', time_frequency_filter_file_path,
+                                             '--detectors', 'H1,L1,V1',
+                                             '--psds', json.dumps(f'{{"H1": "{mock_psd_path}", "L1": "{mock_psd_path}", "V1": "{mock_psd_path}"}}'),
+                                             '--signal-parameters', example_signal_parameters_create_injection_path,
+                                             '--nside', '2']):
+                    try:
+                        main()
+                    except SystemExit as e:
+                        self.assertEqual(e.code, 0)  # Ensure that it exited with code 0
+                    # Execute the tool
+                    with mock.patch('sys.argv', ['nullpol-create-time-frequency-filter-from-sample', '--config', config_file_path]):
+                        try:
+                            main()
+                        except SystemExit as e:
+                            self.assertEqual(e.code, 0)  # Ensure that it exited with code 0    
+
+                # Check that the output file is created
+                self.assertTrue(os.path.exists(time_frequency_filter_file_path))
+        
+if __name__ == '__main__':
+    unittest.main()
