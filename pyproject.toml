@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=40.6.0", "wheel", "Cython", "CythonGSL", "numpy"]
+requires = ["setuptools>=40.6.0", "wheel", "Cython", "CythonGSL", "numpy", "setuptools_scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -26,10 +26,16 @@ dependencies = [
     "scipy",
     "ConfigArgParse",
     "pycbc",
-    "gwpy"
+    "gwpy",
+    "asimov",
 ]
 [tool.setuptools.packages]
 find = {}
+
+[tool.setuptools_scm]
+write_to = "nullpol/_version.py"
+version_scheme = "post-release"  # Use 'post-release' or 'guess-next-dev'
+local_scheme = "node-and-date"   # This includes the full commit hash in the version
 
 [tool.cython]
 language_level = 3

@@ -11,8 +11,10 @@ from ..clustering.single import clustering
 class TimeFrequencyLikelihood(Likelihood):
     """Likelihood function evaluated in the time-frequency domain."""
     def __init__(self, interferometers, waveform_generator=None, projector_generator=None,
-                 priors=None, time_frequency_analysis_arguments={},
+                 priors=None,                 
                  time_frequency_filter=None,
+                 time_frequency_transform_arguments=None,
+                 time_frequency_clustering_arguments=None,
                  reference_frame="sky", time_reference="geocenter", *args, **kwargs):
         self.interferometers = bilby.gw.detector.networks.InterferometerList(interferometers)
 
@@ -44,20 +46,17 @@ class TimeFrequencyLikelihood(Likelihood):
             raise ValueError('maximum_frequency of all interferometers must be less than or equal to the Nyquist frequency.')
 
         self.psd_array = np.array([np.interp(self.frequency_array, interferometer.power_spectral_density.frequency_array, interferometer.power_spectral_density.psd_array) for interferometer in self.interferometers])
-
-        try:
-            self.nx = time_frequency_analysis_arguments['nx']
-            self.df = time_frequency_analysis_arguments['df']
-        except KeyError:
-            raise ValueError('nx and df must be provided for time-frequency analysis.')
-
+        self.time_frequency_transform_arguments = time_frequency_transform_arguments
+        self.time_frequency_clustering_arguments = time_frequency_clustering_arguments
         # Check if all interferometers have the same frequency array
         if not all([np.array_equal(interferometer.frequency_array, self.interferometers[0].frequency_array) for interferometer in self.interferometers[1:]]):
             raise ValueError('All interferometers must have the same frequency array for time-frequency analysis.')
         
         for ifo in self.interferometers:
-            ifo.strain_data.nx = self.nx
-            ifo.strain_data.time_frequency_bandwidth = self.df
+            ifo.strain_data.nx = self.time_frequency_transform_arguments['nx']
+            ifo.strain_data.time_frequency_bandwidth = self.time_frequency_transform_arguments['df']
+        self.time_frequency_transform_arguments['Nf'] = self.interferometers[0].Nf
+        self.time_frequency_transform_arguments['Nt'] = self.interferometers[0].Nt
 
         # Construct the time-frequency filter if it is not provided.
         if time_frequency_filter is None:
@@ -73,13 +72,14 @@ class TimeFrequencyLikelihood(Likelihood):
                                         strain_data_array=strain_data_array
                                         ) # shape (n_interferometers, n_freqs)
                 for j in range(len(self.interferometers)):
-                    energy_map = transform_wavelet_freq(strain[j], self.interferometers[j].Nf, self.interferometers[j].Nt, nx=self.nx) ** 2 + transform_wavelet_freq_quadrature(strain[j], self.interferometers[j].Nf, self.interferometers[j].Nt, nx=self.nx) ** 2
+                    energy_map = transform_wavelet_freq(strain[j], self.interferometers[j].Nf, self.interferometers[j].Nt, nx=self.time_frequency_transform_arguments['nx']) ** 2 + transform_wavelet_freq_quadrature(strain[j], self.interferometers[j].Nf, self.interferometers[j].Nt, nx=time_frequency_transform_arguments['nx']) ** 2
                     energy_map_max = np.fmax(energy_map_max, energy_map)
             self.energy_map_max = energy_map_max
 
             self.dt = self.interferometers[0].duration / self.interferometers[0].Nt
-            time_frequency_filter = clustering(compute_filter_by_quantile(energy_map_max, **time_frequency_analysis_arguments), self.dt, **time_frequency_analysis_arguments)
-            self._DoF = np.sum(time_frequency_filter) * dim
+            time_frequency_filter = clustering(compute_filter_by_quantile(energy_map_max, **time_frequency_clustering_arguments), self.dt,
+                                               **time_frequency_transform_arguments,
+                                               **time_frequency_clustering_arguments)
         # Cleaning the time-frequency filter to remove components beyond the frequency range
         if self.minimum_frequency is not None:
             freq_low_idx = int(np.ceil(self.minimum_frequency / self.df))

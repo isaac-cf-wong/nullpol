@@ -1,2 +1,3 @@
 include nullpol/tools/*.ini
 include nullpol/tools/*.json
+include nullpol/asimov/*.ini
