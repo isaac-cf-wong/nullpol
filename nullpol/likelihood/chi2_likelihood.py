@@ -3,7 +3,7 @@ from bilby.core.likelihood import Likelihood
 import scipy.stats
 import numpy as np
 from tqdm import tqdm
-from nullpol.time_shift import time_shift
+from nullpol.null_stream import time_shift
 from nullpol.wdm.wavelet_transform import transform_wavelet_freq, transform_wavelet_freq_quadrature
 from nullpol.filter import clustering, get_high_pass_filter
 from nullpol.null_stream.null_stream import get_null_stream, get_null_energy
@@ -17,7 +17,7 @@ class NullStreamLikelihood(Likelihood):
     def __init__(self, interferometers, waveform_generator=None, projector_generator=None,
                  priors=None, analysis_domain="frequency", time_frequency_analysis_arguments={},
                  reference_frame="sky", time_reference="geocenter", **kwargs):
-        
+
         self.interferometers = bilby.gw.detector.networks.InterferometerList(interferometers)
 
         if projector_generator is not None:
@@ -37,14 +37,14 @@ class NullStreamLikelihood(Likelihood):
 
         if len(self.interferometers) <= np.sum(self.projector_generator.basis):
             raise ValueError('Number of interferometers must be larger than the number of basis polarization modes.')
-        
+
         self.frequency_array = self.interferometers[0].frequency_array
         self.frequency_mask = np.array([self.frequency_array >= self.minimum_frequency, self.frequency_array <= self.maximum_frequency]).all(axis=0)
         self.frequency_array = self.frequency_array[self.frequency_mask]
 
         if not all([interferometer.frequency_array[1] - interferometer.frequency_array[0] == self.interferometers[0].frequency_array[1] - self.interferometers[0].frequency_array[0] for interferometer in self.interferometers[1:]]):
             raise ValueError('All interferometers must have the same delta_f.')
-        
+
         if not all([interferometer.sampling_frequency >= 2*self.maximum_frequency for interferometer in self.interferometers]):
             raise ValueError('maximum_frequency of all interferometers must be less than or equal to the Nyquist frequency.')
 
@@ -60,7 +60,7 @@ class NullStreamLikelihood(Likelihood):
             # Check if all interferometers have the same frequency array
             if not all([np.array_equal(interferometer.frequency_array, self.interferometers[0].frequency_array) for interferometer in self.interferometers[1:]]):
                 raise ValueError('All interferometers must have the same frequency array for time-frequency analysis.')
-            
+
             for ifo in self.interferometers:
                 ifo.strain_data.nx = self.nx
                 ifo.strain_data.time_frequency_bandwidth = self.df
@@ -119,7 +119,7 @@ class NullStreamLikelihood(Likelihood):
         log_likelihood = scipy.stats.chi2.logpdf(2*null_energy, df=self._DoF)
 
         return log_likelihood
-    
+
     def log_likelihood_time_freq(self):
         """The log likelihood function
 
