@@ -3,7 +3,7 @@ from bilby.core.likelihood import Likelihood
 import scipy.stats
 import numpy as np
 from tqdm import tqdm
-from nullpol.null_stream import time_shift
+from ..null_stream.time_shift import time_shift
 from nullpol.wdm.wavelet_transform import transform_wavelet_freq, transform_wavelet_freq_quadrature
 from nullpol.filter import clustering, get_high_pass_filter
 from nullpol.null_stream.null_stream import get_null_stream, get_null_energy

@@ -2,7 +2,7 @@ import numpy as np
 from bilby.core.likelihood import Likelihood
 import scipy.stats
 import numpy as np
-from nullpol.time_shift import time_shift
+from ..null_stream.time_shift import time_shift
 from ..null_projector import get_null_stream, get_null_energy
 from ..detector.networks import *
 
@@ -14,7 +14,7 @@ class UnconstrainedLikelihood(Likelihood):
     def __init__(self, interferometers, waveform_generator=None, projector_generator=None,
                  priors=None, analysis_domain="frequency",
                  reference_frame="sky", time_reference="geocenter", **kwargs):
-        
+
         self.interferometers = bilby.gw.detector.networks.InterferometerList(interferometers)
 
         if projector_generator is not None:
@@ -32,14 +32,14 @@ class UnconstrainedLikelihood(Likelihood):
 
         if len(self.interferometers) <= np.sum(self.projector_generator.basis):
             raise ValueError('Number of interferometers must be larger than the number of basis polarization modes.')
-        
+
         self.frequency_array = self.interferometers[0].frequency_array
         self.frequency_mask = np.array([self.frequency_array >= self.minimum_frequency, self.frequency_array <= self.maximum_frequency]).all(axis=0)
         self.frequency_array = self.frequency_array[self.frequency_mask]
 
         if not all([interferometer.frequency_array[1] - interferometer.frequency_array[0] == self.interferometers[0].frequency_array[1] - self.interferometers[0].frequency_array[0] for interferometer in self.interferometers[1:]]):
             raise ValueError('All interferometers must have the same delta_f.')
-        
+
         if not all([interferometer.sampling_frequency >= 2*self.maximum_frequency for interferometer in self.interferometers]):
             raise ValueError('maximum_frequency of all interferometers must be less than or equal to the Nyquist frequency.')
 
