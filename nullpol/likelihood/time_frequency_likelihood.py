@@ -1,7 +1,7 @@
 import numpy as np
 from bilby.core.likelihood import Likelihood
 from tqdm import tqdm
-from ..time_shift import time_shift
+from ..null_stream.time_shift import time_shift
 from ..time_frequency_transform import (transform_wavelet_freq,
                                         transform_wavelet_freq_quadrature)
 from ..detector.networks import *
