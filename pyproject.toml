@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=40.6.0", "wheel", "Cython", "CythonGSL", "numpy", "setuptools_scm"]
+requires = ["setuptools>=40.6.0", "wheel", "setuptools_scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "nullpol"
-version = "0.1.0"
+version = "1.0.0"
 description = "A package to perform model-independent polarization test of gravitational-wave signals"
 authors = [{name="Isaac C.F. Wong",email="chunfung.wong@kuleuven.be"},
            {name="Thomas Ng"},
@@ -18,8 +18,8 @@ classifiers = [
 ]
 dependencies = [
     "numpy>=1.18.1",
-    "CythonGSL",
     "bilby",
+    "bilby_pipe",
     "astropy",
     "ligo.skymap",
     "numba",
@@ -44,3 +44,5 @@ language_level = 3
 nullpol-null-energy-test = "nullpol.tools.null_energy_test:main"
 nullpol-create-injection = "nullpol.tools.create_injection:main"
 nullpol-create-time-frequency-filter-from-sample = "nullpol.tools.create_time_frequency_filter_from_sample:main"
+nullpol-simulate-psd-from-psd = "nullpol.tools.simulate_psd_from_psd:main"
+nullpol-pipe = "nullpol.tools.nullpol_pipe:main"

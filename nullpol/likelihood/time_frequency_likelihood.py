@@ -1,93 +1,244 @@
 import numpy as np
+import bilby
 from bilby.core.likelihood import Likelihood
-from tqdm import tqdm
-from ..null_stream.time_shift import time_shift
-from ..time_frequency_transform import (transform_wavelet_freq,
-                                        transform_wavelet_freq_quadrature)
-from ..detector.networks import *
-from ..clustering.threshold_filter import compute_filter_by_quantile
-from ..clustering.single import clustering
+from pathlib import Path
+from pycbc.types.frequencyseries import FrequencySeries
+from bilby.core.prior import DeltaFunction
+from ..null_stream import (encode_polarization,
+                           time_shift,
+                           get_antenna_pattern_matrix,
+                           get_collapsed_antenna_pattern_matrix,
+                           relative_amplification_factor_map,
+                           relative_amplification_factor_helper,
+                           compute_whitened_antenna_pattern_matrix_masked,
+                           compute_whitened_time_frequency_domain_strain_array,
+                           compute_gw_projector_masked)                                                  )
+from ..psd import simulate_psd_from_psd
+from ..time_frequency_transform import transform_wavelet_freq
+from ..utility import logger
+from ..calibration import build_calibration_lookup
+
 
 class TimeFrequencyLikelihood(Likelihood):
-    """Likelihood function evaluated in the time-frequency domain."""
-    def __init__(self, interferometers, waveform_generator=None, projector_generator=None,
-                 priors=None,                 
+    """A time-frequency likelihood class.
+    """
+    def __init__(self,
+                 interferometers,                 
+                 wavelet_frequency_resolution,
+                 wavelet_nx,
+                 polarization_modes,
+                 polarization_basis=None,
+                 wavelet_psds=None,
                  time_frequency_filter=None,
-                 time_frequency_transform_arguments=None,
-                 time_frequency_clustering_arguments=None,
-                 reference_frame="sky", time_reference="geocenter", *args, **kwargs):
+                 simulate_psd_nsample=100,
+                 calibration_marginalization=False,
+                 calibration_lookup_table=None,
+                 calibration_psd_lookup_table=None,
+                 number_of_response_curves=1000,
+                 starting_index=0,
+                 priors=None,
+                 *args, **kwargs):
+        """
+        Parameters
+        ----------
+        interferometers: list
+            List of interferometers.
+        wavelet_frequency_resolution: float
+            The frequency resolution of the wavelet transform.
+        wavelet_nx: int
+            The number of points in the wavelet transform.
+        polarization_modes: list
+            List of polarization modes.
+        polarization_basis: list
+            List of polarization basis.
+        wavelet_psds: array_like
+            The PSDs in the wavelet domain.
+        time_frequency_filter: array_like
+            The time-frequency filter.
+        simulate_psd_nsample: int
+            The number of samples to simulate the PSDs.
+        """
+        super(TimeFrequencyLikelihood, self).__init__(dict())
+        # Load the interferometers.
         self.interferometers = bilby.gw.detector.networks.InterferometerList(interferometers)
-
-        if projector_generator is not None:
-            self.projector_generator = projector_generator
-        else:
-            self.projector_generator = waveform_generator
-
+        self.frequency_domain_strain_array = np.array([ifo.frequency_domain_strain for ifo in self.interferometers])        
+        # Validate the interferometers
+        self._validate_interferometers(self.interferometers)
+        self.wavelet_frequency_resolution = wavelet_frequency_resolution
+        self.wavelet_nx = wavelet_nx
+        self.simulate_psd_nsample = simulate_psd_nsample
+        self._wavelet_Nf = int(self.interferometers[0].sampling_frequency / 2 / self.wavelet_frequency_resolution)
+        self._wavelet_Nt = int(len(self.interferometers[0].time_array) / self.wavelet_frequency_resolution)
+        # Encode the polarization labels
+        self.polarization_modes, self.polarization_basis, self.polarization_derived = encode_polarization(polarization_modes, polarization_basis)
+        self.relative_amplification_factor_map = relative_amplification_factor_map(self.polarization_basis,
+                                                                                   self.polarization_derived)
+        # Load the time_frequency_filter.
+        self.time_freuency_filter = self._load_time_frequency_filter(time_frequency_filter)
+        # Collapse the time_frequency_filter
+        self.time_frequency_filter_collapsed = np.any(self.time_frequency_filter, axis=0)
+        # Validate the size of the time_frequency_filter.
+        self._validate_time_frequency_filter()
+        # Get the resolution matching PSDs
+        self.psd_array = wavelet_psds
+        # Compute the normalization constant
+        self.log_normalization_constant = -np.log(2 * np.pi) * len(self.interferometers) / 2 * np.sum(time_frequency_filter)
+        self._noise_log_likelihood_value = None               
+        # Marginalization
+        self._marginalized_parameters = []
+        self.calibration_marginalization = calibration_marginalization
         self.priors = priors
-        self._marginalized_parameters = dict()
-        self.parameters = dict()
-
-        self.minimum_frequency = np.max([interferometer.minimum_frequency for interferometer in interferometers])
-        self.maximum_frequency = np.min([interferometer.maximum_frequency for interferometer in interferometers])
-
-        dim = len(self.interferometers) - np.sum(self.projector_generator.basis)
-
-        if len(self.interferometers) <= np.sum(self.projector_generator.basis):
-            raise ValueError('Number of interferometers must be larger than the number of basis polarization modes.')
+        if self.calibration_marginalization:
+            self.number_of_response_curves = number_of_response_curves
+            self.starting_index = starting_index
+            self._setup_calibration_marginalization(calibration_lookup_table, calibration_psd_lookup_table, priors)
+            self._marginalized_parameters.append('recalib_index')
+        else:
+            # Simulate the TF domain PSDs
+            self.simulate_psd() 
         
-        self.frequency_array = self.interferometers[0].frequency_array
-        self.frequency_mask = np.array([self.frequency_array >= self.minimum_frequency, self.frequency_array <= self.maximum_frequency]).all(axis=0)
-        self.frequency_array = self.frequency_array[self.frequency_mask]
+    def _setup_calibration_marginalization(self,
+                                           calibration_lookup_table,
+                                           calibration_psd_lookup_table,
+                                           priors=None):
+        self.calibration_draws, self.calibration_parameter_draws, self.psd_draws = build_calibration_lookup(
+            interferometers=self.interferometers,
+            lookup_files=calibration_lookup_table,
+            psd_lookup_files=calibration_psd_lookup_table,
+            priors=priors,
+            number_of_response_curves=self.number_of_response_curves,
+            starting_index=self.starting_index,
+        )
+        # Reshape the calibration psd draws into an array of shape (detector, nsample, nfreq)
+        self.psd_draws = np.array([self.calibration_psd_draws[ifo.name] for ifo in self.interferometers])
+        for name, parameters in self.calibration_parameter_draws.items():
+            if parameters is not None:
+                for key in set(parameters.keys()).intersection(priors.keys()):
+                    priors[key] = DeltaFunction(0.0)
+        self.calibration_abs_draws = dict()
+        for name in self.calibration_draws:
+            self.calibration_abs_draws[name] = np.abs(self.calibration_draws[name])**2        
 
-        if not all([interferometer.frequency_array[1] - interferometer.frequency_array[0] == self.interferometers[0].frequency_array[1] - self.interferometers[0].frequency_array[0] for interferometer in self.interferometers[1:]]):
+    def simulate_psd(self):
+        """
+        Simulate the PSDs from the PSDs of the interferometers.
+        """
+        self.psd_draws = self._get_resolution_matching_psd(self.interferometers)
+
+    def _validate_interferometers(self, interferometers):
+        if not all([interferometer.frequency_array[1] - interferometer.frequency_array[0] == interferometers[0].frequency_array[1] - interferometers[0].frequency_array[0] for interferometer in interferometers[1:]]):
             raise ValueError('All interferometers must have the same delta_f.')
-        
-        if not all([interferometer.sampling_frequency >= 2*self.maximum_frequency for interferometer in self.interferometers]):
-            raise ValueError('maximum_frequency of all interferometers must be less than or equal to the Nyquist frequency.')
 
-        self.psd_array = np.array([np.interp(self.frequency_array, interferometer.power_spectral_density.frequency_array, interferometer.power_spectral_density.psd_array) for interferometer in self.interferometers])
-        self.time_frequency_transform_arguments = time_frequency_transform_arguments
-        self.time_frequency_clustering_arguments = time_frequency_clustering_arguments
-        # Check if all interferometers have the same frequency array
-        if not all([np.array_equal(interferometer.frequency_array, self.interferometers[0].frequency_array) for interferometer in self.interferometers[1:]]):
-            raise ValueError('All interferometers must have the same frequency array for time-frequency analysis.')
-        
-        for ifo in self.interferometers:
-            ifo.strain_data.nx = self.time_frequency_transform_arguments['nx']
-            ifo.strain_data.time_frequency_bandwidth = self.time_frequency_transform_arguments['df']
-        self.time_frequency_transform_arguments['Nf'] = self.interferometers[0].Nf
-        self.time_frequency_transform_arguments['Nt'] = self.interferometers[0].Nt
+    def _load_time_frequency_filter(self, time_frequency_filter):
+        if isinstance(time_frequency_filter, np.ndarray):
+            return time_frequency_filter
+        elif isinstance(time_frequency_filter, str):
+            fname = Path(time_frequency_filter)
+            if fname.suffix == ".npy":
+                return np.load(fname)
+            elif fname.is_dir():
+                return np.load(fname / "time_frequency_filter.npy")
+            else:
+                raise ValueError(f"Unrecognized format of time_frequency_filter: {fname}")
+        elif time_frequency_filter is None:
+            return np.load("time_frequency_filter.npy")
+        else:
+            raise ValueError(f"Unrecognized data type of time_freuency_filter: {time_frequency_filter}")
 
-        # Construct the time-frequency filter if it is not provided.
-        if time_frequency_filter is None:
-            # transform_wavelet_freq(strain, Nf, Nt, nx) only takes 2D array as input, so we need to loop over the first two dimensions
-            energy_map_max = np.zeros((self.interferometers[0].Nt, self.interferometers[0].Nf))
-            for _ in tqdm(range(1000), desc='Generating energy map'):
-                strain_data_array = interferometers.whitened_frequency_domain_strain_array
-                strain = time_shift(interferometers=self.interferometers,
-                                        ra=self.priors['ra'].sample(),
-                                        dec=self.priors['dec'].sample(),
-                                        gps_time=self.interferometers[0].start_time+self.interferometers[0].duration, # take the end time of the interferometer as the reference time
-                                        frequency_array=interferometers[0].frequency_array, # use the full frequency array
-                                        strain_data_array=strain_data_array
-                                        ) # shape (n_interferometers, n_freqs)
-                for j in range(len(self.interferometers)):
-                    energy_map = transform_wavelet_freq(strain[j], self.interferometers[j].Nf, self.interferometers[j].Nt, nx=self.time_frequency_transform_arguments['nx']) ** 2 + transform_wavelet_freq_quadrature(strain[j], self.interferometers[j].Nf, self.interferometers[j].Nt, nx=time_frequency_transform_arguments['nx']) ** 2
-                    energy_map_max = np.fmax(energy_map_max, energy_map)
-            self.energy_map_max = energy_map_max
+    def _validate_time_frequency_filter(self):
+        # Get the shape of the time_frequency_filter
+        ntime, nfreq = self.time_frequency_filter.shape
+        assert nfreq==self._wavelet_Nf, "The length of frequency axis in the wavelet domain does not match the time frequency filter."
+        assert ntime==self._wavelet_Nt, "The length of time axis in the wavelet domain does not match the time frequency filter."
 
-            self.dt = self.interferometers[0].duration / self.interferometers[0].Nt
-            time_frequency_filter = clustering(compute_filter_by_quantile(energy_map_max, **time_frequency_clustering_arguments), self.dt,
-                                               **time_frequency_transform_arguments,
-                                               **time_frequency_clustering_arguments)
-        # Cleaning the time-frequency filter to remove components beyond the frequency range
-        if self.minimum_frequency is not None:
-            freq_low_idx = int(np.ceil(self.minimum_frequency / self.df))
-            time_frequency_filter[:,:freq_low_idx] = 0.
-        if self.maximum_frequency is not None:
-            freq_high_idx = int(np.floor(self.maximum_frequency / self.df))
-            time_frequency_filter[:,freq_high_idx:] = 0.
-        self._time_frequency_filter = time_frequency_filter
+    def _get_resolution_matching_psd(self, interferometers):
+        psd_array = []
+        for interferometer in interferometers:
+            delta_f = interferometer.power_spectral_density.frequency_array[1]-interferometer.power_spectral_density.frequency_array[0]
+            psd_pycbc = FrequencySeries(interferometer.power_spectral_density.psd_array, delta_f=delta_f)
+            psd_array.append(simulate_psd_from_psd(psd_pycbc,interferometer.duration,interferometer.sampling_frequency,self.wavelet_frequency_resolution,self.simulate_psd_nsample,self.wavelet_nx))
+        return np.array(psd_array).reshape(len(interferometers), 1, -1)
+
+    def _get_whitened_time_shifted_time_frequency_domain_strain_array(self):
+        # Time shift the data
+        frequency_domain_strain_array_time_shifted = time_shift(self.interferometers,
+                                                                ra=self.parameters['ra'],
+                                                                dec=self.parameters['dec'],
+                                                                gps_time=self.parameters['geocent_time'],
+                                                                strain_data_array=self.frequency_domain_strain_array)
+        # Transform the time-shifted data to the time-freuency domain
+        time_frequency_domain_strain_array_time_shifted = np.array([transform_wavelet_freq(data,
+                                                                                           self._wavelet_Nf,
+                                                                                           self._wavelet_Nt,
+                                                                                           self.wavelet_nx) for data in frequency_domain_strain_array_time_shifted])
+        # Whiten the strain data
+        time_frequency_domain_strain_array_time_shifted_whitened = compute_whitened_time_frequency_domain_strain_array(time_frequency_domain_strain_array_time_shifted,
+                                                                                                                       self.psd_array,
+                                                                                                                       self.time_frequency_filter)
+        return time_frequency_domain_strain_array_time_shifted_whitened
 
     def log_likelihood(self):
-        raise NotImplementedError('log_likelihood() should be implemented in the subclass.')
+        raise NotImplementedError("The log_likelihood method must be implemented in a subclass.")
+
+    def compute_gw_projector(self):
+        # Evaluate the antenna pattern function
+        F_matrix = get_antenna_pattern_matrix(self.interferometers,
+                                              right_ascension=self.parameters['ra'],
+                                              declination=self.parameters['dec'],
+                                              polarization_angle=self.parameters['psi'],
+                                              gps_time=self.parameters['geocent_time'],
+                                              polarization=self.polarization_modes)
+        # Evaluate the collapsed antenna pattern function
+        # Compute the relative amplification factor
+        if self.relative_amplification_factor_map is not None:
+            relative_amplification_factor = relative_amplification_factor_helper(self.relative_amplification_factor_map,
+                                                                                 self.parameters)
+            F_matrix = get_collapsed_antenna_pattern_matrix(F_matrix,
+                                                            self.polarization_basis,
+                                                            self.polarization_derived,
+                                                            relative_amplification_factor)
+        # Compute the whitened F_matrix
+        whitened_F_matrix = compute_whitened_antenna_pattern_matrix_masked(F_matrix, self.psd_array, self.time_frequency_filter_collapsed)
+        # Compute the GW projector
+        Pgw = compute_gw_projector_masked(whitened_F_matrix, self.time_frequency_filter_collapsed)
+        return Pgw
+
+    def _compute_antenna_pattern_matrix(self):
+        # Evaluate the antenna pattern function
+        F_matrix = get_antenna_pattern_matrix(self.interferometers,
+                                              right_ascension=self.parameters['ra'],
+                                              declination=self.parameters['dec'],
+                                              polarization_angle=self.parameters['psi'],
+                                              gps_time=self.parameters['geocent_time'],
+                                              polarization=self.polarization_modes)
+        # Evaluate the collapsed antenna pattern function
+        # Compute the relative amplification factor
+        if self.relative_amplification_factor_map is not None:
+            relative_amplification_factor = relative_amplification_factor_helper(self.relative_amplification_factor_map,
+                                                                                 self.parameters)
+            F_matrix = get_collapsed_antenna_pattern_matrix(F_matrix,
+                                                            self.polarization_basis,
+                                                            self.polarization_derived,
+                                                            relative_amplification_factor)
+        return F_matrix
+
+    def _calculate_noise_log_likelihood(self):
+        # Transform the time-shifted data to the time-freuency domain
+        time_frequency_domain_strain_array = np.array([transform_wavelet_freq(data,
+                                                                              self._wavelet_Nf,
+                                                                              self._wavelet_Nt,
+                                                                              self.wavelet_nx) for data in self.frequency_domain_strain_array])
+        # Whiten the strain data
+        time_frequency_domain_strain_array_whitened = compute_whitened_time_frequency_domain_strain_array(time_frequency_domain_strain_array,
+                                                                                                          self.psd_draws[:,0,:],
+                                                                                                          self.time_frequency_filter)
+        # Compute the noise log likelihood
+        self._noise_log_likelihood_value = -np.sum(np.sum(np.abs(time_frequency_domain_strain_array_whitened)**2)) * 0.5 + self.log_normalization_constant
+
+    def noise_log_likelihood(self):
+        """
+        Compute the noise log likelihood.
+        """
+        if self._noise_log_likelihood_value is None:            
+            self._noise_log_likelihood_value = self._calculate_noise_log_likelihood()
+        return self._noise_log_likelihood_value

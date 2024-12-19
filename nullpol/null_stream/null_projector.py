@@ -1,4 +1,5 @@
 import numpy as np
+from numba import njit
 
 def get_null_projector(antenna_pattern_matrix):
     """Null projector.

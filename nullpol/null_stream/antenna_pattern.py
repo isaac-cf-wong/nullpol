@@ -1,3 +1,4 @@
+from .encoding import POLARIZATION_DECODING
 import numpy as np
 
 def get_antenna_pattern(interferometer, right_ascension, declination, polarization_angle, gps_time, polarization):
@@ -100,3 +101,38 @@ def change_basis(whitened_antenna_pattern_matrix, basis, amp_phase_factor):
     additional_terms = np.einsum('ijk, jl -> ilk', whitened_antenna_pattern_matrix[:, np.invert(basis), :], multiplicative_factor) # shape (n_interferometers, n_basis, n_freqs)
     
     return whitened_antenna_pattern_matrix[:, basis, :] + additional_terms # shape (n_interferometers, n_basis, n_freqs)
+
+def relative_amplification_factor_map(polarization_basis,
+                                      polarization_derived):
+    nbasis = np.sum(polarization_basis)
+    nderived = np.sum(polarization_derived)
+    if nderived == 0:
+        return None
+    output = []
+    i_counter = 0
+    j_counter = 0
+    for i in range(len(polarization_derived)):
+        if not polarization_derived[i]:
+            continue
+        row = []
+        for j in range(len(polarization_basis)):
+            if polarization_basis[j]:
+                row.append(f'{POLARIZATION_DECODING[i]}{POLARIZATION_DECODING[j]}')
+            j_counter += 1
+        output.append(row)
+        i_counter += 1
+    return np.array(output)
+
+def relative_amplification_factor_helper(parameters_map,
+                                         parameters):
+    func = lambda x: parameters[f'amplitude_{x}']*np.exp(1.j*parameters[f'phase_{x}'])
+    return np.vectorize(func)(parameters_map)
+
+def get_collapsed_antenna_pattern_matrix(antenna_pattern_matrix,
+                                         polarization_basis,
+                                         polarization_derived,
+                                         relative_amplification_factor):
+    # Dimensions:
+    ## antenna_pattern_matrix: (detector, polarization)
+    # Select the columns corresponds to the basis    
+    return antenna_pattern_matrix[:, polarization_basis] + antenna_pattern_matrix[:, polarization_derived] @ relative_amplification_factor
