@@ -236,7 +236,7 @@ class DataAnalysisInput(Input):
             wavelet_nx=self.wavelet_nx,
             polarization_modes=self.polarization_modes,
             polarization_basis=self.polarization_basis,
-            time_frequency_filter="time_frequency_filter.npy",
+            time_frequency_filter=f"{self.label}_time_frequency_filter.npy",
             simulate_psd_nsample=self.simulate_psd_nsample,
             calibration_marginalization=self.calibration_marginalization,
             calibration_lookup_table=self.calibration_lookup_table,
@@ -244,7 +244,7 @@ class DataAnalysisInput(Input):
             number_of_response_curves=self.number_of_response_curves,
             priors=self.search_priors,            
         )
-        if self.likelihood_type == "Chi2TimeFrequency":
+        if self.likelihood_type == "Chi2TimeFrequencyLikelihood":
             Likelihood = Chi2TimeFrequencyLikelihood
         elif "." in self.likelihood_type:
             split_path = self.likelihood_type.split(".")
@@ -436,7 +436,7 @@ class DataAnalysisInput(Input):
                                                               threshold=self.time_frequency_clustering_threshold,
                                                               time_padding=self.time_frequency_clustering_time_padding,
                                                               skypoints=self.time_frequency_clustering_skypoints)
-        write_time_frequency_filter("time_frequency_filter.npy", time_frequency_filter)
+        write_time_frequency_filter(f"{self.label}_time_frequency_filter.npy", time_frequency_filter)
 
     def run_sampler(self):
         if self.scheduler.lower() == "condor" and not self.run_local:

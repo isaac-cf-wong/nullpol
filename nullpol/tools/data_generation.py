@@ -4,10 +4,13 @@ from bilby_pipe.utils import convert_string_to_dict
 from bilby_pipe.parser import create_parser
 from bilby_pipe.main import parse_args
 import sys
+import os
+import glob
 from ..utility import (__version__,
                        log_version_information,
                        logger)
 from ..calibration import build_calibration_lookup
+from .. import prior as nullpol_prior
 
 
 class DataGenerationInput(BilbyDataGenerationInput):
@@ -140,6 +143,11 @@ class DataGenerationInput(BilbyDataGenerationInput):
 
         if create_data:
             self.create_data(args)
+
+    @property
+    def combined_default_prior_dicts(self):
+        d = nullpol_prior.__dict__.copy()
+        return d
 
     def build_calibration_lookups_if_needed(self):
         """
