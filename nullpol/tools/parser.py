@@ -2,8 +2,59 @@ import sys
 import os
 from bilby_pipe.parser import create_parser
 from bilby_pipe.utils import nonestr
+from bilby_pipe.bilbyargparser import (BilbyArgParser,
+                                       HyphenStr)
 from ..utility import logger
+from .._version import __version__
 
+
+def write_to_file(
+    self,
+    filename,
+    args=None,
+    overwrite=False,
+    include_description=False,
+    exclude_default=False,
+    comment=None,
+):
+    if os.path.isfile(filename) and not overwrite:
+        logger.warning(f"File {filename} already exists, not writing to file.")
+    with open(filename, "w") as ff:
+        if include_description:
+            print(
+                f"## This file was written with nullpol version {__version__}\n",
+                file=ff,
+            )
+        if isinstance(comment, str):
+            print("#" + comment + "\n", file=ff)
+        for group in self._action_groups[2:]:
+            print("#" * 80, file=ff)
+            print(f"## {group.title}", file=ff)
+            if include_description:
+                print(f"# {group.description}", file=ff)
+            print("#" * 80 + "\n", file=ff)
+            for action in group._group_actions:
+                if include_description:
+                    print(f"# {action.help}", file=ff)
+                dest = action.dest
+                hyphen_dest = HyphenStr(dest)
+                if isinstance(args, dict):
+                    if action.dest in args:
+                        value = args[dest]
+                    elif hyphen_dest in args:
+                        value = args[hyphen_dest]
+                    else:
+                        value = action.default
+                else:
+                    value = getattr(args, dest, action.default)
+
+                if exclude_default and value == action.default:
+                    continue
+                self.write_comment_if_needed(hyphen_dest, ff)
+                self.write_line(hyphen_dest, value, ff)
+            print("", file=ff)
+
+BilbyArgParser.write_to_file = write_to_file
 
 def create_nullpol_parser(top_level=True):
     """Create the nullpol_pipe parser
@@ -66,6 +117,7 @@ def create_nullpol_parser(top_level=True):
     remove_argument(parser, "--update-fiducial-parameters")
     remove_argument(parser, "--epsilon")
     remove_argument(parser, "--default-prior")
+    remove_argument(parser, "--version")
     add_argument_to_group(parser, "Likelihood arguments", "--likelihood-type", default="Chi2TimeFrequencyLikelihood", help=("The likelihood. Can be one of [Chi2TimeFrequencyLikelihood,] "
                                                                                                                             "or python path to a bilby likelihood class available in the users installation."
                                                                                                                             "If `zero` is given, a testing ZeroLikelihood is used which always "
@@ -96,6 +148,7 @@ def create_nullpol_parser(top_level=True):
     clustering_parser.add('--time-frequency-threshold', type=float, default=0.9, help="Quantile threshold to filter the excess power.")
     clustering_parser.add('--time-frequency-time-padding', type=float, default=0.1, help="Time padding in second to pad on both sides of the cluster.")
     clustering_parser.add('--time-frequency-skypoints', type=int, default=100, help="Number of skypoints to compute the sky-maximized energy map.")
+    parser.add("--version", action="version", version=f"%(prog)s={__version__}")
     return parser
     
 def main():
