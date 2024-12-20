@@ -14,7 +14,8 @@ from ..null_stream import (encode_polarization,
                            compute_whitened_time_frequency_domain_strain_array,
                            compute_gw_projector_masked)                                                  )
 from ..psd import simulate_psd_from_psd
-from ..time_frequency_transform import transform_wavelet_freq
+from ..time_frequency_transform import (transform_wavelet_freq,
+                                        get_shape_of_wavelet_transform)
 from ..utility import logger
 from ..calibration import build_calibration_lookup
 
@@ -28,7 +29,6 @@ class TimeFrequencyLikelihood(Likelihood):
                  wavelet_nx,
                  polarization_modes,
                  polarization_basis=None,
-                 wavelet_psds=None,
                  time_frequency_filter=None,
                  simulate_psd_nsample=100,
                  calibration_marginalization=False,
@@ -51,8 +51,6 @@ class TimeFrequencyLikelihood(Likelihood):
             List of polarization modes.
         polarization_basis: list
             List of polarization basis.
-        wavelet_psds: array_like
-            The PSDs in the wavelet domain.
         time_frequency_filter: array_like
             The time-frequency filter.
         simulate_psd_nsample: int
@@ -67,8 +65,9 @@ class TimeFrequencyLikelihood(Likelihood):
         self.wavelet_frequency_resolution = wavelet_frequency_resolution
         self.wavelet_nx = wavelet_nx
         self.simulate_psd_nsample = simulate_psd_nsample
-        self._wavelet_Nf = int(self.interferometers[0].sampling_frequency / 2 / self.wavelet_frequency_resolution)
-        self._wavelet_Nt = int(len(self.interferometers[0].time_array) / self.wavelet_frequency_resolution)
+        self._wavelet_Nt, self._wavelet_Nf = get_shape_of_wavelet_transform(self.interferometers[0].duration,
+                                                                            self.interferometers[0].sampling_frequency,
+                                                                            self.wavelet_frequency_resolution)
         # Encode the polarization labels
         self.polarization_modes, self.polarization_basis, self.polarization_derived = encode_polarization(polarization_modes, polarization_basis)
         self.relative_amplification_factor_map = relative_amplification_factor_map(self.polarization_basis,
@@ -79,8 +78,6 @@ class TimeFrequencyLikelihood(Likelihood):
         self.time_frequency_filter_collapsed = np.any(self.time_frequency_filter, axis=0)
         # Validate the size of the time_frequency_filter.
         self._validate_time_frequency_filter()
-        # Get the resolution matching PSDs
-        self.psd_array = wavelet_psds
         # Compute the normalization constant
         self.log_normalization_constant = -np.log(2 * np.pi) * len(self.interferometers) / 2 * np.sum(time_frequency_filter)
         self._noise_log_likelihood_value = None               
@@ -158,24 +155,6 @@ class TimeFrequencyLikelihood(Likelihood):
             psd_pycbc = FrequencySeries(interferometer.power_spectral_density.psd_array, delta_f=delta_f)
             psd_array.append(simulate_psd_from_psd(psd_pycbc,interferometer.duration,interferometer.sampling_frequency,self.wavelet_frequency_resolution,self.simulate_psd_nsample,self.wavelet_nx))
         return np.array(psd_array).reshape(len(interferometers), 1, -1)
-
-    def _get_whitened_time_shifted_time_frequency_domain_strain_array(self):
-        # Time shift the data
-        frequency_domain_strain_array_time_shifted = time_shift(self.interferometers,
-                                                                ra=self.parameters['ra'],
-                                                                dec=self.parameters['dec'],
-                                                                gps_time=self.parameters['geocent_time'],
-                                                                strain_data_array=self.frequency_domain_strain_array)
-        # Transform the time-shifted data to the time-freuency domain
-        time_frequency_domain_strain_array_time_shifted = np.array([transform_wavelet_freq(data,
-                                                                                           self._wavelet_Nf,
-                                                                                           self._wavelet_Nt,
-                                                                                           self.wavelet_nx) for data in frequency_domain_strain_array_time_shifted])
-        # Whiten the strain data
-        time_frequency_domain_strain_array_time_shifted_whitened = compute_whitened_time_frequency_domain_strain_array(time_frequency_domain_strain_array_time_shifted,
-                                                                                                                       self.psd_array,
-                                                                                                                       self.time_frequency_filter)
-        return time_frequency_domain_strain_array_time_shifted_whitened
 
     def log_likelihood(self):
         raise NotImplementedError("The log_likelihood method must be implemented in a subclass.")

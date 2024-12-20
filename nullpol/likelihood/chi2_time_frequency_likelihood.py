@@ -19,7 +19,6 @@ class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
                  wavelet_nx,
                  polarization_modes,
                  polarization_basis=None,
-                 wavelet_psds=None,
                  time_frequency_filter=None,
                  simulate_psd_nsample=100,
                  calibration_marginalization=False,
@@ -42,8 +41,6 @@ class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
             List of polarization modes.
         polarization_basis: list
             List of polarization basis.
-        wavelet_psds: array_like
-            The PSDs in the wavelet domain.
         time_frequency_filter: array_like
             The time-frequency filter.
         simulate_psd_nsample: int
@@ -54,11 +51,11 @@ class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
                                                           wavelet_nx=wavelet_nx,
                                                           polarization_modes=polarization_modes,
                                                           polarization_basis=polarization_basis,
-                                                          wavelet_psds=wavelet_psds,
                                                           time_frequency_filter=time_frequency_filter,
                                                           simulate_psd_nsample=simulate_psd_nsample,
                                                           calibration_marginalization=calibration_marginalization,
                                                           calibration_lookup_table=calibration_lookup_table,
+                                                          calibration_psd_lookup_table=calibration_psd_lookup_table,
                                                           number_of_response_curves=number_of_response_curves,
                                                           starting_index=starting_index,
                                                           priors=priors,
@@ -80,12 +77,8 @@ class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
         # Compute the F matrix
         F_matrix = self._compute_antenna_pattern_matrix()
 
-        _, psd_nsample, _ = self.psd_draws.shape
-        time_frequency_domain_strain_array_time_shifted_whitened = compute_whitened_time_frequency_domain_strain_array(time_frequency_domain_strain_array_time_shifted,
-                                                                                                                       psd_array,
-                                                                                                                       time_frequency_filter)
         # Compute the null energy
-        null_energy_array = compute_null_energy(time_frequency_domain_strain_array_time_shifted_whitened,
+        null_energy_array = compute_null_energy(time_frequency_domain_strain_array_time_shifted,
                                                 self.psd_draws,
                                                 F_matrix,
                                                 self.time_frequency_filter,

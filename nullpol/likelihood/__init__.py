@@ -1,1 +1,1 @@
-from nullpol.likelihood.chi2_likelihood import *
+from .chi2_time_frequency_likelihood import *

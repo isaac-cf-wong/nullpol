@@ -1,6 +1,6 @@
 from ..time_frequency_transform import (transform_wavelet_freq,
                                         transform_wavelet_freq_quadrature)
-from ..utility.whiten import whiten_frequency_domain_strain
+from ..null_stream.whiten import whiten_frequency_domain_strain
 
 
 def construct_time_frequency_map(interferometers, frequency_resolution, nx):
