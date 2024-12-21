@@ -15,6 +15,11 @@ class Input(BilbyInput):
         super(Input, self).__init__(args=args,
                                     unknown_args=unknown_args,
                                     print_msg=print_msg)
+        self.polarization_modes = args.polarization_modes
+        self.polarization_basis = args.polarization_modes
+        self.wavelet_frequency_resolution = args.wavelet_frequency_resolution
+        self.wavelet_nx = args.wavelet_nx
+        self.calibration_correction_type = args.calibration_correction_type
 
     @property
     def likelihood(self):
@@ -53,8 +58,8 @@ class Input(BilbyInput):
         logger.debug(
             f"Initialise likelihood {Likelihood} with kwargs: \n{likelihood_kwargs}"
         )
-
-        likelihood = Likelihood(**likelihood_kwargs)
+        print(likelihood_kwargs)
+        likelihood = Likelihood(**likelihood_kwargs)        
 
         # If requested, use a zero likelihood: for testing purposes
         if self.likelihood_type == "zero":
@@ -74,46 +79,6 @@ class Input(BilbyInput):
         self._calibration_psd_lookup_table = lookup
 
     @property
-    def polarization_modes(self):
-        return getattr(self, "_polarization_modes", None)
-
-    @polarization_modes.setter
-    def polarization_modes(self, modes):
-        self._polarization_modes = modes
-
-    @property
-    def polarization_basis(self):
-        return getattr(self, "_polarization_basis", None)
-
-    @polarization_basis.setter
-    def polarization_basis(self, basis):
-        self._polarization_basis = basis
-
-    @property
-    def wavelet_frequency_resolution(self):
-        return getattr(self, "_wavelet_frequency_resolution", None)
-
-    @wavelet_frequency_resolution.setter
-    def wavelet_frequency_resolution(self, resolution):
-        self._wavelet_frequency_resolution = resolution
-
-    @property
-    def wavelet_nx(self):
-        return getattr(self, "_nx", None)
-
-    @wavelet_nx.setter
-    def wavelet_nx(self, nx):
-        self._wavelet_nx = nx
-
-    @property
-    def simulate_psd_nsample(self):
-        return getattr(self, "_simulate_psd_nsample", None)
-
-    @simulate_psd_nsample.setter
-    def simulate_psd_nsample(self, nsample):
-        self._simulate_psd_nsample = nsample
-
-    @property
     def calibration_correction_type(self):
         return getattr(self, "_calibration_correction_type", None)
 
@@ -122,41 +87,56 @@ class Input(BilbyInput):
         self._calibration_correction_type = correction_type
 
     @property
-    def time_frequency_clustering_method(self):
-        return getattr(self, "_time_frequency_clustering_method", None)
-
-    @time_frequency_clustering_method.setter
-    def time_frequency_clustering_method(self, method):
-        self._time_frequency_clustering_method = method
-
-    @property
-    def time_frequency_clustering_pe_samples_filename(self):
-        return getattr(self, "_time_frequency_clustering_pe_samples_filename", None)
-
-    @time_frequency_clustering_pe_samples_filename.setter
-    def time_frequency_clustering_pe_samples_filename(self, filename):
-        self._time_frequency_clustering_pe_samples_filename = filename
+    def polarization_modes(self):
+        return getattr(self, '_polarization_modes', None)
+    
+    @polarization_modes.setter
+    def polarization_modes(self, modes):
+        self._polarization_modes = modes
+        if modes is not None:
+            logger.debug(f"Polarization modes set to {modes}")
+        else:
+            self._polarization_modes = 'pc'
+            logger.debug(f"Polarization modes set to default value of {self._polarization_modes}")
 
     @property
-    def time_frequency_clustering_threshold(self):
-        return getattr(self, "_time_frequency_clustering_threshold", None)
-
-    @time_frequency_clustering_threshold.setter
-    def time_frequency_clustering_threshold(self, threshold):
-        self._time_frequency_clustering_threshold = threshold    
-
-    @property
-    def time_frequency_clustering_time_padding(self):
-        return getattr(self, "_time_frequency_clustering_time_padding", None)
-
-    @time_frequency_clustering_time_padding.setter
-    def time_frequency_clustering_time_padding(self, time_padding):
-        self._time_frequency_clustering_time_padding = time_padding
+    def polarization_basis(self):
+        return getattr(self, '_polarization_basis', None)
+    
+    @polarization_basis.setter
+    def polarization_basis(self, basis):
+        self._polarization_basis = basis
+        if basis is not None:
+            logger.debug(f"Polarization basis set to {basis}")
+        else:
+            self._polarization_basis = self.polarization_modes
+            logger.debug(f"Polarization basis set to default value of {self._polarization_basis}")
 
     @property
-    def time_frequency_clustering_skypoints(self):
-        return getattr(self, "_time_frequency_clustering_skypoints", None)
+    def simulate_psd_nsample(self):
+        return getattr(self, "_simulate_psd_nsample", None)
 
-    @time_frequency_clustering_skypoints.setter
-    def time_frequency_clustering_time_skypoints(self, skypoints):
-        self._time_frequency_clustering_skypoints = skypoints
+    @simulate_psd_nsample.setter
+    def simulate_psd_nsample(self, nsample):
+        self._simulate_psd_nsample = nsample     
+
+    @property
+    def wavelet_nx(self):
+        return getattr(self, "_wavelet_nx", None)
+    
+    @wavelet_nx.setter
+    def wavelet_nx(self, wavelet_nx):
+        self._wavelet_nx = wavelet_nx
+        if wavelet_nx is not None:
+            logger.debug(f"wavelet_nx set to {wavelet_nx}")
+        else:
+            self._wavelet_nx = 4.
+            logger.debug(f"wavelet_nx set to default value of 4.")               
+
+    @property
+    def wavelet_frequency_resolution(self):
+        return getattr(self, "_wavelet_frequency_resolution", None)
+
+    @wavelet_frequency_resolution.setter
+    def wavelet_frequency_resolution(self, resolution):
+        self._wavelet_frequency_resolution = resolution            

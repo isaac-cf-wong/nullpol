@@ -1,6 +1,6 @@
 import bilby
+from bilby_pipe.data_analysis import DataAnalysisInput as BilbyDataAnalysisInput
 from bilby_pipe.main import parse_args
-from bilby_pipe.parser import create_parser
 from bilby_pipe.utils import (
     CHECKPOINT_EXIT_CODE,
     BilbyPipeError,
@@ -9,10 +9,10 @@ from bilby_pipe.utils import (
     convert_string_to_dict,
 )
 import bilby_pipe.utils
-import os
 import signal
 import sys
 import numpy as np
+from .parser import create_nullpol_parser
 from .input import Input
 from ..utility import (logger,
                        log_version_information)
@@ -31,7 +31,7 @@ def sighandler(signum, frame):
     logger.info("Performing periodic eviction")
     sys.exit(CHECKPOINT_EXIT_CODE)
 
-class DataAnalysisInput(Input):
+class DataAnalysisInput(BilbyDataAnalysisInput, Input):
     """Handles user-input for the data analysis script.
     """
     def __init__(self, args, unknown_args, test=False):
@@ -107,135 +107,57 @@ class DataAnalysisInput(Input):
             self._load_data_dump()
 
     @property
-    def polarization_modes(self):
-        return self._polarization_modes
-    
-    @polarization_modes.setter
-    def polarization_modes(self, modes):
-        self._polarization_modes = modes
-        if modes is not None:
-            logger.debug(f"Polarization modes set to {modes}")
-        else:
-            self._polarization_modes = 'pc'
-            logger.debug(f"Polarization modes set to default value of {self._polarization_modes}")
-
-    @property
-    def polarization_basis(self):
-        return self._polarization_basis
-    
-    @polarization_basis.setter
-    def polarization_basis(self, basis):
-        self._polarization_basis = basis
-        if basis is not None:
-            logger.debug(f"Polarization basis set to {basis}")
-        else:
-            self._polarization_basis = self.polarization_modes
-            logger.debug(f"Polarization basis set to default value of {self._polarization_basis}")
-
-    @property
-    def sampling_seed(self):
-        return self._sampling_seed
-
-    @sampling_seed.setter
-    def sampling_seed(self, sampling_seed):
-        if sampling_seed is None:
-            sampling_seed = np.random.randint(1, 1e6)
-        self._sampling_seed = sampling_seed
-        np.random.seed(sampling_seed)
-        bilby.core.utils.random.seed(sampling_seed)
-        logger.info(f"Sampling seed set to {sampling_seed}")
-
-        if not any(
-            [
-                k in self.sampler_kwargs
-                for k in bilby.core.sampler.Sampler.sampling_seed_equiv_kwargs
-            ]
-        ):
-            self.sampler_kwargs["sampling_seed"] = self._sampling_seed
-
-    @property
-    def interferometers(self):
-        try:
-            return self._interferometers
-        except AttributeError:
-            ifos = self.data_dump.interferometers
-            names = [ifo.name for ifo in ifos]
-            logger.info(f"Found data for detectors = {names}")
-            ifos_to_use = [ifo for ifo in ifos if ifo.name in self.detectors]
-            names_to_use = [ifo.name for ifo in ifos_to_use]
-            logger.info(f"Using data for detectors = {names_to_use}")
-            self._interferometers = bilby.gw.detector.InterferometerList(ifos_to_use)
-            self.print_detector_information(self._interferometers)
-            return self._interferometers
-
-    @staticmethod
-    def print_detector_information(interferometers):
-        for ifo in interferometers:
-            logger.info(
-                "{}: sampling-frequency={}, segment-start-time={}, duration={}".format(
-                    ifo.name,
-                    ifo.strain_data.sampling_frequency,
-                    ifo.strain_data.start_time,
-                    ifo.strain_data.duration,
-                )
-            )
-
-    @property
-    def data_dump(self):
-        if hasattr(self, "_data_dump"):
-            return self._data_dump
-        else:
-            raise BilbyPipeError("Data dump not loaded")
-
-    def _load_data_dump(self):
-        filename = self.data_dump_file
-        self.meta_data["data_dump"] = filename
-
-        logger.debug("Data dump not previously loaded")
-
-        final_filename = resolve_filename_with_transfer_fallback(filename)
-        if filename is None:
-            raise FileNotFoundError(
-                f"No dump data {filename} file found. Most likely the generation "
-                "step failed."
-            )
-
-        self._data_dump = DataDump.from_pickle(final_filename)
-        self.meta_data.update(self._data_dump.meta_data)
-        return self._data_dump
-
-    @property
     def result_class(self):
         """The nullpol result class to store results in"""
         return PolarizationResult
     
     @property
-    def calibration_psd_lookup_table(self):
-        return getattr(self, "_calibration_psd_lookup_table", None)
+    def time_frequency_clustering_method(self):
+        return getattr(self, "_time_frequency_clustering_method", None)
 
-    @calibration_psd_lookup_table.setter
-    def calibration_psd_lookup_table(self, lookup):
-        if isinstance(lookup, str):
-            lookup = convert_string_to_dict(lookup)
-        self._calibration_psd_lookup_table = lookup
+    @time_frequency_clustering_method.setter
+    def time_frequency_clustering_method(self, method):
+        self._time_frequency_clustering_method = method
 
     @property
-    def result_directory(self):
-        result_dir = os.path.join(self.outdir, "result")
-        return os.path.relpath(result_dir)
+    def time_frequency_clustering_pe_samples_filename(self):
+        return getattr(self, "_time_frequency_clustering_pe_samples_filename", None)
+
+    @time_frequency_clustering_pe_samples_filename.setter
+    def time_frequency_clustering_pe_samples_filename(self, filename):
+        self._time_frequency_clustering_pe_samples_filename = filename
 
     @property
-    def wavelet_nx(self):
-        return self._wavelet_nx
+    def time_frequency_clustering_threshold(self):
+        return getattr(self, "_time_frequency_clustering_threshold", None)
 
-    @wavelet_nx.setter
-    def wavelet_nx(self, wavelet_nx):
-        self._wavelet_nx = wavelet_nx
-        if wavelet_nx is not None:
-            logger.debug(f"wavelet_nx set to {wavelet_nx}")
-        else:
-            self._wavelet_nx = 4.
-            logger.debug(f"wavelet_nx set to default value of 4.")
+    @time_frequency_clustering_threshold.setter
+    def time_frequency_clustering_threshold(self, threshold):
+        self._time_frequency_clustering_threshold = threshold    
+
+    @property
+    def time_frequency_clustering_time_padding(self):
+        return getattr(self, "_time_frequency_clustering_time_padding", None)
+
+    @time_frequency_clustering_time_padding.setter
+    def time_frequency_clustering_time_padding(self, time_padding):
+        self._time_frequency_clustering_time_padding = time_padding
+
+    @property
+    def time_frequency_clustering_frequency_padding(self):
+        return getattr(self, "_time_frequency_clustering_frequency_padding", None)
+
+    @time_frequency_clustering_frequency_padding.setter
+    def time_frequency_clustering_frequency_padding(self, frequency_padding):
+        self._time_frequency_clustering_frequency_padding = frequency_padding
+
+    @property
+    def time_frequency_clustering_skypoints(self):
+        return getattr(self, "_time_frequency_clustering_skypoints", None)
+
+    @time_frequency_clustering_skypoints.setter
+    def time_frequency_clustering_time_skypoints(self, skypoints):
+        self._time_frequency_clustering_skypoints = skypoints
 
     def get_likelihood_and_priors(self):
         """Read in the likelihood and prior from the data dump
@@ -255,69 +177,7 @@ class DataAnalysisInput(Input):
         likelihood = self.likelihood
         priors = self.search_priors
         return likelihood, priors
-
-    @property
-    def time_frequency_clustering_method(self):
-        return self._time_frequency_clustering_method
-    
-    @time_frequency_clustering_method.setter
-    def time_frequency_clustering_method(self, method):
-        self._time_frequency_clustering_method = method
-        if method is not None:
-            logger.debug(f"Time-frequency clustering method set to {method}")
-        else:
-            self._time_frequency_clustering_method = "data"
-            logger.debug(f"Time-frequency clustering method set to default value of '{self._time_frequency_clustering_method}'")
-
-    @property
-    def time_frequency_clustering_pe_samples_filename(self):
-        return self._time_frequency_clustering_pe_samples_filename
-
-    @time_frequency_clustering_pe_samples_filename.setter
-    def time_frequency_clustering_pe_samples_filename(self, filename):
-        self._time_frequency_clustering_pe_samples_filename = filename
-        if filename is not None:
-            logger.debug(f"Time-frequency clustering PE samples filename set to {filename}")
         
-    @property
-    def time_frequency_clustering_threshold(self):
-        return self._time_frequency_clustering_threshold
-    
-    @time_frequency_clustering_threshold.setter
-    def time_frequency_clustering_threshold(self, threshold):
-        self._time_frequency_clustering_threshold = threshold
-        if threshold is not None:
-            logger.debug(f"Time-frequency clustering threshold set to {threshold}")
-        else:
-            self._time_frequency_clustering_threshold = 0.95
-            logger.debug(f"Time-frequency clustering threshold set to default value of {self._time_frequency_clustering_threshold}")
-
-    @property
-    def time_frequency_clustering_time_padding(self):
-        return self._time_frequency_clustering_time_padding
-    
-    @time_frequency_clustering_time_padding.setter
-    def time_frequency_clustering_time_padding(self, time_padding):
-        self._time_frequency_clustering_time_padding = time_padding
-        if time_padding is not None:
-            logger.debug(f"Time-frequency clustering time padding set to {time_padding}")
-        else:
-            self._time_frequency_clustering_time_padding = 0.1
-            logger.debug(f"Time-frequency clustering time padding set to default value of {self._time_frequency_clustering_time_padding}")
-
-    @property
-    def time_frequency_clustering_skypoints(self):
-        return self._time_frequency_clustering_skypoints
-    
-    @time_frequency_clustering_skypoints.setter
-    def time_frequency_clustering_skypoints(self, skypoints):
-        self._time_frequency_clustering_skypoints = skypoints
-        if skypoints is not None:
-            logger.debug(f"Time-frequency clustering skypoints set to {skypoints}")
-        else:
-            self._time_frequency_clustering_skypoints = 100
-            logger.debug(f"Time-frequency clustering skypoints set to default value of {self._time_frequency_clustering_skypoints}")
-
     def run_time_frequency_clustering(self):
         if self.scheduler.lower() == "condor" and not self.run_local:
             signal.signal(signal.SIGALRM, handler=sighandler)
@@ -385,6 +245,7 @@ class DataAnalysisInput(Input):
                                                               wavelet_nx=self.wavelet_nx,
                                                               threshold=self.time_frequency_clustering_threshold,
                                                               time_padding=self.time_frequency_clustering_time_padding,
+                                                              frequency_padding=self.time_frequency_clustering_frequency_padding,
                                                               skypoints=self.time_frequency_clustering_skypoints)
         write_time_frequency_filter(f"{self.label}_time_frequency_filter.npy", time_frequency_filter)
 
@@ -412,7 +273,7 @@ class DataAnalysisInput(Input):
 
 def create_analysis_parser(usage=__doc__):
     """Data analysis parser creation"""
-    return create_parser(top_level=False, usage=usage)
+    return create_nullpol_parser(top_level=False)
 
 def main():
     """Data analysis main logic"""

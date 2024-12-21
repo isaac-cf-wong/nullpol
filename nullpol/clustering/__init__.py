@@ -18,6 +18,7 @@ def run_time_frequency_clustering(interferometers,
                                   maximum_frequency,
                                   threshold,
                                   time_padding,
+                                  frequency_padding,
                                   skypoints):
     # Simulate the wavelet PSDs
     psd_array = np.array([simulate_psd_from_psd(psd=interferometer.power_spectral_density.psd_array,
@@ -71,7 +72,7 @@ def run_time_frequency_clustering(interferometers,
     energy_threshold = np.quantile(energy_map_combined[energy_map_combined>0.], threshold)
     energy_filter = energy_map_combined > energy_threshold
     dt = interferometers[0].duration / wavelet_Nt
-    output = clustering(energy_filter, dt, wavelet_frequency_resolution, padding_time=time_padding, padding_freq=16)
+    output = clustering(energy_filter, dt, wavelet_frequency_resolution, padding_time=time_padding, padding_freq=frequency_padding)
     return output.astype(bool)
 
 def write_time_frequency_filter(filename, time_frequency_filter):

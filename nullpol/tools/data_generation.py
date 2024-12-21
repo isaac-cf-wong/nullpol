@@ -86,9 +86,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
         # Frequencies
         self.sampling_frequency = args.sampling_frequency
         self.minimum_frequency = args.minimum_frequency
-        self.maximum_frequency = args.maximum_frequency
-        self.wavelet_frequency_resolution = args.wavelet_frequency_resolution
-        self.wavelet_nx = args.wavelet_nx
+        self.maximum_frequency = args.maximum_frequency        
 
         # Waveform, source model and likelihood
         self.reference_frequency = args.reference_frequency
@@ -120,7 +118,6 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
 
         # Calibration
         self.calibration_model = args.calibration_model
-        self.calibration_correction_type = args.calibration_correction_type
         self.spline_calibration_envelope_dict = args.spline_calibration_envelope_dict
         self.spline_calibration_amplitude_uncertainty_dict = (
             args.spline_calibration_amplitude_uncertainty_dict

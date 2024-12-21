@@ -72,13 +72,12 @@ class TimeFrequencyLikelihood(Likelihood):
         self.relative_amplification_factor_map = relative_amplification_factor_map(self.polarization_basis,
                                                                                    self.polarization_derived)
         # Load the time_frequency_filter.
-        self.time_freuency_filter = self._load_time_frequency_filter(time_frequency_filter)
-        # Collapse the time_frequency_filter
-        self.time_frequency_filter_collapsed = np.any(self.time_frequency_filter, axis=0)
+        self.time_frequency_filter = time_frequency_filter
+        self._time_frequency_filter_collapsed = None
         # Validate the size of the time_frequency_filter.
-        self._validate_time_frequency_filter()
-        # Compute the normalization constant
-        self.log_normalization_constant = -np.log(2 * np.pi) * len(self.interferometers) / 2 * np.sum(time_frequency_filter)
+        if isinstance(self._time_frequency_filter, np.ndarray):
+            self._validate_time_frequency_filter()
+        # Compute the normalization constant        
         self._noise_log_likelihood_value = None               
         # Marginalization
         self._marginalized_parameters = []
@@ -125,24 +124,42 @@ class TimeFrequencyLikelihood(Likelihood):
         if not all([interferometer.frequency_array[1] - interferometer.frequency_array[0] == interferometers[0].frequency_array[1] - interferometers[0].frequency_array[0] for interferometer in interferometers[1:]]):
             raise ValueError('All interferometers must have the same delta_f.')
 
-    def _load_time_frequency_filter(self, time_frequency_filter):
-        if isinstance(time_frequency_filter, np.ndarray):
-            return time_frequency_filter
-        elif isinstance(time_frequency_filter, str):
-            fname = Path(time_frequency_filter)
+    @property
+    def time_frequency_filter(self):
+        output = getattr(self, '_time_frequency_filter', None)
+        if isinstance(output, np.ndarray):
+            return output
+        elif isinstance(output, str):
+            fname = Path(output)
             if fname.suffix == ".npy":
-                return np.load(fname)
-            elif fname.is_dir():
-                return np.load(fname / "time_frequency_filter.npy")
+                self._time_frequency_filter = np.load(output)
+                self._validate_time_frequency_filter()
+                return self._time_frequency_filter
             else:
                 raise ValueError(f"Unrecognized format of time_frequency_filter: {fname}")
-        elif time_frequency_filter is None:
-            return np.load("time_frequency_filter.npy")
         else:
-            raise ValueError(f"Unrecognized data type of time_freuency_filter: {time_frequency_filter}")
+            raise ValueError(f"Unrecognized data type of time_freuency_filter: {output}")
+    
+    @time_frequency_filter.setter
+    def time_frequency_filter(self, time_frequency_filter):
+        self._time_frequency_filter = time_frequency_filter        
+
+    @property
+    def time_frequency_filter_collapsed(self):
+        if self._time_frequency_filter_collapsed is None:
+            self._time_frequency_filter_collapsed = np.any(self.time_frequency_filter, axis=0)
+        return self._time_frequency_filter_collapsed
+
+    @property
+    def log_normalization_constant(self):
+        output = getattr(self, '_log_normalization_constant', None)
+        if output is None:
+            output = -np.log(2 * np.pi) * len(self.interferometers) / 2 * np.sum(self.time_frequency_filter)
+            self._log_normalization_constant = output
+        return output
 
     def _validate_time_frequency_filter(self):
-        # Get the shape of the time_frequency_filter
+        # Get the shape of the time_frequency_filter        
         ntime, nfreq = self.time_frequency_filter.shape
         assert nfreq==self._wavelet_Nf, "The length of frequency axis in the wavelet domain does not match the time frequency filter."
         assert ntime==self._wavelet_Nt, "The length of time axis in the wavelet domain does not match the time frequency filter."
