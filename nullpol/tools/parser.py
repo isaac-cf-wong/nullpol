@@ -141,6 +141,9 @@ def create_nullpol_parser(top_level=True):
     add_argument_to_group(parser, "Likelihood arguments", "--wavelet-nx", type=float, default=4., help="Sharpness of the wavelet.")
     add_argument_to_group(parser, "Likelihood arguments", "--simulate-psd-nsample", type=int, default=10, help="Number of samples to estimate the PSD in the time-frequency domain.")
     add_argument_to_group(parser, "Prior arguments", "--default-prior", type=str, default="PolarizationPriorDict", help="The name of the prior set to base the prior on.")
+    add_argument_to_group(parser, "Calibration arguments", "--calibration-correction-type", type=nonestr, default="data", help=("Type of calibration correction: can be either `data` or `template`. "
+                                                                                                                                "See https://bilby-dev.github.io/bilby/api/bilby.gw.detector.calibration.html "
+                                                                                                                                "for more information."))
     clustering_parser = parser.add_argument_group(
         title="Time-frequency clustering",
         description="The configuration of time-frequency clustering.",
@@ -149,10 +152,10 @@ def create_nullpol_parser(top_level=True):
                                                                                     "`injection`, `maxL`, `maP`, `random`]."))
     clustering_parser.add("--time-frequency-clustering-pe-samples-filename", type=nonestr, help=("If `maxL`, `maxP` or `random` is chosen in --time-frequency-clustering-method, "
                                                                                                  "provide the path to the bilby result file."))
-    clustering_parser.add('--time-frequency-threshold', type=float, default=0.9, help="Quantile threshold to filter the excess power.")
-    clustering_parser.add('--time-frequency-time-padding', type=float, default=0.1, help="Time padding in second to pad on both sides of the cluster.")
-    clustering_parser.add('--time-frequency-skypoints', type=int, default=100, help="Number of skypoints to compute the sky-maximized energy map.")
-    parser.add("--version", action="version", version=f"%(prog)s={__version__}")
+    clustering_parser.add('--time-frequency-clustering-threshold', type=float, default=0.9, help="Quantile threshold to filter the excess power.")
+    clustering_parser.add('--time-frequency-clustering-time-padding', type=float, default=0.1, help="Time padding in second to pad on both sides of the cluster.")
+    clustering_parser.add('--time-frequency-clustering-skypoints', type=int, default=100, help="Number of skypoints to compute the sky-maximized energy map.")
+    parser.add("--version", action="version", version=f"%(prog)s={__version__}")    
     return parser
     
 def main():

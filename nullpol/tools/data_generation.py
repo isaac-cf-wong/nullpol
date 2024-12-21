@@ -1,10 +1,10 @@
-from bilby_pipe.input import Input
 from bilby_pipe.data_generation import DataGenerationInput as BilbyDataGenerationInput
 from bilby_pipe.utils import convert_string_to_dict
-from bilby_pipe.parser import create_parser
 from bilby_pipe.main import parse_args
 import sys
 import bilby_pipe.utils
+from .input import Input
+from .parser import create_nullpol_parser
 from ..utility import (log_version_information,
                        logger)
 from ..calibration import build_calibration_lookup
@@ -13,7 +13,7 @@ from .. import __version__
 bilby_pipe.utils.logger = logger
 
 
-class DataGenerationInput(BilbyDataGenerationInput):
+class DataGenerationInput(BilbyDataGenerationInput, Input):
     """Handles user-input for the data generation script
 
     Parameters
@@ -91,6 +91,7 @@ class DataGenerationInput(BilbyDataGenerationInput):
         self.wavelet_nx = args.wavelet_nx
 
         # Waveform, source model and likelihood
+        self.reference_frequency = args.reference_frequency
         self.waveform_generator_class = args.waveform_generator
         self.waveform_approximant = args.waveform_approximant
         self.catch_waveform_errors = args.catch_waveform_errors
@@ -149,6 +150,17 @@ class DataGenerationInput(BilbyDataGenerationInput):
         d = nullpol_prior.__dict__.copy()
         return d
 
+    @property
+    def priors(self):
+        """Read in and compose the prior at run-time"""
+        if getattr(self, "_priors", None) is None:
+            self._priors = self._get_priors()
+        return self._priors
+
+    @priors.setter
+    def priors(self, priors):
+        self._priors = priors
+
     def build_calibration_lookups_if_needed(self):
         """
         Build lookup files that are needed for incorporating calibration uncertainty.
@@ -201,7 +213,7 @@ class DataGenerationInput(BilbyDataGenerationInput):
 
 def create_generation_parser():
     """Data generation parser creation"""
-    return create_parser(top_level=False)
+    return create_nullpol_parser(top_level=False)
 
 def main():
     """Data generation main logic"""

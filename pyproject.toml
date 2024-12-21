@@ -20,7 +20,7 @@ classifiers = [
 dependencies = [
     "numpy<=2.0.0",
     "bilby",
-    "bilby_pipe",
+    "bilby_pipe<=1.4.2",
     "astropy",
     "ligo.skymap",
     "numba",

@@ -1,7 +1,6 @@
 import bilby
 from bilby_pipe.main import parse_args
 from bilby_pipe.parser import create_parser
-from bilby_pipe.input import Input
 from bilby_pipe.utils import (
     CHECKPOINT_EXIT_CODE,
     BilbyPipeError,
@@ -14,12 +13,10 @@ import os
 import signal
 import sys
 import numpy as np
-from importlib import import_module
-import inspect
+from .input import Input
 from ..utility import (logger,
                        log_version_information)
 from ..result import PolarizationResult
-from ..likelihood import Chi2TimeFrequencyLikelihood
 from ..clustering import (run_time_frequency_clustering,
                           write_time_frequency_filter)
 
@@ -226,53 +223,6 @@ class DataAnalysisInput(Input):
     def result_directory(self):
         result_dir = os.path.join(self.outdir, "result")
         return os.path.relpath(result_dir)
-
-    @property
-    def likelihood(self):
-        self.search_priors = self.priors.copy()
-        likelihood_kwargs = dict(
-            interferometers=self.interferometers,
-            wavelet_frequency_resolution=self.wavelet_frequency_resolution,
-            wavelet_nx=self.wavelet_nx,
-            polarization_modes=self.polarization_modes,
-            polarization_basis=self.polarization_basis,
-            time_frequency_filter=f"{self.label}_time_frequency_filter.npy",
-            simulate_psd_nsample=self.simulate_psd_nsample,
-            calibration_marginalization=self.calibration_marginalization,
-            calibration_lookup_table=self.calibration_lookup_table,
-            calibration_psd_lookup_table=self.calibration_psd_lookup_table,
-            number_of_response_curves=self.number_of_response_curves,
-            priors=self.search_priors,            
-        )
-        if self.likelihood_type == "Chi2TimeFrequencyLikelihood":
-            Likelihood = Chi2TimeFrequencyLikelihood
-        elif "." in self.likelihood_type:
-            split_path = self.likelihood_type.split(".")
-            module = ".".join(split_path[:-1])
-            likelihood_class = split_path[-1]
-            Likelihood = getattr(import_module(module), likelihood_class)
-            likelihood_kwargs.update(self.extra_likelihood_kwargs)            
-        else:
-            raise ValueError(f"Unknown Likelihood class {self.likelihood_type}")
-
-        likelihood_kwargs = {
-            key: likelihood_kwargs[key]
-            for key in likelihood_kwargs
-            if key in inspect.getfullargspec(Likelihood.__init__).args
-        }
-
-        logger.debug(
-            f"Initialise likelihood {Likelihood} with kwargs: \n{likelihood_kwargs}"
-        )
-
-        likelihood = Likelihood(**likelihood_kwargs)
-
-        # If requested, use a zero likelihood: for testing purposes
-        if self.likelihood_type == "zero":
-            logger.debug("Using a ZeroLikelihood")
-            likelihood = bilby.core.likelihood.ZeroLikelihood(likelihood)
-
-        return likelihood
 
     @property
     def wavelet_nx(self):

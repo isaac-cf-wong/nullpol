@@ -5,14 +5,13 @@ from pathlib import Path
 from pycbc.types.frequencyseries import FrequencySeries
 from bilby.core.prior import DeltaFunction
 from ..null_stream import (encode_polarization,
-                           time_shift,
                            get_antenna_pattern_matrix,
                            get_collapsed_antenna_pattern_matrix,
                            relative_amplification_factor_map,
                            relative_amplification_factor_helper,
                            compute_whitened_antenna_pattern_matrix_masked,
                            compute_whitened_time_frequency_domain_strain_array,
-                           compute_gw_projector_masked)                                                  )
+                           compute_gw_projector_masked)
 from ..psd import simulate_psd_from_psd
 from ..time_frequency_transform import (transform_wavelet_freq,
                                         get_shape_of_wavelet_transform)
