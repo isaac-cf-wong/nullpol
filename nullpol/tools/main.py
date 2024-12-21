@@ -1,10 +1,8 @@
-from bilby_pipe.parser import create_parser
 from bilby_pipe.utils import (parse_args,
                               get_command_line_arguments,
                               get_outdir_name,
                               tcolors)
-from bilby_pipe.main import (perform_runtime_checks,
-                             write_complete_config_file)
+from bilby_pipe.main import write_complete_config_file
 from bilby_pipe.input import Input
 from bilby_pipe.main import MainInput as BilbyMainInput
 import bilby_pipe.utils
@@ -12,6 +10,7 @@ import importlib
 from ..utility import (log_version_information,
                        logger)
 from ..job_creation import generate_dag
+from .parser import create_nullpol_parser
 
 
 bilby_pipe.utils.logger = logger
@@ -27,7 +26,6 @@ class MainInput(BilbyMainInput):
         self.condor_job_priority = args.condor_job_priority
         self.create_summary = args.create_summary
         self.scitoken_issuer = args.scitoken_issuer
-        self.container = args.container
 
         self.outdir = args.outdir
         self.label = args.label
@@ -37,7 +35,6 @@ class MainInput(BilbyMainInput):
         self.sampler = args.sampler
         self.sampling_seed = args.sampling_seed
         self.detectors = args.detectors
-        self.coherence_test = args.coherence_test
         self.data_dict = args.data_dict
         self.channel_dict = args.channel_dict
         self.frame_type_dict = args.frame_type_dict
@@ -166,6 +163,10 @@ class MainInput(BilbyMainInput):
         self.extra_lines = []
         self.requirements = []
 
+    @property
+    def analysis_executable(self):
+        return self._analysis_executable
+
     @analysis_executable.setter
     def analysis_executable(self, analysis_executable):
         if analysis_executable:
@@ -192,7 +193,7 @@ def create_main_parser():
 
     will build and submit the job.
     """
-    return create_parser(top_level=True, usage=_nullpol_pipe_doc)
+    return create_nullpol_parser(top_level=True)
 
 def main():
     """Top-level interface for nullpol_pipe"""
@@ -213,7 +214,7 @@ def main():
 
     log_version_information()
     inputs = MainInput(args, unknown_args)
-    write_complete_config_file(parser, args, inputs)
+    write_complete_config_file(parser, args, inputs, input_cls=MainInput)
     generate_dag(inputs)
 
     if len(unknown_args) > 0:

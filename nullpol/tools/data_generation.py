@@ -4,13 +4,13 @@ from bilby_pipe.utils import convert_string_to_dict
 from bilby_pipe.parser import create_parser
 from bilby_pipe.main import parse_args
 import sys
-import os
-import glob
-from ..utility import (__version__,
-                       log_version_information,
+import bilby_pipe.utils
+from ..utility import (log_version_information,
                        logger)
 from ..calibration import build_calibration_lookup
 from .. import prior as nullpol_prior
+from .. import __version__
+bilby_pipe.utils.logger = logger
 
 
 class DataGenerationInput(BilbyDataGenerationInput):

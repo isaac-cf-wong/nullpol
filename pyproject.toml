@@ -12,12 +12,13 @@ authors = [{name="Isaac C.F. Wong",email="chunfung.wong@kuleuven.be"},
 license = {file="LICENSE"}
 readme = "README.md"
 classifiers = [
-    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "numpy>=1.18.1",
+    "numpy<=2.0.0",
     "bilby",
     "bilby_pipe",
     "astropy",
@@ -29,6 +30,7 @@ dependencies = [
     "gwpy",
     "asimov",
 ]
+requires-python = ">=3.9"
 [tool.setuptools.packages]
 find = {}
 

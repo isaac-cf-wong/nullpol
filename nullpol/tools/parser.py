@@ -4,9 +4,12 @@ from bilby_pipe.parser import create_parser
 from bilby_pipe.utils import nonestr
 from bilby_pipe.bilbyargparser import (BilbyArgParser,
                                        HyphenStr)
+import bilby_pipe.utils
 from ..utility import logger
 from .._version import __version__
 
+
+bilby_pipe.utils.logger = logger
 
 def write_to_file(
     self,
@@ -101,6 +104,7 @@ def create_nullpol_parser(top_level=True):
         raise ValueError(f"Argument group '{group_name}' not found")                
 
     parser = create_parser(top_level=top_level)
+    remove_argument(parser, "--coherence-test")
     remove_argument(parser, "--distance-marginalization")
     remove_argument(parser, "--distance-marginalization-lookup-table")
     remove_argument(parser, "--phase-marginalization")
@@ -142,7 +146,7 @@ def create_nullpol_parser(top_level=True):
         description="The configuration of time-frequency clustering.",
     )
     clustering_parser.add("--time-frequency-clustering-method", type=nonestr, help=("Method to perform clustering. Can be one of [`data`, "
-                                                                                    "`maxL`, `maP`, `random`]."))
+                                                                                    "`injection`, `maxL`, `maP`, `random`]."))
     clustering_parser.add("--time-frequency-clustering-pe-samples-filename", type=nonestr, help=("If `maxL`, `maxP` or `random` is chosen in --time-frequency-clustering-method, "
                                                                                                  "provide the path to the bilby result file."))
     clustering_parser.add('--time-frequency-threshold', type=float, default=0.9, help="Quantile threshold to filter the excess power.")
