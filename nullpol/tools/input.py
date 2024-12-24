@@ -1,3 +1,4 @@
+from importlib import import_module
 import bilby
 from bilby_pipe.input import Input as BilbyInput
 import bilby_pipe.utils

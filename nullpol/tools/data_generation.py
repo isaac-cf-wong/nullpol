@@ -301,7 +301,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
         else:
             raise ValueError(
                 f"Unknown time-frequency clustering method {self.time_frequency_clustering_method}"
-            )            
+            )                         
         time_frequency_filter = run_time_frequency_clustering(interferometers=self.interferometers,
                                                               frequency_domain_strain_array=frequency_domain_strain_array,
                                                               wavelet_frequency_resolution=self.wavelet_frequency_resolution,

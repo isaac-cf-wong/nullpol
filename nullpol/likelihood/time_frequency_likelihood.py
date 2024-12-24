@@ -12,10 +12,10 @@ from ..null_stream import (encode_polarization,
                            compute_whitened_antenna_pattern_matrix_masked,
                            compute_whitened_time_frequency_domain_strain_array,
                            compute_gw_projector_masked)
-from ..psd import simulate_psd_from_psd
+from ..psd import (simulate_psd_from_psd,
+                   get_pycbc_psd)
 from ..time_frequency_transform import (transform_wavelet_freq,
                                         get_shape_of_wavelet_transform)
-from ..utility import logger
 from ..calibration import build_calibration_lookup
 
 
@@ -162,7 +162,7 @@ class TimeFrequencyLikelihood(Likelihood):
         psd_array = []
         for interferometer in interferometers:
             delta_f = interferometer.frequency_array[1]-interferometer.frequency_array[0]
-            psd_pycbc = FrequencySeries(interferometer.power_spectral_density_array, delta_f=delta_f)
+            psd_pycbc = get_pycbc_psd(interferometer.power_spectral_density_array, delta_f=delta_f)
             psd_array.append(simulate_psd_from_psd(psd_pycbc,interferometer.duration,interferometer.sampling_frequency,self.wavelet_frequency_resolution,self.simulate_psd_nsample,self.wavelet_nx))
         return np.array(psd_array).reshape(len(interferometers), 1, -1)
 
@@ -220,7 +220,7 @@ class TimeFrequencyLikelihood(Likelihood):
         # Whiten the strain data
         time_frequency_domain_strain_array_whitened = compute_whitened_time_frequency_domain_strain_array(time_frequency_domain_strain_array,
                                                                                                           self.psd_draws[:,0,:],
-                                                                                                          self.time_frequency_filter)
+                                                                                                          self.time_frequency_filter)        
         # Compute the noise log likelihood
         self._noise_log_likelihood_value = -np.sum(np.sum(np.abs(time_frequency_domain_strain_array_whitened)**2)) * 0.5 + self.log_normalization_constant
 

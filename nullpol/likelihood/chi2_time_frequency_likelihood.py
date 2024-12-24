@@ -96,11 +96,15 @@ class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
                                                                               self._wavelet_Nf,
                                                                               self._wavelet_Nt,
                                                                               self.wavelet_nx) for data in self.frequency_domain_strain_array])
+        np.save('time_frequency_domain_strain_array.npy', time_frequency_domain_strain_array)
         # Whiten the strain data
         time_frequency_domain_strain_array_whitened = compute_whitened_time_frequency_domain_strain_array(time_frequency_domain_strain_array,
                                                                                                           self.psd_draws[:,0,:],
                                                                                                           self.time_frequency_filter,
                                                                                                           self.interferometers[0].sampling_frequency)
+        np.save('psd.npy', self.psd_draws[:,0,:])
+        np.save('time_frequency_domain_strain_array_whitened.npy', time_frequency_domain_strain_array_whitened)
+        np.save('time_frequency_filter.npy', self.time_frequency_filter)
         energy = np.sum(np.abs(time_frequency_domain_strain_array_whitened)**2)
         self._noise_log_likelihood_value = scipy.stats.chi2.logpdf(energy, df=len(self.interferometers)*np.sum(self.time_frequency_filter))
 

@@ -1,7 +1,8 @@
 import numpy as np
 from tqdm import tqdm
 from ..utility import logger
-from ..psd import simulate_psd_from_psd
+from ..psd import (simulate_psd_from_psd,
+                   get_pycbc_psd)
 from ..null_stream import (time_shift,
                            compute_whitened_time_frequency_domain_strain_array)
 from ..time_frequency_transform import (transform_wavelet_freq,
@@ -21,7 +22,7 @@ def run_time_frequency_clustering(interferometers,
                                   frequency_padding,
                                   skypoints):
     # Simulate the wavelet PSDs
-    psd_array = np.array([simulate_psd_from_psd(psd=interferometer.power_spectral_density_array,
+    psd_array = np.array([simulate_psd_from_psd(psd=get_pycbc_psd(interferometer.power_spectral_density_array, 1./interferometer.duration),
                                                 seglen=interferometer.duration,
                                                 srate=interferometer.sampling_frequency,
                                                 wavelet_frequency_resolution=wavelet_frequency_resolution,
@@ -43,6 +44,8 @@ def run_time_frequency_clustering(interferometers,
         freq_high_idx = int(np.floor(maximum_frequency / wavelet_frequency_resolution))
         prefilter[:,freq_high_idx:] = False
     energy_map_combined = np.zeros((wavelet_Nt, wavelet_Nf))
+    print(psd_array)
+    print(np.sum(psd_array<0.))
     for i in tqdm(range(skypoints), desc='Generating energy map'):
         # Time shift the data
         frequency_domain_strain_array_time_shifted = time_shift(interferometers=interferometers,
@@ -71,8 +74,6 @@ def run_time_frequency_clustering(interferometers,
         # Compute the energy map
         energy_map = np.sum(np.abs(time_frequency_domain_strain_array_time_shifted)**2+np.abs(time_frequency_domain_strain_array_time_shifted_quadrature)**2, axis=0)
         energy_map_combined += energy_map
-    print(energy_map_combined)
-    print(energy_map_combined>0.)
     energy_threshold = np.quantile(energy_map_combined[energy_map_combined>0.], threshold)
     energy_filter = energy_map_combined > energy_threshold
     dt = interferometers[0].duration / wavelet_Nt
