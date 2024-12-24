@@ -156,7 +156,7 @@ class DataAnalysisInput(BilbyDataAnalysisInput, Input):
         return getattr(self, "_time_frequency_clustering_skypoints", None)
 
     @time_frequency_clustering_skypoints.setter
-    def time_frequency_clustering_time_skypoints(self, skypoints):
+    def time_frequency_clustering_skypoints(self, skypoints):
         self._time_frequency_clustering_skypoints = skypoints
 
     def get_likelihood_and_priors(self):
