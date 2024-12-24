@@ -42,6 +42,7 @@ def generate_dag(inputs):
         generation_node = GenerationNode(inputs, **kwargs)
         generation_node_list.append(generation_node)
     
+    inputs.coherence_test = False # nullpol does not support coherence test
     detectors_list = get_detectors_list(inputs)
     parallel_list = get_parallel_list(inputs)
     merged_node_list = []
