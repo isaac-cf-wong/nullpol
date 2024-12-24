@@ -70,6 +70,7 @@ class DataAnalysisInput(BilbyDataAnalysisInput, Input):
         self.maximum_frequency = args.maximum_frequency
         self.wavelet_frequency_resolution = args.wavelet_frequency_resolution
         self.wavelet_nx = args.wavelet_nx
+        self.duration = args.duration
         self.simulate_psd_nsample = args.simulate_psd_nsample
 
         # Time-frequency clustering
