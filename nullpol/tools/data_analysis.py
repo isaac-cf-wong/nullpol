@@ -212,8 +212,8 @@ class DataAnalysisInput(BilbyDataAnalysisInput, Input):
             logger.info("Generating zero-noise injection data")
             ifos = bilby.gw.detector.InterferometerList([ifo.name for ifo in self.interferometers])
             # Copy the power spectral density
-            for ifo in ifos:
-                ifo.power_spectral_density = self.interferometers[ifo.name].power_spectral_density
+            for i in range(len(ifos)):
+                ifos[i].power_spectral_density = self.interferometers[i].power_spectral_density
             ifos.set_strain_data_from_zero_noise(
                 sampling_frequency=self.sampling_frequency,
                 duration=self.duration,
