@@ -71,10 +71,10 @@ class TimeFrequencyLikelihood(Likelihood):
         self.polarization_modes, self.polarization_basis, self.polarization_derived = encode_polarization(polarization_modes, polarization_basis)
         self.relative_amplification_factor_map = relative_amplification_factor_map(self.polarization_basis,
                                                                                    self.polarization_derived)
-        # Load the time_frequency_filter.
+        # Load the time_frequency_filter
         self.time_frequency_filter = time_frequency_filter
         self._time_frequency_filter_collapsed = None
-        # Validate the size of the time_frequency_filter.
+        # Validate the size of the time_frequency_filter
         if isinstance(self._time_frequency_filter, np.ndarray):
             self._validate_time_frequency_filter()
         # Compute the normalization constant        
