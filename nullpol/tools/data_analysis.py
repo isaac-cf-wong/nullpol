@@ -75,6 +75,7 @@ class DataAnalysisInput(BilbyDataAnalysisInput, Input):
         self.maximum_frequency = args.maximum_frequency
         self.wavelet_frequency_resolution = args.wavelet_frequency_resolution
         self.wavelet_nx = args.wavelet_nx
+        self.duration = args.duration
         self.simulate_psd_nsample = args.simulate_psd_nsample
 
         # Time-frequency clustering
@@ -109,8 +110,11 @@ class DataAnalysisInput(BilbyDataAnalysisInput, Input):
         self.calibration_lookup_table = args.calibration_lookup_table
         self.number_of_response_curves = args.number_of_response_curves
 
+        # Injection arguments
+        self.injection_waveform_approximant = args.injection_waveform_approximant
+
         if test is False:
-            self._load_data_dump()
+            self._load_data_dump()            
 
     @property
     def result_class(self):

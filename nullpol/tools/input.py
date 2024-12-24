@@ -22,6 +22,26 @@ class Input(BilbyInput):
         self.simulate_psd_nsample = args.simulate_psd_nsample
         self.calibration_correction_type = args.calibration_correction_type
 
+        # Waveform, source model and likelihood
+        self.reference_frequency = args.reference_frequency
+        self.waveform_generator_class = args.waveform_generator
+        self.waveform_approximant = args.waveform_approximant
+        self.catch_waveform_errors = args.catch_waveform_errors
+        self.pn_spin_order = args.pn_spin_order
+        self.pn_tidal_order = args.pn_tidal_order
+        self.pn_phase_order = args.pn_phase_order
+        self.pn_amplitude_order = args.pn_amplitude_order
+        self.mode_array = args.mode_array
+        self.waveform_arguments_dict = args.waveform_arguments_dict
+        self.numerical_relativity_file = args.numerical_relativity_file
+        self.injection_waveform_approximant = args.injection_waveform_approximant
+        self.frequency_domain_source_model = args.frequency_domain_source_model
+        self.conversion_function = args.conversion_function
+        self.generation_function = args.generation_function
+        self.likelihood_type = args.likelihood_type
+        self.extra_likelihood_kwargs = args.extra_likelihood_kwargs
+        self.enforce_signal_duration = args.enforce_signal_duration
+
     @property
     def likelihood(self):
         self.search_priors = self.priors.copy()
@@ -139,4 +159,4 @@ class Input(BilbyInput):
 
     @wavelet_frequency_resolution.setter
     def wavelet_frequency_resolution(self, resolution):
-        self._wavelet_frequency_resolution = resolution            
+        self._wavelet_frequency_resolution = resolution
