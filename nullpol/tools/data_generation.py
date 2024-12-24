@@ -136,11 +136,6 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
             self.create_data(args)
 
     @property
-    def combined_default_prior_dicts(self):
-        d = nullpol_prior.__dict__.copy()
-        return d
-
-    @property
     def priors(self):
         """Read in and compose the prior at run-time"""
         if getattr(self, "_priors", None) is None:
