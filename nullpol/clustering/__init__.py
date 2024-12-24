@@ -62,10 +62,12 @@ def run_time_frequency_clustering(interferometers,
         # Whiten the time-frequency data
         time_frequency_domain_strain_array_time_shifted = compute_whitened_time_frequency_domain_strain_array(time_frequency_domain_strain_array_time_shifted,
                                                                                                               psd_array,
-                                                                                                              prefilter)
+                                                                                                              prefilter,
+                                                                                                              interferometers[0].sampling_frequency)
         time_frequency_domain_strain_array_time_shifted_quadrature = compute_whitened_time_frequency_domain_strain_array(time_frequency_domain_strain_array_time_shifted_quadrature,
                                                                                                                          psd_array,
-                                                                                                                         prefilter)
+                                                                                                                         prefilter,
+                                                                                                                         interferometers[0].sampling_frequency)
         # Compute the energy map
         energy_map = np.sum(np.abs(time_frequency_domain_strain_array_time_shifted)**2+np.abs(time_frequency_domain_strain_array_time_shifted_quadrature)**2, axis=0)
         energy_map_combined += energy_map

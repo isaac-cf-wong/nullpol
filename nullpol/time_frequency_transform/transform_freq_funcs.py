@@ -92,7 +92,6 @@ def transform_wavelet_freq_helper(data,Nf,Nt,phif):
         DX_unpack_loop(m,Nt,Nf,DX_trans,wave)
     return wave
 
-@njit
 def transform_wavelet_freq_quadrature_helper(data,Nf,Nt,phif):
     """Helper to do the wavelet transform using the fast wavelet domain quadrature transform.
 
