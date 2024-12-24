@@ -235,7 +235,7 @@ class DataAnalysisInput(BilbyDataAnalysisInput, Input):
                 duration=self.duration,
                 start_time=self.start_time,
                 sampling_frequency=self.sampling_frequency,
-                frequency_domain_source_model=self.injection_bilby_frequency_domain_source_model,
+                frequency_domain_source_model=self.frequency_domain_source_model,
                 parameter_conversion=self.parameter_conversion,
                 waveform_arguments=waveform_arguments,
             )
