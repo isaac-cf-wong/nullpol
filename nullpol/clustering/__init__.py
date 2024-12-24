@@ -21,7 +21,7 @@ def run_time_frequency_clustering(interferometers,
                                   frequency_padding,
                                   skypoints):
     # Simulate the wavelet PSDs
-    psd_array = np.array([simulate_psd_from_psd(psd=interferometer.power_spectral_density.psd_array,
+    psd_array = np.array([simulate_psd_from_psd(psd=interferometer.power_spectral_density_array,
                                                 seglen=interferometer.duration,
                                                 srate=interferometer.sampling_frequency,
                                                 wavelet_frequency_resolution=wavelet_frequency_resolution,
@@ -71,6 +71,8 @@ def run_time_frequency_clustering(interferometers,
         # Compute the energy map
         energy_map = np.sum(np.abs(time_frequency_domain_strain_array_time_shifted)**2+np.abs(time_frequency_domain_strain_array_time_shifted_quadrature)**2, axis=0)
         energy_map_combined += energy_map
+    print(energy_map_combined)
+    print(energy_map_combined>0.)
     energy_threshold = np.quantile(energy_map_combined[energy_map_combined>0.], threshold)
     energy_filter = energy_map_combined > energy_threshold
     dt = interferometers[0].duration / wavelet_Nt

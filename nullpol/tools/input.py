@@ -2,8 +2,6 @@ import bilby
 from bilby_pipe.input import Input as BilbyInput
 import bilby_pipe.utils
 from bilby_pipe.utils import convert_string_to_dict
-from importlib import import_module
-import inspect
 from ..utility import logger
 from ..likelihood import Chi2TimeFrequencyLikelihood
 from .. import prior as nullpol_prior
@@ -42,6 +40,9 @@ class Input(BilbyInput):
         self.likelihood_type = args.likelihood_type
         self.extra_likelihood_kwargs = args.extra_likelihood_kwargs
         self.enforce_signal_duration = args.enforce_signal_duration
+        self.duration = args.duration
+        self.trigger_time = args.trigger_time
+        self.post_trigger_duration = args.post_trigger_duration
 
     @property
     def likelihood(self):
@@ -180,3 +181,19 @@ class Input(BilbyInput):
         waveform_arguments["waveform_approximant"] = self.injection_waveform_approximant
         waveform_arguments["numerical_relativity_file"] = self.numerical_relativity_file
         return waveform_arguments
+
+    @property
+    def injection_parameters(self):
+        return self._injection_parameters
+
+    @injection_parameters.setter
+    def injection_parameters(self, injection_parameters):
+        self._injection_parameters = injection_parameters
+        if self.calibration_prior is not None:
+            for key in self.calibration_prior:
+                if key not in injection_parameters:
+                    if "frequency" in key:
+                        injection_parameters[key] = self.calibration_prior[key].peak
+                    else:
+                        injection_parameters[key] = 0
+        self.meta_data["injection_parameters"] = injection_parameters
