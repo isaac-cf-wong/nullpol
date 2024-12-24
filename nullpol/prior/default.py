@@ -15,3 +15,6 @@ class PolarizationPriorDict(PriorDict):
             if not os.path.isfile(filename):
                 filename = os.path.join(DEFAULT_PRIOR_DIR, filename)
         super(PolarizationPriorDict, self).__init__(dictionary=dictionary, filename=filename)
+
+    def validate_prior(self):
+        return True
