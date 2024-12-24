@@ -8,10 +8,14 @@ import numpy as np
 import pandas as pd
 from pycbc.types.frequencyseries import FrequencySeries
 from ..utility import logger
-from ..psd import simulate_psd_from_psd
+from ..psd import (simulate_psd_from_psd,
+                   get_pycbc_psd)
 
 def build_calibration_lookup(
     interferometers,
+    wavelet_frequency_resolution,
+    simulate_psd_nsample,
+    wavelet_nx=4.,
     lookup_files=None,
     psd_lookup_files=None,
     priors=None,
@@ -48,7 +52,10 @@ def build_calibration_lookup(
                 psd_draws[name] = read_calibration_psd_file(psd_filename)
             else:
                 psd_draws[name] = _generate_calibration_psd_draws(interferometer=interferometer,
-                                                                  calibration_draws=draws[name])
+                                                                  calibration_draws=draws[name],
+                                                                  wavelet_frequency_resolution=wavelet_frequency_resolution,
+                                                                  simulate_psd_nsample=simulate_psd_nsample,
+                                                                  wavelet_nx=wavelet_nx)
                 write_calibration_psd_file(psd_filename, psd_draws[name])
         elif isinstance(interferometer.calibration_model, Precomputed):
             model = interferometer.calibration_model
@@ -60,7 +67,10 @@ def build_calibration_lookup(
                 psd_draws[name] = read_calibration_psd_file(psd_filename)
             else:
                 psd_draws[name] = _generate_calibration_psd_draws(interferometer=interferometer,
-                                                              calibration_draws=draws[name])
+                                                                  calibration_draws=draws[name],
+                                                                  wavelet_frequency_resolution=wavelet_frequency_resolution,
+                                                                  simulate_psd_nsample=simulate_psd_nsample,
+                                                                  wavelet_nx=wavelet_nx)
                 write_calibration_psd_file(psd_filename, psd_draws[name])
         else:
             if priors is None:
@@ -75,7 +85,10 @@ def build_calibration_lookup(
             )
             write_calibration_file(filename, frequencies, draws[name], parameters[name])
             psd_draws[name] = _generate_calibration_psd_draws(interferometer=interferometer,
-                                                              calibration_draws=draws[name])
+                                                              calibration_draws=draws[name],
+                                                              wavelet_frequency_resolution=wavelet_frequency_resolution,
+                                                              simulate_psd_nsample=simulate_psd_nsample,
+                                                              wavelet_nx=wavelet_nx)
             write_calibration_psd_file(psd_filename, psd_draws[name])
 
         interferometer.calibration_model = Recalibrate()
@@ -109,11 +122,11 @@ def _generate_calibration_psd_draws(interferometer,
                                     wavelet_frequency_resolution,
                                     simulate_psd_nsample,
                                     wavelet_nx):
-    delta_f = interferometer.power_spectral_density.frequency_array[1]-interferometer.power_spectral_density.frequency_array[0]
+    delta_f = interferometer.frequency_array[1]-interferometer.frequency_array[0]
     psd_draws = []
     for calibration_draw in calibration_draws:
-        psd_array = interferometer.power_spectral_density.psd_array.copy()
+        psd_array = interferometer.power_spectral_density_array.copy()
         psd_array[interferometer.frequency_mask] = psd_array[interferometer.frequency_mask] / np.abs(calibration_draw)**2
-        psd_pycbc = FrequencySeries(psd_array, delta_f=delta_f)
+        psd_pycbc = get_pycbc_psd(psd_array, delta_f=delta_f)
         psd_draws.append(simulate_psd_from_psd(psd_pycbc,interferometer.duration,interferometer.sampling_frequency,wavelet_frequency_resolution,simulate_psd_nsample,wavelet_nx))
     return np.array(psd_draws)
