@@ -28,7 +28,7 @@ class TimeFrequencyLikelihood(Likelihood):
                  wavelet_nx,
                  polarization_modes,
                  polarization_basis=None,
-                 time_frequency_filter=None,
+                 time_frequency_filter_filename=None,
                  simulate_psd_nsample=100,
                  calibration_marginalization=False,
                  calibration_lookup_table=None,
@@ -50,8 +50,8 @@ class TimeFrequencyLikelihood(Likelihood):
             List of polarization modes.
         polarization_basis: list
             List of polarization basis.
-        time_frequency_filter: array_like
-            The time-frequency filter.
+        time_frequency_filter_filename: str
+            File name to the time-frequency filter.
         simulate_psd_nsample: int
             The number of samples to simulate the PSDs.
         """
@@ -72,11 +72,7 @@ class TimeFrequencyLikelihood(Likelihood):
         self.relative_amplification_factor_map = relative_amplification_factor_map(self.polarization_basis,
                                                                                    self.polarization_derived)
         # Load the time_frequency_filter.
-        self.time_frequency_filter = time_frequency_filter
-        self._time_frequency_filter_collapsed = None
-        # Validate the size of the time_frequency_filter.
-        if isinstance(self._time_frequency_filter, np.ndarray):
-            self._validate_time_frequency_filter()
+        self.time_frequency_filter_filename = time_frequency_filter_filename
         # Compute the normalization constant        
         self._noise_log_likelihood_value = None               
         # Marginalization
@@ -125,20 +121,20 @@ class TimeFrequencyLikelihood(Likelihood):
             raise ValueError('All interferometers must have the same delta_f.')
 
     @property
+    def time_frequency_filter_filename(self):
+        return getattr(self, "_time_frequency_filter_filename", None)
+
+    @time_frequency_filter_filename.setter
+    def time_frequency_filter_filename(self, filename):
+        self._time_frequency_filter_filename = filename
+
+    @property
     def time_frequency_filter(self):
         output = getattr(self, '_time_frequency_filter', None)
-        if isinstance(output, np.ndarray):
-            return output
-        elif isinstance(output, str):
-            fname = Path(output)
-            if fname.suffix == ".npy":
-                self._time_frequency_filter = np.load(output)
-                self._validate_time_frequency_filter()
-                return self._time_frequency_filter
-            else:
-                raise ValueError(f"Unrecognized format of time_frequency_filter: {fname}")
-        else:
-            raise ValueError(f"Unrecognized data type of time_freuency_filter: {output}")
+        if output is None:
+            self._time_frequency_filter = np.load(self._time_frequency_filter_filename)
+            return self._time_frequency_filter
+        return output
     
     @time_frequency_filter.setter
     def time_frequency_filter(self, time_frequency_filter):
@@ -146,9 +142,11 @@ class TimeFrequencyLikelihood(Likelihood):
 
     @property
     def time_frequency_filter_collapsed(self):
-        if self._time_frequency_filter_collapsed is None:
-            self._time_frequency_filter_collapsed = np.any(self.time_frequency_filter, axis=0)
-        return self._time_frequency_filter_collapsed
+        output = getattr(self, "_time_frequency_filter_collapsed", None)
+        if output is None:
+            self._time_frequency_filter_collapsed = np.any(self.time_frequency_filter, axis=0)            
+            return self._time_frequency_filter_collapsed
+        return output
 
     @property
     def log_normalization_constant(self):
@@ -167,8 +165,8 @@ class TimeFrequencyLikelihood(Likelihood):
     def _get_resolution_matching_psd(self, interferometers):
         psd_array = []
         for interferometer in interferometers:
-            delta_f = interferometer.power_spectral_density.frequency_array[1]-interferometer.power_spectral_density.frequency_array[0]
-            psd_pycbc = FrequencySeries(interferometer.power_spectral_density.psd_array, delta_f=delta_f)
+            delta_f = interferometer.frequency_array[1]-interferometer.frequency_array[0]
+            psd_pycbc = FrequencySeries(interferometer.power_spectral_density_array, delta_f=delta_f)
             psd_array.append(simulate_psd_from_psd(psd_pycbc,interferometer.duration,interferometer.sampling_frequency,self.wavelet_frequency_resolution,self.simulate_psd_nsample,self.wavelet_nx))
         return np.array(psd_array).reshape(len(interferometers), 1, -1)
 

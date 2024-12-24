@@ -19,6 +19,7 @@ class Input(BilbyInput):
         self.polarization_basis = args.polarization_modes
         self.wavelet_frequency_resolution = args.wavelet_frequency_resolution
         self.wavelet_nx = args.wavelet_nx
+        self.simulate_psd_nsample = args.simulate_psd_nsample
         self.calibration_correction_type = args.calibration_correction_type
 
     @property
@@ -58,7 +59,6 @@ class Input(BilbyInput):
         logger.debug(
             f"Initialise likelihood {Likelihood} with kwargs: \n{likelihood_kwargs}"
         )
-        print(likelihood_kwargs)
         likelihood = Likelihood(**likelihood_kwargs)        
 
         # If requested, use a zero likelihood: for testing purposes
