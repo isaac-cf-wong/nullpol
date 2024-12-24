@@ -17,7 +17,7 @@ def main():
     parser.add('--wavelet-frequency-resolution', type=float, help="Wavelet frequency resolution in Hz.")
     parser.add('--wavelet-sharpness', type=float, help="Sharpness of wavelet.", default=4.)
     parser.add('--seed', type=int, help="Seed.")
-    parser.add('-v', '--version', action='store_action')
+    parser.add('-v', '--version', action='store_true')
 
     args = parser.parse_args()
 

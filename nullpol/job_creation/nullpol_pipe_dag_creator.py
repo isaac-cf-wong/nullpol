@@ -19,6 +19,11 @@ from ..utility import logger
 
 bilby_pipe.utils.logger = logger
 
+def get_detectors_list(inputs):
+    detectors_list = []
+    detectors_list.append(inputs.detectors)
+    return detectors_list
+
 def generate_dag(inputs):
     """Core logic setting up parent-child structure between nodes"""
     inputs = copy.deepcopy(inputs)

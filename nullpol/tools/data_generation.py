@@ -115,6 +115,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
         self.psd_fractional_overlap = args.psd_fractional_overlap
         self.psd_start_time = args.psd_start_time
         self.psd_method = args.psd_method
+        self.simulate_psd_nsample = args.simulate_psd_nsample
 
         # Calibration
         self.calibration_model = args.calibration_model
