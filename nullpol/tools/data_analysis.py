@@ -243,6 +243,8 @@ class DataAnalysisInput(BilbyDataAnalysisInput, Input):
                                                               frequency_domain_strain_array=frequency_domain_strain_array,
                                                               wavelet_frequency_resolution=self.wavelet_frequency_resolution,
                                                               wavelet_nx=self.wavelet_nx,
+                                                              minimum_frequency=self.minimum_frequency,
+                                                              maximum_frequency=self.maximum_frequency,
                                                               threshold=self.time_frequency_clustering_threshold,
                                                               time_padding=self.time_frequency_clustering_time_padding,
                                                               frequency_padding=self.time_frequency_clustering_frequency_padding,
