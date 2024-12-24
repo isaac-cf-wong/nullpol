@@ -4,10 +4,9 @@ import numpy as np
 @njit
 def compute_gw_projector_masked(whitened_antenna_pattern_matrix,
                             frequency_mask):
-    nfreq = len(frequency_mask)
-    ndet, nmode = whitened_antenna_pattern_matrix.shape
+    nfreq, ndet, nmode = whitened_antenna_pattern_matrix.shape
     output = np.zeros((nfreq, ndet, ndet), dtype=whitened_antenna_pattern_matrix.dtype)
-    for i in range(frequency_mask):
+    for i in range(len(frequency_mask)):
         if frequency_mask[i]:
             F = whitened_antenna_pattern_matrix[i,:,:]
             F_dagger = np.conj(F).T

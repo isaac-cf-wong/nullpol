@@ -125,18 +125,10 @@ class TimeFrequencyLikelihood(Likelihood):
             raise ValueError('All interferometers must have the same delta_f.')
 
     @property
-    def time_frequency_filter_filename(self):
-        return getattr(self, "_time_frequency_filter_filename", None)
-
-    @time_frequency_filter_filename.setter
-    def time_frequency_filter_filename(self, filename):
-        self._time_frequency_filter_filename = filename
-
-    @property
     def time_frequency_filter(self):
         output = getattr(self, '_time_frequency_filter', None)
-        if output is None:
-            self._time_frequency_filter = np.load(self._time_frequency_filter_filename)
+        if isinstance(output, str):
+            self._time_frequency_filter = np.load(self._time_frequency_filter)
             return self._time_frequency_filter
         return output
     
