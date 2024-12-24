@@ -1,11 +1,7 @@
-import bilby
 from bilby_pipe.input import Input as BilbyInput
 import bilby_pipe.utils
 from bilby_pipe.utils import convert_string_to_dict
-from importlib import import_module
-import inspect
 from ..utility import logger
-from ..likelihood import Chi2TimeFrequencyLikelihood
 
 
 bilby_pipe.utils.logger  = logger
@@ -41,52 +37,9 @@ class Input(BilbyInput):
         self.likelihood_type = args.likelihood_type
         self.extra_likelihood_kwargs = args.extra_likelihood_kwargs
         self.enforce_signal_duration = args.enforce_signal_duration
-
-    @property
-    def likelihood(self):
-        self.search_priors = self.priors.copy()
-        likelihood_kwargs = dict(
-            interferometers=self.interferometers,
-            wavelet_frequency_resolution=self.wavelet_frequency_resolution,
-            wavelet_nx=self.wavelet_nx,
-            polarization_modes=self.polarization_modes,
-            polarization_basis=self.polarization_basis,
-            time_frequency_filter=f"{self.label}_time_frequency_filter.npy",
-            simulate_psd_nsample=self.simulate_psd_nsample,
-            calibration_marginalization=self.calibration_marginalization,
-            calibration_lookup_table=self.calibration_lookup_table,
-            calibration_psd_lookup_table=self.calibration_psd_lookup_table,
-            number_of_response_curves=self.number_of_response_curves,
-            priors=self.search_priors,            
-        )
-        if self.likelihood_type == "Chi2TimeFrequencyLikelihood":
-            Likelihood = Chi2TimeFrequencyLikelihood
-        elif "." in self.likelihood_type:
-            split_path = self.likelihood_type.split(".")
-            module = ".".join(split_path[:-1])
-            likelihood_class = split_path[-1]
-            Likelihood = getattr(import_module(module), likelihood_class)
-            likelihood_kwargs.update(self.extra_likelihood_kwargs)            
-        else:
-            raise ValueError(f"Unknown Likelihood class {self.likelihood_type}")
-
-        likelihood_kwargs = {
-            key: likelihood_kwargs[key]
-            for key in likelihood_kwargs
-            if key in inspect.getfullargspec(Likelihood.__init__).args
-        }
-
-        logger.debug(
-            f"Initialise likelihood {Likelihood} with kwargs: \n{likelihood_kwargs}"
-        )
-        likelihood = Likelihood(**likelihood_kwargs)        
-
-        # If requested, use a zero likelihood: for testing purposes
-        if self.likelihood_type == "zero":
-            logger.debug("Using a ZeroLikelihood")
-            likelihood = bilby.core.likelihood.ZeroLikelihood(likelihood)
-
-        return likelihood
+        self.duration = args.duration
+        self.trigger_time = args.trigger_time
+        self.post_trigger_duration = args.post_trigger_duration
 
     @property
     def calibration_psd_lookup_table(self):
@@ -174,3 +127,19 @@ class Input(BilbyInput):
         waveform_arguments["waveform_approximant"] = self.injection_waveform_approximant
         waveform_arguments["numerical_relativity_file"] = self.numerical_relativity_file
         return waveform_arguments
+
+    @property
+    def injection_parameters(self):
+        return self._injection_parameters
+
+    @injection_parameters.setter
+    def injection_parameters(self, injection_parameters):
+        self._injection_parameters = injection_parameters
+        if self.calibration_prior is not None:
+            for key in self.calibration_prior:
+                if key not in injection_parameters:
+                    if "frequency" in key:
+                        injection_parameters[key] = self.calibration_prior[key].peak
+                    else:
+                        injection_parameters[key] = 0
+        self.meta_data["injection_parameters"] = injection_parameters

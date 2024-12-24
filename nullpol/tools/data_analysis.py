@@ -3,22 +3,19 @@ from bilby_pipe.data_analysis import DataAnalysisInput as BilbyDataAnalysisInput
 from bilby_pipe.main import parse_args
 from bilby_pipe.utils import (
     CHECKPOINT_EXIT_CODE,
-    BilbyPipeError,
-    DataDump,
-    resolve_filename_with_transfer_fallback,
-    convert_string_to_dict,
 )
 import bilby_pipe.utils
 import signal
 import sys
 import numpy as np
+import inspect
+from importlib import import_module
 from .parser import create_nullpol_parser
 from .input import Input
 from ..utility import (logger,
                        log_version_information)
 from ..result import PolarizationResult
-from ..clustering import (run_time_frequency_clustering,
-                          write_time_frequency_filter)
+from ..likelihood import Chi2TimeFrequencyLikelihood
 
 # fmt: off
 import matplotlib  # isort:skip
@@ -48,6 +45,8 @@ class DataAnalysisInput(BilbyDataAnalysisInput, Input):
         self.meta_data = dict()
         self.result = None
 
+        self.injection_parameters = None
+
         # Admin arguments
         self.ini = args.ini
         self.scheduler = args.scheduler
@@ -76,15 +75,6 @@ class DataAnalysisInput(BilbyDataAnalysisInput, Input):
         self.wavelet_frequency_resolution = args.wavelet_frequency_resolution
         self.wavelet_nx = args.wavelet_nx
         self.duration = args.duration
-        self.simulate_psd_nsample = args.simulate_psd_nsample
-
-        # Time-frequency clustering
-        self.time_frequency_clustering_method = args.time_frequency_clustering_method
-        self.time_frequency_clustering_pe_samples_filename = args.time_frequency_clustering_pe_samples_filename
-        self.time_frequency_clustering_threshold = args.time_frequency_clustering_threshold
-        self.time_frequency_clustering_time_padding = args.time_frequency_clustering_time_padding
-        self.time_frequency_clustering_frequency_padding = args.time_frequency_clustering_frequency_padding
-        self.time_frequency_clustering_skypoints = args.time_frequency_clustering_skypoints
 
         # Likelihood
         self.likelihood_type = args.likelihood_type
@@ -121,54 +111,6 @@ class DataAnalysisInput(BilbyDataAnalysisInput, Input):
         """The nullpol result class to store results in"""
         return PolarizationResult
     
-    @property
-    def time_frequency_clustering_method(self):
-        return getattr(self, "_time_frequency_clustering_method", None)
-
-    @time_frequency_clustering_method.setter
-    def time_frequency_clustering_method(self, method):
-        self._time_frequency_clustering_method = method
-
-    @property
-    def time_frequency_clustering_pe_samples_filename(self):
-        return getattr(self, "_time_frequency_clustering_pe_samples_filename", None)
-
-    @time_frequency_clustering_pe_samples_filename.setter
-    def time_frequency_clustering_pe_samples_filename(self, filename):
-        self._time_frequency_clustering_pe_samples_filename = filename
-
-    @property
-    def time_frequency_clustering_threshold(self):
-        return getattr(self, "_time_frequency_clustering_threshold", None)
-
-    @time_frequency_clustering_threshold.setter
-    def time_frequency_clustering_threshold(self, threshold):
-        self._time_frequency_clustering_threshold = threshold    
-
-    @property
-    def time_frequency_clustering_time_padding(self):
-        return getattr(self, "_time_frequency_clustering_time_padding", None)
-
-    @time_frequency_clustering_time_padding.setter
-    def time_frequency_clustering_time_padding(self, time_padding):
-        self._time_frequency_clustering_time_padding = time_padding
-
-    @property
-    def time_frequency_clustering_frequency_padding(self):
-        return getattr(self, "_time_frequency_clustering_frequency_padding", None)
-
-    @time_frequency_clustering_frequency_padding.setter
-    def time_frequency_clustering_frequency_padding(self, frequency_padding):
-        self._time_frequency_clustering_frequency_padding = frequency_padding
-
-    @property
-    def time_frequency_clustering_skypoints(self):
-        return getattr(self, "_time_frequency_clustering_skypoints", None)
-
-    @time_frequency_clustering_skypoints.setter
-    def time_frequency_clustering_skypoints(self, skypoints):
-        self._time_frequency_clustering_skypoints = skypoints
-
     def get_likelihood_and_priors(self):
         """Read in the likelihood and prior from the data dump
 
@@ -188,79 +130,6 @@ class DataAnalysisInput(BilbyDataAnalysisInput, Input):
         priors = self.search_priors
         return likelihood, priors
         
-    def run_time_frequency_clustering(self):
-        if self.scheduler.lower() == "condor" and not self.run_local:
-            signal.signal(signal.SIGALRM, handler=sighandler)
-            signal.alarm(self.periodic_restart_time)
-        logger.info(f"Running time-frequency clustering with method: {self.time_frequency_clustering_method}")
-        # Build the strain data for time-frequency clustering
-        if self.time_frequency_clustering_method == "data":
-            frequency_domain_strain_array = np.array([ifo.frequency_domain_strain for ifo in self.interferometers])
-        elif self.time_frequency_clustering_method in ["injection",
-                                                       "maxL",
-                                                       "maP",
-                                                       "random"]:
-            if self.time_frequency_clustering_method == "injection":
-                parameters = self.meta_data["injection_parameters"]
-            else:
-                if self.time_frequency_clustering_pe_samples_filename is None:
-                    raise ValueError("PE samples filename must be provided for PE-samples-based time-frequency clustering")
-                posterior = bilby.core.result.read_in_result(self.time_frequency_clustering_pe_samples_filename).posterior
-                if self.time_frequency_clustering_method == "maxL":
-                    parameters = posterior.loc[posterior["log_likelihood"].idxmax()].to_dict()
-                elif self.time_frequency_clustering_method == "maP":
-                    parameters = posterior.loc[(posterior["log_likelihood"]+posterior["log_prior"]).idxmax()].to_dict()
-                elif self.time_frequency_clustering_method == "random":
-                    parameters = posterior.sample().to_dict()
-                else:
-                    raise ValueError(f"Unknown time-frequency clustering method {self.time_frequency_clustering_method}")
-                # Remove log_likelihood and log_prior from parameters
-                parameters.pop("log_likelihood")
-                parameters.pop("log_prior")
-            # Generate the mock strain data from the parameters.
-            ## Generate a new interferometer list with the same detectors
-            logger.info("Generating zero-noise injection data")
-            ifos = bilby.gw.detector.InterferometerList([ifo.name for ifo in self.interferometers])
-            # Copy the power spectral density
-            for i in range(len(ifos)):
-                ifos[i].power_spectral_density = self.interferometers[i].power_spectral_density
-            ifos.set_strain_data_from_zero_noise(
-                sampling_frequency=self.sampling_frequency,
-                duration=self.duration,
-                start_time=self.start_time
-            )
-            waveform_arguments = self.get_injection_waveform_arguments()
-            logger.info(f"Using waveform arguments: {waveform_arguments}")
-            waveform_generator = self.waveform_generator_class(
-                duration=self.duration,
-                start_time=self.start_time,
-                sampling_frequency=self.sampling_frequency,
-                frequency_domain_source_model=self.frequency_domain_source_model,
-                parameter_conversion=self.parameter_conversion,
-                waveform_arguments=waveform_arguments,
-            )
-            ifos.inject_signal(
-                waveform_generator=waveform_generator,
-                parameters=self.injection_parameters,
-                raise_error=self.enforce_signal_duration,
-            )
-            frequency_domain_strain_array = np.array([ifo.frequency_domain_strain for ifo in self.interferometers])
-        else:
-            raise ValueError(
-                f"Unknown time-frequency clustering method {self.time_frequency_clustering_method}"
-            )            
-        time_frequency_filter = run_time_frequency_clustering(interferometers=self.interferometers,
-                                                              frequency_domain_strain_array=frequency_domain_strain_array,
-                                                              wavelet_frequency_resolution=self.wavelet_frequency_resolution,
-                                                              wavelet_nx=self.wavelet_nx,
-                                                              minimum_frequency=self.minimum_frequency,
-                                                              maximum_frequency=self.maximum_frequency,
-                                                              threshold=self.time_frequency_clustering_threshold,
-                                                              time_padding=self.time_frequency_clustering_time_padding,
-                                                              frequency_padding=self.time_frequency_clustering_frequency_padding,
-                                                              skypoints=self.time_frequency_clustering_skypoints)
-        write_time_frequency_filter(f"{self.label}_time_frequency_filter.npy", time_frequency_filter)
-
     def run_sampler(self):
         if self.scheduler.lower() == "condor" and not self.run_local:
             signal.signal(signal.SIGALRM, handler=sighandler)
@@ -283,6 +152,52 @@ class DataAnalysisInput(BilbyDataAnalysisInput, Input):
             **self.sampler_kwargs,
         )
 
+    @property
+    def likelihood(self):
+        self.search_priors = self.priors.copy()
+        likelihood_kwargs = dict(
+            interferometers=self.interferometers,
+            wavelet_frequency_resolution=self.wavelet_frequency_resolution,
+            wavelet_nx=self.wavelet_nx,
+            polarization_modes=self.polarization_modes,
+            polarization_basis=self.polarization_basis,
+            time_frequency_filter=self.meta_data['time_frequency_filter'],
+            simulate_psd_nsample=self.simulate_psd_nsample,
+            calibration_marginalization=self.calibration_marginalization,
+            calibration_lookup_table=self.calibration_lookup_table,
+            calibration_psd_lookup_table=self.calibration_psd_lookup_table,
+            number_of_response_curves=self.number_of_response_curves,
+            priors=self.search_priors,            
+        )
+        if self.likelihood_type == "Chi2TimeFrequencyLikelihood":
+            Likelihood = Chi2TimeFrequencyLikelihood
+        elif "." in self.likelihood_type:
+            split_path = self.likelihood_type.split(".")
+            module = ".".join(split_path[:-1])
+            likelihood_class = split_path[-1]
+            Likelihood = getattr(import_module(module), likelihood_class)
+            likelihood_kwargs.update(self.extra_likelihood_kwargs)            
+        else:
+            raise ValueError(f"Unknown Likelihood class {self.likelihood_type}")
+
+        likelihood_kwargs = {
+            key: likelihood_kwargs[key]
+            for key in likelihood_kwargs
+            if key in inspect.getfullargspec(Likelihood.__init__).args
+        }
+
+        logger.debug(
+            f"Initialise likelihood {Likelihood} with kwargs: \n{likelihood_kwargs}"
+        )
+        likelihood = Likelihood(**likelihood_kwargs)        
+
+        # If requested, use a zero likelihood: for testing purposes
+        if self.likelihood_type == "zero":
+            logger.debug("Using a ZeroLikelihood")
+            likelihood = bilby.core.likelihood.ZeroLikelihood(likelihood)
+
+        return likelihood        
+
 def create_analysis_parser(usage=__doc__):
     """Data analysis parser creation"""
     return create_nullpol_parser(top_level=False)
@@ -295,7 +210,6 @@ def main():
     )
     log_version_information()
     analysis = DataAnalysisInput(args, unknown_args)
-    analysis.run_time_frequency_clustering()
     analysis.run_sampler()
     if analysis.reweighting_configuration is not None:
         analysis.reweight_result()

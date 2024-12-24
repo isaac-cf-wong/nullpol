@@ -1,13 +1,17 @@
+import bilby
 from bilby_pipe.data_generation import DataGenerationInput as BilbyDataGenerationInput
 from bilby_pipe.utils import convert_string_to_dict, DataDump
 from bilby_pipe.main import parse_args
 import sys
 import bilby_pipe.utils
+import numpy as np
 from .input import Input
 from .parser import create_nullpol_parser
 from ..utility import (log_version_information,
                        logger)
 from ..calibration import build_calibration_lookup
+from ..clustering import (run_time_frequency_clustering,
+                          write_time_frequency_filter)
 from .. import prior as nullpol_prior
 from .. import __version__
 bilby_pipe.utils.logger = logger
@@ -120,6 +124,14 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
         self.plot_spectrogram = args.plot_spectrogram
         self.plot_injection = args.plot_injection
 
+        # Time-frequency clustering
+        self.time_frequency_clustering_method = args.time_frequency_clustering_method
+        self.time_frequency_clustering_pe_samples_filename = args.time_frequency_clustering_pe_samples_filename
+        self.time_frequency_clustering_threshold = args.time_frequency_clustering_threshold
+        self.time_frequency_clustering_time_padding = args.time_frequency_clustering_time_padding
+        self.time_frequency_clustering_frequency_padding = args.time_frequency_clustering_frequency_padding
+        self.time_frequency_clustering_skypoints = args.time_frequency_clustering_skypoints
+
         if create_data:
             self.create_data(args)
 
@@ -189,20 +201,127 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
         self.calibration_psd_lookup_table = calibration_psd_lookup
         self.number_of_response_curves = n_response
 
+    @property
+    def time_frequency_clustering_method(self):
+        return getattr(self, "_time_frequency_clustering_method", None)
+
+    @time_frequency_clustering_method.setter
+    def time_frequency_clustering_method(self, method):
+        self._time_frequency_clustering_method = method
+
+    @property
+    def time_frequency_clustering_pe_samples_filename(self):
+        return getattr(self, "_time_frequency_clustering_pe_samples_filename", None)
+
+    @time_frequency_clustering_pe_samples_filename.setter
+    def time_frequency_clustering_pe_samples_filename(self, filename):
+        self._time_frequency_clustering_pe_samples_filename = filename
+
+    @property
+    def time_frequency_clustering_threshold(self):
+        return getattr(self, "_time_frequency_clustering_threshold", None)
+
+    @time_frequency_clustering_threshold.setter
+    def time_frequency_clustering_threshold(self, threshold):
+        self._time_frequency_clustering_threshold = threshold    
+
+    @property
+    def time_frequency_clustering_time_padding(self):
+        return getattr(self, "_time_frequency_clustering_time_padding", None)
+
+    @time_frequency_clustering_time_padding.setter
+    def time_frequency_clustering_time_padding(self, time_padding):
+        self._time_frequency_clustering_time_padding = time_padding
+
+    @property
+    def time_frequency_clustering_frequency_padding(self):
+        return getattr(self, "_time_frequency_clustering_frequency_padding", None)
+
+    @time_frequency_clustering_frequency_padding.setter
+    def time_frequency_clustering_frequency_padding(self, frequency_padding):
+        self._time_frequency_clustering_frequency_padding = frequency_padding
+
+    @property
+    def time_frequency_clustering_skypoints(self):
+        return getattr(self, "_time_frequency_clustering_skypoints", None)
+
+    @time_frequency_clustering_skypoints.setter
+    def time_frequency_clustering_skypoints(self, skypoints):
+        self._time_frequency_clustering_skypoints = skypoints
+
+    def run_time_frequency_clustering(self):
+        logger.info(f"Running time-frequency clustering with method: {self.time_frequency_clustering_method}")
+        # Build the strain data for time-frequency clustering
+        if self.time_frequency_clustering_method == "data":
+            frequency_domain_strain_array = np.array([ifo.frequency_domain_strain for ifo in self.interferometers])
+        elif self.time_frequency_clustering_method in ["injection",
+                                                       "maxL",
+                                                       "maP",
+                                                       "random"]:
+            if self.time_frequency_clustering_method == "injection":
+                parameters = self.meta_data["injection_parameters"]
+            else:
+                if self.time_frequency_clustering_pe_samples_filename is None:
+                    raise ValueError("PE samples filename must be provided for PE-samples-based time-frequency clustering")
+                posterior = bilby.core.result.read_in_result(self.time_frequency_clustering_pe_samples_filename).posterior
+                if self.time_frequency_clustering_method == "maxL":
+                    parameters = posterior.loc[posterior["log_likelihood"].idxmax()].to_dict()
+                elif self.time_frequency_clustering_method == "maP":
+                    parameters = posterior.loc[(posterior["log_likelihood"]+posterior["log_prior"]).idxmax()].to_dict()
+                elif self.time_frequency_clustering_method == "random":
+                    parameters = posterior.sample().to_dict()
+                else:
+                    raise ValueError(f"Unknown time-frequency clustering method {self.time_frequency_clustering_method}")
+                # Remove log_likelihood and log_prior from parameters
+                parameters.pop("log_likelihood")
+                parameters.pop("log_prior")
+            # Generate the mock strain data from the parameters.
+            ## Generate a new interferometer list with the same detectors
+            logger.info("Generating zero-noise injection data")
+            ifos = bilby.gw.detector.InterferometerList([ifo.name for ifo in self.interferometers])
+            # Copy the power spectral density
+            for i in range(len(ifos)):
+                ifos[i].power_spectral_density = self.interferometers[i].power_spectral_density
+            ifos.set_strain_data_from_zero_noise(
+                sampling_frequency=self.sampling_frequency,
+                duration=self.duration,
+                start_time=self.start_time
+            )
+            waveform_arguments = self.get_injection_waveform_arguments()
+            logger.info(f"Using waveform arguments: {waveform_arguments}")
+            waveform_generator = self.waveform_generator_class(
+                duration=self.duration,
+                start_time=self.start_time,
+                sampling_frequency=self.sampling_frequency,
+                frequency_domain_source_model=self.bilby_frequency_domain_source_model,
+                parameter_conversion=self.parameter_conversion,
+                waveform_arguments=waveform_arguments,
+            )
+            ifos.inject_signal(
+                waveform_generator=waveform_generator,
+                parameters=self.injection_parameters,
+                raise_error=self.enforce_signal_duration,
+            )
+            frequency_domain_strain_array = np.array([ifo.frequency_domain_strain for ifo in self.interferometers])
+        else:
+            raise ValueError(
+                f"Unknown time-frequency clustering method {self.time_frequency_clustering_method}"
+            )            
+        time_frequency_filter = run_time_frequency_clustering(interferometers=self.interferometers,
+                                                              frequency_domain_strain_array=frequency_domain_strain_array,
+                                                              wavelet_frequency_resolution=self.wavelet_frequency_resolution,
+                                                              wavelet_nx=self.wavelet_nx,
+                                                              minimum_frequency=self.minimum_frequency,
+                                                              maximum_frequency=self.maximum_frequency,
+                                                              threshold=self.time_frequency_clustering_threshold,
+                                                              time_padding=self.time_frequency_clustering_time_padding,
+                                                              frequency_padding=self.time_frequency_clustering_frequency_padding,
+                                                              skypoints=self.time_frequency_clustering_skypoints)
+        self.meta_data['time_frequency_filter'] = time_frequency_filter
+
     def save_data_dump(self):
         """Method to dump the saved data to disk for later analysis"""
         self.build_calibration_lookups_if_needed()
-
-        likelihood = self.likelihood
-        likelihood_lookup_table = None
-        if hasattr(likelihood, "fiducial_parameters"):
-            self.meta_data["fiducial_parameters"] = likelihood.fiducial_parameters
-        if self.is_likelihood_multiband:
-            likelihood_roq_weights = None
-            likelihood_multiband_weights = likelihood.weights
-        else:
-            likelihood_roq_weights = getattr(likelihood, "weights", None)
-            likelihood_multiband_weights = None
         self.meta_data["reweighting_configuration"] = self.reweighting_configuration
         data_dump = DataDump(
             outdir=self.data_directory,
@@ -211,10 +330,10 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
             trigger_time=self.trigger_time,
             interferometers=self.interferometers,
             meta_data=self.meta_data,
-            likelihood_lookup_table=likelihood_lookup_table,
-            likelihood_roq_weights=likelihood_roq_weights,
-            likelihood_roq_params=getattr(likelihood, "roq_params", None),
-            likelihood_multiband_weights=likelihood_multiband_weights,
+            likelihood_lookup_table=None,
+            likelihood_roq_weights=None,
+            likelihood_roq_params=None,
+            likelihood_multiband_weights=None,
             priors_dict=dict(self.priors),
             priors_class=self.priors.__class__,
         )
@@ -229,5 +348,6 @@ def main():
     args, unknown_args = parse_args(sys.argv[1:], create_generation_parser())
     log_version_information()
     data = DataGenerationInput(args, unknown_args)
+    data.run_time_frequency_clustering()
     data.save_data_dump()
     logger.info("Completed data generation")
