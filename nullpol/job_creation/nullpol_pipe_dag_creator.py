@@ -1,7 +1,6 @@
 import copy
 from bilby_pipe.job_creation.dag import Dag
 from bilby_pipe.job_creation.bilby_pipe_dag_creator import (get_trigger_time_list,
-                                                            get_detectors_list,
                                                             get_parallel_list)
 from bilby_pipe.job_creation.nodes import (MergeNode,
                                            FinalResultNode,
