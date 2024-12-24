@@ -14,7 +14,7 @@ def run_time_frequency_clustering(interferometers,
                                   frequency_domain_strain_array,
                                   wavelet_frequency_resolution,
                                   wavelet_nx,
-                                  minimum_freuency,
+                                  minimum_frequency,
                                   maximum_frequency,
                                   threshold,
                                   time_padding,
@@ -36,8 +36,8 @@ def run_time_frequency_clustering(interferometers,
                                                             wavelet_frequency_resolution=wavelet_frequency_resolution)
     prefilter = np.full((wavelet_Nt, wavelet_Nf), True)
     # Remove the components beyond the frequency range
-    if minimum_freuency is not None:
-        freq_low_idx = int(np.ceil(minimum_freuency / wavelet_frequency_resolution))
+    if minimum_frequency is not None:
+        freq_low_idx = int(np.ceil(minimum_frequency / wavelet_frequency_resolution))
         prefilter[:,:freq_low_idx] = False
     if maximum_frequency is not None:
         freq_high_idx = int(np.floor(maximum_frequency / wavelet_frequency_resolution))
