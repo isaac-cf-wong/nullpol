@@ -55,6 +55,11 @@ class DataAnalysisInput(BilbyDataAnalysisInput, Input):
         self.request_cpus = args.request_cpus
         self.run_local = args.local
 
+        # Naming arguments
+        self.outdir = args.outdir
+        self.label = args.label
+        self.result_format = args.result_format
+
         # Data dump file to run on
         self.data_dump_file = args.data_dump_file
 
