@@ -1,5 +1,5 @@
 from bilby_pipe.data_generation import DataGenerationInput as BilbyDataGenerationInput
-from bilby_pipe.utils import convert_string_to_dict
+from bilby_pipe.utils import convert_string_to_dict, DataDump
 from bilby_pipe.main import parse_args
 import sys
 import bilby_pipe.utils
@@ -208,6 +208,37 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
         self.calibration_lookup_table = calibration_lookup
         self.calibration_psd_lookup_table = calibration_psd_lookup
         self.number_of_response_curves = n_response
+
+    def save_data_dump(self):
+        """Method to dump the saved data to disk for later analysis"""
+        self.build_calibration_lookups_if_needed()
+
+        likelihood = self.likelihood
+        likelihood_lookup_table = None
+        if hasattr(likelihood, "fiducial_parameters"):
+            self.meta_data["fiducial_parameters"] = likelihood.fiducial_parameters
+        if self.is_likelihood_multiband:
+            likelihood_roq_weights = None
+            likelihood_multiband_weights = likelihood.weights
+        else:
+            likelihood_roq_weights = getattr(likelihood, "weights", None)
+            likelihood_multiband_weights = None
+        self.meta_data["reweighting_configuration"] = self.reweighting_configuration
+        data_dump = DataDump(
+            outdir=self.data_directory,
+            label=self.label,
+            idx=self.idx,
+            trigger_time=self.trigger_time,
+            interferometers=self.interferometers,
+            meta_data=self.meta_data,
+            likelihood_lookup_table=likelihood_lookup_table,
+            likelihood_roq_weights=likelihood_roq_weights,
+            likelihood_roq_params=getattr(likelihood, "roq_params", None),
+            likelihood_multiband_weights=likelihood_multiband_weights,
+            priors_dict=dict(self.priors),
+            priors_class=self.priors.__class__,
+        )
+        data_dump.to_pickle()
 
 def create_generation_parser():
     """Data generation parser creation"""

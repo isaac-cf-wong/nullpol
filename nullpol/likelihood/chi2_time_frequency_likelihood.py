@@ -60,7 +60,10 @@ class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
                                                           starting_index=starting_index,
                                                           priors=priors,
                                                           *args, **kwargs)
-        self._DoF = (len(self.interferometers)-np.sum(self.polarization_basis)) * np.sum(self.time_frequency_filter)
+    
+    @property
+    def DoF(self):
+        return (len(self.interferometers)-np.sum(self.polarization_basis)) * np.sum(self.time_frequency_filter)
 
     def log_likelihood(self):
         # Time shift the data
