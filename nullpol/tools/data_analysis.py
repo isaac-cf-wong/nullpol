@@ -78,6 +78,7 @@ class DataAnalysisInput(BilbyDataAnalysisInput, Input):
         self.time_frequency_clustering_pe_samples_filename = args.time_frequency_clustering_pe_samples_filename
         self.time_frequency_clustering_threshold = args.time_frequency_clustering_threshold
         self.time_frequency_clustering_time_padding = args.time_frequency_clustering_time_padding
+        self.time_frequency_clustering_frequency_padding = args.time_frequency_clustering_frequency_padding
         self.time_frequency_clustering_skypoints = args.time_frequency_clustering_skypoints
 
         # Likelihood

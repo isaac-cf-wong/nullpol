@@ -1,9 +1,10 @@
 from pycbc.noise import noise_from_psd
+from pycbc.types import FrequencySeries
 import numpy as np
 from ..time_frequency_transform import transform_wavelet_freq_time
 
-
 def simulate_psd_from_psd(psd, seglen, srate, wavelet_frequency_resolution, nsample, nx=4.):
+    psd = FrequencySeries(psd, delta_f=1/seglen)
     Nf = int(srate / 2 / wavelet_frequency_resolution)
     tlen = int(seglen * srate)
     Nt = int(tlen / Nf)
