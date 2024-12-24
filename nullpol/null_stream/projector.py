@@ -8,8 +8,8 @@ def compute_gw_projector_masked(whitened_antenna_pattern_matrix,
     output = np.zeros((nfreq, ndet, ndet), dtype=whitened_antenna_pattern_matrix.dtype)
     for i in range(len(frequency_mask)):
         if frequency_mask[i]:
-            F = whitened_antenna_pattern_matrix[i,:,:]
-            F_dagger = np.conj(F).T
+            F = np.ascontiguousarray(whitened_antenna_pattern_matrix[i,:,:])
+            F_dagger = np.ascontiguousarray(np.conj(F).T)
             output[i,:,:] = F @ np.linalg.inv(F_dagger @ F) @ F_dagger
     return output
 
@@ -35,6 +35,6 @@ def compute_projection_squared(time_frequency_domain_strain_array,
     for i in range(ntime):
         for j in range(nfreq):
             if time_freuency_filter[i,j]:
-                d = time_frequency_domain_strain_array[:,i,j]
+                d = np.ascontiguousarray(time_frequency_domain_strain_array[:,i,j])
                 output[i,j] = np.abs(np.dot(np.conj(d), projector[j] @ d))
     return output
