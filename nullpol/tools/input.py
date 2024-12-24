@@ -160,3 +160,17 @@ class Input(BilbyInput):
     @wavelet_frequency_resolution.setter
     def wavelet_frequency_resolution(self, resolution):
         self._wavelet_frequency_resolution = resolution
+
+    def get_injection_waveform_arguments(self):
+        """Get the dict of the waveform arguments needed for creating injections.
+
+        Defaults the injection-waveform-approximant to waveform-approximant, if
+        no injection-waveform-approximant provided. Note that the default
+        waveform-approximant is `IMRPhenomPv2`.
+        """
+        if self.injection_waveform_approximant is None:
+            self.injection_waveform_approximant = self.waveform_approximant
+        waveform_arguments = self.get_default_waveform_arguments()
+        waveform_arguments["waveform_approximant"] = self.injection_waveform_approximant
+        waveform_arguments["numerical_relativity_file"] = self.numerical_relativity_file
+        return waveform_arguments
