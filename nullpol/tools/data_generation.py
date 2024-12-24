@@ -8,7 +8,6 @@ from .parser import create_nullpol_parser
 from ..utility import (log_version_information,
                        logger)
 from ..calibration import build_calibration_lookup
-from .. import prior as nullpol_prior
 from .. import __version__
 bilby_pipe.utils.logger = logger
 
@@ -122,11 +121,6 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
 
         if create_data:
             self.create_data(args)
-
-    @property
-    def combined_default_prior_dicts(self):
-        d = nullpol_prior.__dict__.copy()
-        return d
 
     @property
     def priors(self):

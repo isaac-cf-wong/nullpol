@@ -11,11 +11,12 @@ from ..utility import (log_version_information,
                        logger)
 from ..job_creation import generate_dag
 from .parser import create_nullpol_parser
+from .input import Input
 
 
 bilby_pipe.utils.logger = logger
 
-class MainInput(BilbyMainInput):
+class MainInput(BilbyMainInput, Input):
     def __init__(self, args, unknown_args, perform_checks=True):
         Input.__init__(self, args, unknown_args, print_msg=False)
 

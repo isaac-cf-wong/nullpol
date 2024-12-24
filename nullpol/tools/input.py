@@ -6,6 +6,7 @@ from importlib import import_module
 import inspect
 from ..utility import logger
 from ..likelihood import Chi2TimeFrequencyLikelihood
+from .. import prior as nullpol_prior
 
 
 bilby_pipe.utils.logger  = logger
@@ -87,6 +88,11 @@ class Input(BilbyInput):
             likelihood = bilby.core.likelihood.ZeroLikelihood(likelihood)
 
         return likelihood
+    
+    @property
+    def combined_default_prior_dicts(self):
+        d = nullpol_prior.__dict__.copy()
+        return d
 
     @property
     def calibration_psd_lookup_table(self):
