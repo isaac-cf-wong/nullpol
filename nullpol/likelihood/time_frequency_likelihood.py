@@ -229,5 +229,5 @@ class TimeFrequencyLikelihood(Likelihood):
         Compute the noise log likelihood.
         """
         if self._noise_log_likelihood_value is None:            
-            self._noise_log_likelihood_value = self._calculate_noise_log_likelihood()
+            self._calculate_noise_log_likelihood()
         return self._noise_log_likelihood_value
