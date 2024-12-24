@@ -35,7 +35,6 @@ def compute_whitened_antenna_pattern_matrix_masked(antenna_pattern_matrix,
                 output[i,j,:] = antenna_pattern_matrix[j,:] / np.sqrt(psd_array[j,i] * scaling)
     return output
 
-@njit
 def compute_whitened_time_frequency_domain_strain_array(time_frequency_domain_strain_array,
                                                         psd_array,
                                                         time_frequency_filter,
