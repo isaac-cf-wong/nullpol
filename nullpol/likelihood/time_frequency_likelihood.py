@@ -28,7 +28,7 @@ class TimeFrequencyLikelihood(Likelihood):
                  wavelet_nx,
                  polarization_modes,
                  polarization_basis=None,
-                 time_frequency_filter_filename=None,
+                 time_frequency_filter=None,
                  simulate_psd_nsample=100,
                  calibration_marginalization=False,
                  calibration_lookup_table=None,
@@ -50,8 +50,8 @@ class TimeFrequencyLikelihood(Likelihood):
             List of polarization modes.
         polarization_basis: list
             List of polarization basis.
-        time_frequency_filter_filename: str
-            File name to the time-frequency filter.
+        time_frequency_filter: str
+            The time-frequency filter.
         simulate_psd_nsample: int
             The number of samples to simulate the PSDs.
         """

@@ -42,7 +42,7 @@ class DataAnalysisInput(BilbyDataAnalysisInput, Input):
             unknown_args (tuple): A tuple of unknown arguments.
             test (bool, optional): _description_. Defaults to False.
         """
-        super().__init__(args, unknown_args)
+        Input.__init__(self, args, unknown_args)
 
         # Generic initialisation
         self.meta_data = dict()
