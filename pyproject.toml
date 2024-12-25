@@ -43,7 +43,6 @@ local_scheme = "node-and-date"   # This includes the full commit hash in the ver
 language_level = 3
 
 [project.scripts]
-nullpol-null-energy-test = "nullpol.tools.null_energy_test:main"
 nullpol-create-injection = "nullpol.tools.create_injection:main"
 nullpol-create-time-frequency-filter-from-sample = "nullpol.tools.create_time_frequency_filter_from_sample:main"
 nullpol-simulate-psd-from-psd = "nullpol.tools.simulate_psd_from_psd:main"
