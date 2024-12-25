@@ -3,7 +3,7 @@ import numpy as np
 
 @njit
 def compute_gw_projector_masked(whitened_antenna_pattern_matrix,
-                            frequency_mask):
+                                frequency_mask):
     nfreq, ndet, nmode = whitened_antenna_pattern_matrix.shape
     output = np.zeros((nfreq, ndet, ndet), dtype=whitened_antenna_pattern_matrix.dtype)
     for i in range(len(frequency_mask)):
