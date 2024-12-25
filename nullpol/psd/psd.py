@@ -9,7 +9,7 @@ def get_pycbc_psd(psd_array, delta_f):
     psd_array[np.isinf(psd_array)] = 0.
     return FrequencySeries(psd_array, delta_f=delta_f)
 
-def simulate_psd_from_psd(psd, seglen, srate, wavelet_frequency_resolution, nsample, nx=4., minimum_frequency=None, maximum_frequency=None):
+def simulate_psd_from_psd(psd, seglen, srate, wavelet_frequency_resolution, nsample, nx=4.):
     Nf = int(srate / 2 / wavelet_frequency_resolution)
     tlen = int(seglen * srate)
     Nt = int(tlen / Nf)
