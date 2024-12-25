@@ -2,7 +2,7 @@
 from numba import njit
 import numpy as np
 
-@njit
+
 def inverse_wavelet_time_helper_fast(wave_in,phi,Nf,Nt,mult):
     """Helper loop fort fast inverse wavelet transform.
 

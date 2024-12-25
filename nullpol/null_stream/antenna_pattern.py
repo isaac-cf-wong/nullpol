@@ -1,5 +1,6 @@
-from .encoding import POLARIZATION_DECODING
 import numpy as np
+from .encoding import POLARIZATION_DECODING
+
 
 def get_antenna_pattern(interferometer, right_ascension, declination, polarization_angle, gps_time, polarization):
     """
@@ -55,59 +56,27 @@ def get_antenna_pattern_matrix(interferometers, right_ascension, declination, po
     """
     return np.array([get_antenna_pattern(interferometer, right_ascension, declination, polarization_angle, gps_time, polarization) for interferometer in interferometers])
 
-def whiten_antenna_pattern_matrix(antenna_pattern_matrix, frequency_array, psds):
-    """
-    Whiten antenna pattern matrix.
-
-    Parameters
-    ----------
-    antenna_pattern_matrix : array_like
-        Antenna pattern matrix with shape (n_interferometers, n_polarization).
-    frequency_array : array_like
-        Frequency array with shape (n_freqs).
-    psds : array_like
-        Power spectral density array with shape (n_interferometers, n_freqs).
-
-    Returns
-    -------
-    whitened_antenna_pattern_matrix : array_like
-        Whitened antenna pattern matrix with shape (n_interferometers, n_polarization, n_freqs).
-    """
-    df = frequency_array[1] - frequency_array[0]
-
-    whitening_factor = 1/np.sqrt(psds/(2*df)) # shape (n_interferometers, n_freqs)
-
-    return np.einsum('ij, ik -> ijk', antenna_pattern_matrix, whitening_factor) # shape (n_interferometers, n_polarization, n_freqs)
-
-def change_basis(whitened_antenna_pattern_matrix, basis, amp_phase_factor):
-    """
-    Change basis of whitened antenna pattern matrix.
-
-    Parameters
-    ----------
-    whitened_antenna_pattern_matrix : array_like
-        Whitened antenna pattern matrix with shape (n_interferometers, n_polarization, n_freqs).
-    basis : array_like
-        Array of booleans for basis modes.
-    amp_phase_factor : array_like
-        Array of amplitude and phase factors for basis modes with shape (n_polarization-n_basis, n_basis, 2).
-
-    Returns
-    -------
-    whitened_antenna_pattern_matrix_new_basis : array_like
-        Whitened antenna pattern matrix with shape (n_interferometers, n_basis, n_freqs).
-    """
-    multiplicative_factor = amp_phase_factor[:, :, 0] * np.exp(1j * amp_phase_factor[:, :, 1]) # shape (n_polarization-n_basis, n_basis)
-    additional_terms = np.einsum('ijk, jl -> ilk', whitened_antenna_pattern_matrix[:, np.invert(basis), :], multiplicative_factor) # shape (n_interferometers, n_basis, n_freqs)
-    
-    return whitened_antenna_pattern_matrix[:, basis, :] + additional_terms # shape (n_interferometers, n_basis, n_freqs)
-
 def relative_amplification_factor_map(polarization_basis,
                                       polarization_derived):
+    """Get a map of the keywords to the relative amplification factors.
+
+    Parameters
+    ----------
+    polarization_basis: boolean array
+        A 6-element boolean array indicating the basis modes.
+    polarization_derived: boolean array
+        A 6-element boolean array indicating the derived modes.
+
+    Returns
+    -------
+    numpy array:
+        A matrix of keyword labels. The first character indicates the derived mode,
+        and the second character indicates the basis mode.
+    """
     nbasis = np.sum(polarization_basis)
     nderived = np.sum(polarization_derived)
     if nderived == 0:
-        return None
+        return np.array([[] for _ in range(nbasis)])
     output = []
     i_counter = 0
     j_counter = 0
@@ -125,6 +94,20 @@ def relative_amplification_factor_map(polarization_basis,
 
 def relative_amplification_factor_helper(parameters_map,
                                          parameters):
+    """A helper function to construct a matrix of relative amplification factors.
+    
+    Parameters
+    ----------
+    parameters_map: array-like
+        A map of keywords.
+    parameters: dict
+        A dictionary of parameters.
+
+    Returns
+    -------
+    numpy array:
+        A matrix of relative amplification factors.
+    """
     func = lambda x: parameters[f'amplitude_{x}']*np.exp(1.j*parameters[f'phase_{x}'])
     return np.vectorize(func)(parameters_map)
 
@@ -132,6 +115,24 @@ def get_collapsed_antenna_pattern_matrix(antenna_pattern_matrix,
                                          polarization_basis,
                                          polarization_derived,
                                          relative_amplification_factor):
+    """Get the collapsed antenna pattern matrix.
+
+    Parameters
+    ----------
+    antenna_pattern_matrix: array-like
+        Antenna pattern matrix.
+    polarization_basis: boolean array
+        A boolean array to indicate polarization basis.
+    polarization_derived: boolean array
+        A boolean array to indicate the derived modes.
+    relative_amplification_factor: array-like
+        The relative amplification factor.
+
+    Returns
+    -------
+    numpy array:
+        Get a collapsed antenna pattern matrix.
+    """
     # Dimensions:
     ## antenna_pattern_matrix: (detector, polarization)
     # Select the columns corresponds to the basis    

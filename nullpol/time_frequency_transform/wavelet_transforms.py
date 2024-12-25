@@ -9,7 +9,7 @@ from .transform_time_funcs import (phi_vec,
 from .inverse_wavelet_freq_funcs import inverse_wavelet_freq_helper_fast
 from .inverse_wavelet_time_funcs import inverse_wavelet_time_helper_fast
 
-@njit
+
 def inverse_wavelet_time(wave_in,Nf,Nt,nx=4.,mult=32):
     """Fast inverse wavelet transform to time domain.
 
@@ -28,7 +28,6 @@ def inverse_wavelet_time(wave_in,Nf,Nt,nx=4.,mult=32):
     output = inverse_wavelet_time_helper_fast(wave_in,phi,Nf,Nt,mult)
     return output
 
-@njit
 def inverse_wavelet_freq_time(wave_in,Nf,Nt,nx=4.):
     """Inverse wavelet transform to time domain via Fourier transform of frequency domain.
 

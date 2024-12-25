@@ -2,7 +2,7 @@
 from numba import njit
 import numpy as np
 
-@njit
+
 def inverse_wavelet_freq_helper_fast(wave_in,phif,Nf,Nt):
     """Loop for inverse_wavelet_freq.
 
