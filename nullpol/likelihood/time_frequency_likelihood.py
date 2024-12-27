@@ -179,7 +179,7 @@ class TimeFrequencyLikelihood(Likelihood):
                                               polarization=self.polarization_modes)
         # Evaluate the collapsed antenna pattern function
         # Compute the relative amplification factor
-        if self.relative_amplification_factor_map is not None:
+        if self.relative_amplification_factor_map.size > 0:
             relative_amplification_factor = relative_amplification_factor_helper(self.relative_amplification_factor_map,
                                                                                  self.parameters)
             F_matrix = get_collapsed_antenna_pattern_matrix(F_matrix,
@@ -202,7 +202,7 @@ class TimeFrequencyLikelihood(Likelihood):
                                               polarization=self.polarization_modes)
         # Evaluate the collapsed antenna pattern function
         # Compute the relative amplification factor
-        if self.relative_amplification_factor_map is not None:
+        if self.relative_amplification_factor_map.size > 0:
             relative_amplification_factor = relative_amplification_factor_helper(self.relative_amplification_factor_map,
                                                                                  self.parameters)
             F_matrix = get_collapsed_antenna_pattern_matrix(F_matrix,
