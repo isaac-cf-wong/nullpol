@@ -66,6 +66,11 @@ class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
         return (len(self.interferometers)-np.sum(self.polarization_basis)) * np.sum(self.time_frequency_filter)
 
     def log_likelihood(self):
+        null_energy_array = self._calculate_residual_power()
+        log_likelihood = scipy.stats.chi2.logpdf(null_energy_array, df=self._DoF)
+        return logsumexp(log_likelihood) - np.log(len(log_likelihood))
+    
+    def _calculate_residual_power(self):
         # Time shift the data
         frequency_domain_strain_array_time_shifted = time_shift(interferometers=self.interferometers,
                                                                 ra=self.parameters['ra'],
@@ -87,9 +92,8 @@ class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
                                                 self.time_frequency_filter,
                                                 self.time_frequency_filter_collapsed,
                                                 self.interferometers[0].sampling_frequency)
-        log_likelihood = scipy.stats.chi2.logpdf(null_energy_array, df=self._DoF)
-        return logsumexp(log_likelihood) - np.log(len(log_likelihood))
-    
+        return null_energy_array
+
     def _calculate_noise_log_likelihood(self):
         # Transform the time-shifted data to the time-freuency domain
         time_frequency_domain_strain_array = np.array([transform_wavelet_freq(data,

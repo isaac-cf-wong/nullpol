@@ -44,8 +44,6 @@ def run_time_frequency_clustering(interferometers,
         freq_high_idx = int(np.floor(maximum_frequency / wavelet_frequency_resolution))
         prefilter[:,freq_high_idx:] = False
     energy_map_combined = np.zeros((wavelet_Nt, wavelet_Nf))
-    print(psd_array)
-    print(np.sum(psd_array<0.))
     for i in tqdm(range(skypoints), desc='Generating energy map'):
         # Time shift the data
         frequency_domain_strain_array_time_shifted = time_shift(interferometers=interferometers,
