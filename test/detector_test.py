@@ -1,5 +1,5 @@
 import unittest
-from nullpol.null_stream.antenna_pattern import get_antenna_pattern, get_antenna_pattern_matrix, whiten_antenna_pattern_matrix
+from nullpol.null_stream.antenna_pattern import get_antenna_pattern, get_antenna_pattern_matrix
 from bilby.gw.detector import InterferometerList
 
 
