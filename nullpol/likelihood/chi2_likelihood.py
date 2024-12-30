@@ -63,62 +63,6 @@ class NullStreamChi2Likelihood(Likelihood):
         else:
             self.psd_array = wavelet_psds
         
-
-        # dim = len(self.interferometers) - np.sum(self.projector_generator.basis)
-
-        # if len(self.interferometers) <= np.sum(self.projector_generator.basis):
-        #     raise ValueError('Number of interferometers must be larger than the number of basis polarization modes.')
-
-        # self.frequency_array = self.interferometers[0].frequency_array
-        # self.frequency_mask = np.array([self.frequency_array >= self.minimum_frequency, self.frequency_array <= self.maximum_frequency]).all(axis=0)
-        # self.frequency_array = self.frequency_array[self.frequency_mask]
-
-        # self.psd_array = np.array([np.interp(self.frequency_array, interferometer.power_spectral_density.frequency_array, interferometer.power_spectral_density.psd_array) for interferometer in self.interferometers])
-
-        # if self.analysis_domain == "time_frequency":
-        #     try:
-        #         self.nx = time_frequency_analysis_arguments['nx']
-        #         self.df = time_frequency_analysis_arguments['df']
-        #     except KeyError:
-        #         raise ValueError('nx and df must be provided for time-frequency analysis.')
-
-        #     # Check if all interferometers have the same frequency array
-        #     if not all([np.array_equal(interferometer.frequency_array, self.interferometers[0].frequency_array) for interferometer in self.interferometers[1:]]):
-        #         raise ValueError('All interferometers must have the same frequency array for time-frequency analysis.')
-
-        #     for ifo in self.interferometers:
-        #         ifo.strain_data.nx = self.nx
-        #         ifo.strain_data.time_frequency_bandwidth = self.df
-
-        #     # transform_wavelet_freq(strain, Nf, Nt, nx) only takes 2D array as input, so we need to loop over the first two dimensions
-        #     energy_map_max = np.zeros((self.interferometers[0].Nt, self.interferometers[0].Nf))
-        #     for _ in tqdm(range(1000), desc='Generating energy map'):
-        #         strain_data_array = interferometers.whitened_frequency_domain_strain_array
-        #         strain = time_shift(interferometers=self.interferometers,
-        #                              ra=self.priors['ra'].sample(),
-        #                              dec=self.priors['dec'].sample(),
-        #                              gps_time=self.interferometers[0].start_time+self.interferometers[0].duration, # take the end time of the interferometer as the reference time
-        #                              frequency_array=interferometers[0].frequency_array, # use the full frequency array
-        #                              strain_data_array=strain_data_array
-        #                              ) # shape (n_interferometers, n_freqs)
-        #         for j in range(len(self.interferometers)):
-        #             energy_map = transform_wavelet_freq(strain[j], self.interferometers[j].Nf, self.interferometers[j].Nt, nx=self.nx) ** 2 + transform_wavelet_freq_quadrature(strain[j], self.interferometers[j].Nf, self.interferometers[j].Nt, nx=self.nx) ** 2
-        #             energy_map_max = np.fmax(energy_map_max, energy_map)
-        #     self.energy_map_max = energy_map_max
-
-        #     self.dt = self.interferometers[0].duration / self.interferometers[0].Nt
-        #     self.time_frequency_filter = clustering(get_high_pass_filter(energy_map_max, **time_frequency_analysis_arguments), self.dt, **time_frequency_analysis_arguments)
-        #     self._DoF = np.sum(self.time_frequency_filter) * dim
-
-        #     self.log_likelihood = self.log_likelihood_time_freq
-
-        # elif self.analysis_domain == "frequency":
-        #     self._DoF = int((self.maximum_frequency - self.minimum_frequency) * self.interferometers[0].duration) * 2 * dim
-        #     self.log_likelihood = self.log_likelihood_freq
-
-        # else:
-        #     raise ValueError('analysis_domain not recognized.')
-
     def _validate_interferometers(self, interferometers):
         if not all([interferometer.frequency_array[1] - interferometer.frequency_array[0] == interferometers[0].frequency_array[1] - interferometers[0].frequency_array[0] for interferometer in interferometers[1:]]):
             raise ValueError('All interferometers must have the same delta_f.')
