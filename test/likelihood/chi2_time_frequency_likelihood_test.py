@@ -28,7 +28,6 @@ class TestChi2TimeFrequencyLikelihood(unittest.TestCase):
         self.time_padding = 0.1
         self.frequency_padding = 1
         self.skypoints = 10
-        self.create_time_frequency_filter()
         priors = bilby.core.prior.PriorDict()
         self.parameters = dict(
             mass_1=36.0,
@@ -47,6 +46,7 @@ class TestChi2TimeFrequencyLikelihood(unittest.TestCase):
             ra=1.375,
             dec=-1.2108,
         )
+        self.create_time_frequency_filter()
         # projector_generator = ProjectorGenerator(wave)
         # likelihood = Chi2TimeFrequencyLikelihood(interferometers=interferometers,
         #                                          projector_generator=projector_generator)
@@ -79,8 +79,7 @@ class TestChi2TimeFrequencyLikelihood(unittest.TestCase):
 
     def test_noise_residual_power(self):
         samples = []
-        for i in tqdm(200):
-            print(f'Progress: {i+1}/200')
+        for i in tqdm(range(200), desc='test_noise_residual_power'):
             # Create a noise injection
             interferometers = InterferometerList(['H1', 'L1', 'V1'])
             create_injection(interferometers=interferometers,
@@ -109,8 +108,7 @@ class TestChi2TimeFrequencyLikelihood(unittest.TestCase):
 
     def test_signal_residual_power(self):
         samples = []
-        for i in tqdm(200):
-            print(f'Progress: {i+1}/200')
+        for i in tqdm(range(200), desc='test_signal_residual_power'):
             # Create a noise injection
             interferometers = InterferometerList(['H1', 'L1', 'V1'])
             create_injection(interferometers=interferometers,
@@ -138,8 +136,7 @@ class TestChi2TimeFrequencyLikelihood(unittest.TestCase):
 
     def test_signal_residual_power_incorrect_parameters(self):
         samples = []
-        for i in tqdm(200):
-            print(f'Progress: {i+1}/200')
+        for i in tqdm(range(200), desc='test_signal_residual_power_incorrect_parameters'):
             # Create a noise injection
             interferometers = InterferometerList(['H1', 'L1', 'V1'])
             create_injection(interferometers=interferometers,
