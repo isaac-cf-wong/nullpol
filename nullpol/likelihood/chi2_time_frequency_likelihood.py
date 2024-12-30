@@ -4,12 +4,12 @@ from numba import njit
 from scipy.special import logsumexp
 from .time_frequency_likelihood import TimeFrequencyLikelihood
 from ..null_stream import (time_shift,
-                           compute_whitened_time_frequency_domain_strain_array,
                            compute_whitened_antenna_pattern_matrix_masked,
                            compute_gw_projector_masked,
                            compute_null_projector_from_gw_projector,
                            compute_projection_squared)
 from ..time_frequency_transform import transform_wavelet_freq
+from ..detector import compute_whitened_time_frequency_domain_strain_array
 
 class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
     """A time-frequency likelihood class that calculates the chi-squared likelihood."""
@@ -106,9 +106,6 @@ class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
                                                                                                           self.psd_draws[:,0,:],
                                                                                                           self.time_frequency_filter,
                                                                                                           self.interferometers[0].sampling_frequency)
-        np.save('psd.npy', self.psd_draws[:,0,:])
-        np.save('time_frequency_domain_strain_array_whitened.npy', time_frequency_domain_strain_array_whitened)
-        np.save('time_frequency_filter.npy', self.time_frequency_filter)
         energy = np.sum(np.abs(time_frequency_domain_strain_array_whitened)**2)
         self._noise_log_likelihood_value = scipy.stats.chi2.logpdf(energy, df=len(self.interferometers)*np.sum(self.time_frequency_filter))
 
@@ -126,8 +123,7 @@ def compute_null_energy(time_frequency_domain_strain_array_time_shifted,
         # Compute the whitened time-frequency domain strain array
         time_frequency_domain_strain_array_time_shifted_whitened = compute_whitened_time_frequency_domain_strain_array(time_frequency_domain_strain_array_time_shifted,
                                                                                                                        psd_array,
-                                                                                                                       time_frequency_filter,
-                                                                                                                       srate)
+                                                                                                                       time_frequency_filter)
         # Compute the whitened F_matrix
         whitened_F_matrix = compute_whitened_antenna_pattern_matrix_masked(F_matrix,
                                                                            psd_array,
@@ -140,6 +136,6 @@ def compute_null_energy(time_frequency_domain_strain_array_time_shifted,
         # Compute the projection squared
         projection_squared = compute_projection_squared(time_frequency_domain_strain_array_time_shifted_whitened,
                                                         Pnull,
-                                                        time_frequency_filter)
+                                                        time_frequency_filter)        
         null_energy_array[i] = np.sum(projection_squared)
     return null_energy_array

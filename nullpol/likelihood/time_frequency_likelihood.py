@@ -12,11 +12,10 @@ from ..null_stream import (encode_polarization,
                            compute_whitened_antenna_pattern_matrix_masked,
                            compute_whitened_time_frequency_domain_strain_array,
                            compute_gw_projector_masked)
-from ..psd import (simulate_psd_from_psd,
-                   get_pycbc_psd)
 from ..time_frequency_transform import (transform_wavelet_freq,
                                         get_shape_of_wavelet_transform)
 from ..calibration import build_calibration_lookup
+from ..detector import simulate_wavelet_psd
 
 
 class TimeFrequencyLikelihood(Likelihood):
@@ -161,10 +160,11 @@ class TimeFrequencyLikelihood(Likelihood):
     def _get_resolution_matching_psd(self, interferometers):
         psd_array = []
         for interferometer in interferometers:
-            delta_f = interferometer.frequency_array[1]-interferometer.frequency_array[0]
-            psd_pycbc = get_pycbc_psd(interferometer.power_spectral_density_array, delta_f=delta_f)
-            psd_array.append(simulate_psd_from_psd(psd_pycbc,interferometer.duration,interferometer.sampling_frequency,self.wavelet_frequency_resolution,self.simulate_psd_nsample,self.wavelet_nx))
-        return np.array(psd_array).reshape(len(interferometers), 1, -1)
+            psd_array.append(simulate_wavelet_psd(interferometer=interferometer,
+                                                  wavelet_frequency_resolution=self.wavelet_frequency_resolution,
+                                                  nx=self.wavelet_nx,
+                                                  nsample=self.simulate_psd_nsample))
+        return np.array(psd_array)[:,None,:]
 
     def log_likelihood(self):
         raise NotImplementedError("The log_likelihood method must be implemented in a subclass.")

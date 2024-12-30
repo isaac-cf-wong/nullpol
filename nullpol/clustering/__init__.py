@@ -76,6 +76,12 @@ def run_time_frequency_clustering(interferometers,
     energy_filter = energy_map_combined > energy_threshold
     dt = interferometers[0].duration / wavelet_Nt
     output = clustering(energy_filter, dt, wavelet_frequency_resolution, padding_time=time_padding, padding_freq=frequency_padding)
+    # Clean the filter again
+    output = output.astype(bool)
+    if minimum_frequency is not None:
+        output[:,:freq_low_idx] = False
+    if maximum_frequency is not None:
+        output[:,freq_high_idx:] = False
     return output.astype(bool)
 
 def write_time_frequency_filter(filename, time_frequency_filter):
