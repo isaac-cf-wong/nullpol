@@ -12,7 +12,7 @@ from nullpol.likelihood.chi2_time_frequency_likelihood import Chi2TimeFrequencyL
 
 class TestChi2TimeFrequencyLikelihood(unittest.TestCase):
     def setUp(self):
-        seed = 5
+        seed = 1234
         # Set the seed
         np.random.seed(seed)
         bilby.core.utils.random.seed(seed)      
@@ -47,9 +47,6 @@ class TestChi2TimeFrequencyLikelihood(unittest.TestCase):
             dec=-1.2108,
         )
         self.create_time_frequency_filter()
-        # projector_generator = ProjectorGenerator(wave)
-        # likelihood = Chi2TimeFrequencyLikelihood(interferometers=interferometers,
-        #                                          projector_generator=projector_generator)
 
     def create_time_frequency_filter(self):
         interferometers = InterferometerList(['H1', 'L1', 'V1'])
@@ -77,34 +74,34 @@ class TestChi2TimeFrequencyLikelihood(unittest.TestCase):
                                                                    frequency_padding=self.frequency_padding,
                                                                    skypoints=self.skypoints)        
 
-    # def test_noise_residual_power(self):
-    #     samples = []
-    #     for i in tqdm(range(200), desc='test_noise_residual_power'):
-    #         # Create a noise injection
-    #         interferometers = InterferometerList(['H1', 'L1', 'V1'])
-    #         create_injection(interferometers=interferometers,
-    #                         duration=self.duration,
-    #                         sampling_frequency=self.sampling_frequency,
-    #                         start_time=self.start_time,
-    #                         noise_type='noise')
-    #         polarization_modes = 'pc'
-    #         polarization_basis = 'pc'
-    #         likelihood = Chi2TimeFrequencyLikelihood(interferometers=interferometers,
-    #                                                 wavelet_frequency_resolution=self.wavelet_frequency_resolution,
-    #                                                 wavelet_nx=self.wavelet_nx,
-    #                                                 polarization_modes=polarization_modes,
-    #                                                 polarization_basis=polarization_basis,
-    #                                                 time_frequency_filter=self.time_frequency_filter,
-    #                                                 simulate_psd_nsample=100)
-    #         likelihood.parameters = dict(ra=0,
-    #                                     dec=0,
-    #                                     psi=0,
-    #                                     geocent_time=self.geocent_time)
-    #         power = likelihood._calculate_residual_power()
-    #         samples.append(power[0])
-    #     result = scipy.stats.kstest(samples, cdf='chi2', args=(np.sum(self.time_frequency_filter),))
-    #     print(f"p-value = {result.pvalue}")
-    #     self.assertGreaterEqual(result.pvalue, 0.05)
+    def test_noise_residual_power(self):
+        samples = []
+        for i in tqdm(range(200), desc='test_noise_residual_power'):
+            # Create a noise injection
+            interferometers = InterferometerList(['H1', 'L1', 'V1'])
+            create_injection(interferometers=interferometers,
+                            duration=self.duration,
+                            sampling_frequency=self.sampling_frequency,
+                            start_time=self.start_time,
+                            noise_type='noise')
+            polarization_modes = 'pc'
+            polarization_basis = 'pc'
+            likelihood = Chi2TimeFrequencyLikelihood(interferometers=interferometers,
+                                                    wavelet_frequency_resolution=self.wavelet_frequency_resolution,
+                                                    wavelet_nx=self.wavelet_nx,
+                                                    polarization_modes=polarization_modes,
+                                                    polarization_basis=polarization_basis,
+                                                    time_frequency_filter=self.time_frequency_filter,
+                                                    simulate_psd_nsample=100)
+            likelihood.parameters = dict(ra=0,
+                                        dec=0,
+                                        psi=0,
+                                        geocent_time=self.geocent_time)
+            power = likelihood._calculate_residual_power()
+            samples.append(power[0])
+        result = scipy.stats.kstest(samples, cdf='chi2', args=(np.sum(self.time_frequency_filter),))
+        print(f"p-value = {result.pvalue}")
+        self.assertGreaterEqual(result.pvalue, 0.05)
 
     def test_signal_residual_power(self):
         samples = []
