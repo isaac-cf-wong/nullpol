@@ -46,9 +46,9 @@ class TestInterferometer(unittest.TestCase):
         psd_array = []
         for interferometer in interferometers:
             wavelet_psd = simulate_wavelet_psd(interferometer=interferometer,
-                                            wavelet_frequency_resolution=self.wavelet_frequency_resolution,
-                                            nx=self.nx,
-                                            nsample=self.nsample)
+                                               wavelet_frequency_resolution=self.wavelet_frequency_resolution,
+                                               nx=self.nx,
+                                               nsample=self.nsample)
             # Compute the time-frequency domain strain array
             time_frequency_domain_strain = compute_time_frequency_domain_strain_array(interferometer=interferometer,
                                                                                       wavelet_frequency_resolution=self.wavelet_frequency_resolution,
