@@ -6,6 +6,7 @@ from bilby_pipe.utils import convert_string_to_dict
 from ..utility import logger
 from ..likelihood import Chi2TimeFrequencyLikelihood
 from .. import prior as nullpol_prior
+import inspect
 
 
 bilby_pipe.utils.logger  = logger
