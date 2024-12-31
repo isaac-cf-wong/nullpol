@@ -13,7 +13,7 @@ from ..utility import (log_version_information,
                        get_file_extension)
 from ..calibration import build_calibration_lookup
 from ..clustering import (run_time_frequency_clustering,
-                          write_time_frequency_filter)
+                          plot_spectrogram)
 from .. import prior as nullpol_prior
 from .. import __version__
 bilby_pipe.utils.logger = logger
@@ -320,17 +320,35 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
             raise ValueError(
                 f"Unknown time-frequency clustering method {self.time_frequency_clustering_method}"
             )
-        time_frequency_filter = run_time_frequency_clustering(interferometers=self.interferometers,
-                                                              frequency_domain_strain_array=frequency_domain_strain_array,
-                                                              wavelet_frequency_resolution=self.wavelet_frequency_resolution,
-                                                              wavelet_nx=self.wavelet_nx,
-                                                              minimum_frequency=self.minimum_frequency,
-                                                              maximum_frequency=self.maximum_frequency,
-                                                              threshold=self.time_frequency_clustering_threshold,
-                                                              time_padding=self.time_frequency_clustering_time_padding,
-                                                              frequency_padding=self.time_frequency_clustering_frequency_padding,
-                                                              skypoints=self.time_frequency_clustering_skypoints)
+        time_frequency_filter, sky_maximized_spectrogram = run_time_frequency_clustering(interferometers=self.interferometers,
+                                                                                         frequency_domain_strain_array=frequency_domain_strain_array,
+                                                                                         wavelet_frequency_resolution=self.wavelet_frequency_resolution,
+                                                                                         wavelet_nx=self.wavelet_nx,
+                                                                                         minimum_frequency=self.minimum_frequency,
+                                                                                         maximum_frequency=self.maximum_frequency,
+                                                                                         threshold=self.time_frequency_clustering_threshold,
+                                                                                         time_padding=self.time_frequency_clustering_time_padding,
+                                                                                         frequency_padding=self.time_frequency_clustering_frequency_padding,
+                                                                                         skypoints=self.time_frequency_clustering_skypoints,
+                                                                                         return_sky_maximized_spectrogram=True)
         self.meta_data['time_frequency_filter'] = time_frequency_filter
+        plot_spectrogram(spectrogram=time_frequency_filter,
+                         duration=self.interferometers[0].duration,
+                         sampling_frequency=self.interferometers[0].sampling_frequency,
+                         wavelet_frequency_resolution=self.wavelet_frequency_resolution,
+                         title="Time-frequency Filter Spectrogram",
+                         savefig=f"{self.label}_time_frequency_filter_spectrogram.png",
+                         dpi=100)
+        logger.info(f"Saved plot of time-frequency filter spectrogram to {self.label}_time_frequency_filter_spectrogram.png.")
+        plot_spectrogram(spectrogram=sky_maximized_spectrogram,
+                         duration=self.interferometers[0].duration,
+                         sampling_frequency=self.interferometers[0].sampling_frequency,
+                         wavelet_frequency_resolution=self.wavelet_frequency_resolution,
+                         title="Sky-maximized Spectrogram",
+                         savefig=f"{self.label}_sky_maximized_spectrogram.png",
+                         dpi=100)
+        logger.info(f"Saved plot of sky-maximized spectrogram to {self.label}_sky_maximized_spectrogram.png.")
+
 
     def save_data_dump(self):
         """Method to dump the saved data to disk for later analysis"""

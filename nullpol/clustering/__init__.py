@@ -9,6 +9,7 @@ from ..time_frequency_transform import (transform_wavelet_freq,
                                         transform_wavelet_freq_quadrature,
                                         get_shape_of_wavelet_transform)
 from .single import clustering
+from .plot import *
 
 
 def run_time_frequency_clustering(interferometers,
@@ -20,7 +21,8 @@ def run_time_frequency_clustering(interferometers,
                                   threshold,
                                   time_padding,
                                   frequency_padding,
-                                  skypoints):
+                                  skypoints,
+                                  return_sky_maximized_spectrogram=False):
     # Simulate the wavelet PSDs
     psd_array = np.array([simulate_psd_from_psd(psd=get_pycbc_psd(interferometer.power_spectral_density_array, 1./interferometer.duration),
                                                 seglen=interferometer.duration,
@@ -82,7 +84,10 @@ def run_time_frequency_clustering(interferometers,
         output[:,:freq_low_idx] = False
     if maximum_frequency is not None:
         output[:,freq_high_idx:] = False
-    return output.astype(bool)
+    if return_sky_maximized_spectrogram:
+        return output.astype(bool), energy_map_combined
+    else:
+        return output.astype(bool)
 
 def write_time_frequency_filter(filename, time_frequency_filter):
     np.save(filename, time_frequency_filter)

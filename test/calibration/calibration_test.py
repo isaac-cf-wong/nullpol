@@ -139,7 +139,6 @@ class TestCalibration(unittest.TestCase):
                                                                                                           srate=self.srate)
         print(whitened_time_frequency_domain_strain_array)                                                                                                        
         print(np.var(whitened_time_frequency_domain_strain_array[:,:int(np.ceil(self.minimum_frequency/self.wavelet_frequency_resolution))]))
-        self.assertTrue(False)
         
 
     def test_build_calibration_lookup_when_there_are_lookup_files(self):

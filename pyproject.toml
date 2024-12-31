@@ -29,6 +29,7 @@ dependencies = [
     "pycbc",
     "gwpy",
     "asimov",
+    "librosa"
 ]
 requires-python = ">=3.9"
 [tool.setuptools.packages]
