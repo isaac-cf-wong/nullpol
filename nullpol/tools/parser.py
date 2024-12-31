@@ -87,21 +87,21 @@ def create_nullpol_parser(top_level=True):
         if action_to_remove:
             for option_string in action_to_remove.option_strings:
                 if option_string in parser._option_string_actions:
-                    del parser._option_string_actions[option_string]            
+                    del parser._option_string_actions[option_string]
         for action in parser._action_groups:
             for group_action in action._group_actions:
                 opts = group_action.option_strings
                 if (opts and opts[0] == arg) or group_action.dest == arg:
                     action._group_actions.remove(group_action)
-                    return                    
-                
+                    return
+
     def add_argument_to_group(parser, group_name, *args, **kwargs):
         # Locate the group by name
         for grp in parser._action_groups:
             if grp.title == group_name:
                 grp.add_argument(*args, **kwargs)
                 return
-        raise ValueError(f"Argument group '{group_name}' not found")                
+        raise ValueError(f"Argument group '{group_name}' not found")
 
     parser = create_parser(top_level=top_level)
     remove_argument(parser, "--coherence-test")
@@ -149,16 +149,18 @@ def create_nullpol_parser(top_level=True):
         description="The configuration of time-frequency clustering.",
     )
     clustering_parser.add("--time-frequency-clustering-method", type=nonestr, help=("Method to perform clustering. Can be one of [`data`, "
-                                                                                    "`injection`, `maxL`, `maP`, `random`]."))
+                                                                                    "`injection`, `injection_parameters_file`, `maxL`, `maP`, `random`]."))
+    clustering_parser.add("--time-frequency-clustering-injection-parameters-filename", type=nonestr, help=("If `injection_parameters_file` is chosen in --time-frequency-clustering-method, "
+                                                                                                 "provide the path to the injection parameters file."))
     clustering_parser.add("--time-frequency-clustering-pe-samples-filename", type=nonestr, help=("If `maxL`, `maxP` or `random` is chosen in --time-frequency-clustering-method, "
                                                                                                  "provide the path to the bilby result file."))
     clustering_parser.add('--time-frequency-clustering-threshold', type=float, default=0.9, help="Quantile threshold to filter the excess power.")
     clustering_parser.add('--time-frequency-clustering-time-padding', type=float, default=0.1, help="Time padding in second to pad on both sides of the cluster.")
     clustering_parser.add('--time-frequency-clustering-frequency-padding', type=float, default=1, help="Frequency padding in Hz to pad on both sides of the cluster.")
     clustering_parser.add('--time-frequency-clustering-skypoints', type=int, default=100, help="Number of skypoints to compute the sky-maximized energy map.")
-    parser.add("--version", action="version", version=f"%(prog)s={__version__}")    
+    parser.add("--version", action="version", version=f"%(prog)s={__version__}")
     return parser
-    
+
 def main():
     filename = sys.argv[1]
     if filename in ["-h", "--help"]:

@@ -5,10 +5,12 @@ from bilby_pipe.main import parse_args
 import sys
 import bilby_pipe.utils
 import numpy as np
+import json
 from .input import Input
 from .parser import create_nullpol_parser
 from ..utility import (log_version_information,
-                       logger)
+                       logger,
+                       get_file_extension)
 from ..calibration import build_calibration_lookup
 from ..clustering import (run_time_frequency_clustering,
                           write_time_frequency_filter)
@@ -90,8 +92,8 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
         # Frequencies
         self.sampling_frequency = args.sampling_frequency
         self.minimum_frequency = args.minimum_frequency
-        self.maximum_frequency = args.maximum_frequency        
-        
+        self.maximum_frequency = args.maximum_frequency
+
         # PSD
         self.psd_maximum_duration = args.psd_maximum_duration
         self.psd_dict = args.psd_dict
@@ -126,6 +128,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
 
         # Time-frequency clustering
         self.time_frequency_clustering_method = args.time_frequency_clustering_method
+        self.time_frequency_clustering_injection_parameters_filename = args.time_frequency_clustering_injection_parameters_filename
         self.time_frequency_clustering_pe_samples_filename = args.time_frequency_clustering_pe_samples_filename
         self.time_frequency_clustering_threshold = args.time_frequency_clustering_threshold
         self.time_frequency_clustering_time_padding = args.time_frequency_clustering_time_padding
@@ -218,7 +221,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
 
     @time_frequency_clustering_threshold.setter
     def time_frequency_clustering_threshold(self, threshold):
-        self._time_frequency_clustering_threshold = threshold    
+        self._time_frequency_clustering_threshold = threshold
 
     @property
     def time_frequency_clustering_time_padding(self):
@@ -250,11 +253,26 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
         if self.time_frequency_clustering_method == "data":
             frequency_domain_strain_array = np.array([ifo.frequency_domain_strain for ifo in self.interferometers])
         elif self.time_frequency_clustering_method in ["injection",
+                                                       "injection_parameters_file",
                                                        "maxL",
                                                        "maP",
                                                        "random"]:
             if self.time_frequency_clustering_method == "injection":
                 parameters = self.meta_data["injection_parameters"]
+            elif self.time_frequency_clustering_method == "injection_parameters_file":
+                if self.time_frequency_clustering_injection_parameters_filename is None:
+                    raise ValueError("time-frequency-clustering-injection-parameters-filename must be provided when time-frequency-clustering-method = 'injection_parameters_file'.")
+                if get_file_extension(self.time_frequency_clustering_injection_parameters_filename) != ".json":
+                    raise ValueError(f"time-frequency-clustering-injection-parameters-filename = {self.time_frequency_clustering_injection_parameters_filename} needs to be a JSON file.")
+                with open(self.time_frequency_clustering_injection_parameters_filename, 'r') as f:
+                    parameters = json.load(f)
+                if isinstance(parameters, list):
+                    if len(parameters) > 1:
+                        logger.warning(f"Currently only supports injecting a single signal, but the injection parameters file contains {len(parameters)} signals.")
+                        logger.warning(f"Only the first signal is injected.")
+                    parameters = parameters[0]
+                elif not isinstance(parameters, dict):
+                    raise ValueError(f"Data type of time-frequency-clustering-injection-parameters-filename = {type(parameters)} is not supported. Expected a list or a dictionary.")
             else:
                 if self.time_frequency_clustering_pe_samples_filename is None:
                     raise ValueError("PE samples filename must be provided for PE-samples-based time-frequency clustering")
@@ -268,8 +286,8 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
                 else:
                     raise ValueError(f"Unknown time-frequency clustering method {self.time_frequency_clustering_method}")
                 # Remove log_likelihood and log_prior from parameters
-                parameters.pop("log_likelihood")
-                parameters.pop("log_prior")
+                parameters.pop("log_likelihood", None)
+                parameters.pop("log_prior", None)
             # Generate the mock strain data from the parameters.
             ## Generate a new interferometer list with the same detectors
             logger.info("Generating zero-noise injection data")
@@ -301,7 +319,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
         else:
             raise ValueError(
                 f"Unknown time-frequency clustering method {self.time_frequency_clustering_method}"
-            )                         
+            )
         time_frequency_filter = run_time_frequency_clustering(interferometers=self.interferometers,
                                                               frequency_domain_strain_array=frequency_domain_strain_array,
                                                               wavelet_frequency_resolution=self.wavelet_frequency_resolution,
