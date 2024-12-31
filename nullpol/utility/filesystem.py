@@ -14,4 +14,4 @@ def get_file_extension(file_path):
     str:
         Extension of the file.
     """
-        return Path(file_path).suffix
+    return Path(file_path).suffix
