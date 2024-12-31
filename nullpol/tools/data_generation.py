@@ -271,7 +271,15 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
                         logger.warning(f"Currently only supports injecting a single signal, but the injection parameters file contains {len(parameters)} signals.")
                         logger.warning(f"Only the first signal is injected.")
                     parameters = parameters[0]
-                elif not isinstance(parameters, dict):
+                elif isinstance(parameters, dict):
+                    if "injections" in parameters:
+                        parameters = parameters['injections']
+                        if isinstance(parameters, list):
+                            if len(parameters) > 1:
+                                logger.warning(f"Currently only supports injecting a single signal, but the injection parameters file contains {len(parameters)} signals.")
+                                logger.warning(f"Only the first signal is injected.")
+                            parameters = parameters[0]
+                else:
                     raise ValueError(f"Data type of time-frequency-clustering-injection-parameters-filename = {type(parameters)} is not supported. Expected a list or a dictionary.")
             else:
                 if self.time_frequency_clustering_pe_samples_filename is None:
