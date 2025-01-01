@@ -27,7 +27,7 @@ def run_time_frequency_clustering(interferometers,
                                                       seglen=ifo.duration,
                                                       srate=ifo.sampling_frequency,
                                                       wavelet_frequency_resolution=wavelet_frequency_resolution,
-                                                      nsample=10,
+                                                      nsample=100,
                                                       nx=wavelet_nx) for ifo in interferometers])
     # Draw random sky points
     ra_array = np.random.uniform(0, 2 * np.pi, size=skypoints)
@@ -38,13 +38,16 @@ def run_time_frequency_clustering(interferometers,
                                                             wavelet_frequency_resolution=wavelet_frequency_resolution)
     prefilter = np.full((wavelet_Nt, wavelet_Nf), True)
     # Remove the components beyond the frequency range
+
     if minimum_frequency is not None:
         freq_low_idx = int(np.ceil(minimum_frequency / wavelet_frequency_resolution))
         prefilter[:,:freq_low_idx] = False
+
     if maximum_frequency is not None:
         freq_high_idx = int(np.floor(maximum_frequency / wavelet_frequency_resolution))
         prefilter[:,freq_high_idx:] = False
     energy_map_combined = np.zeros((wavelet_Nt, wavelet_Nf))
+
     for i in tqdm(range(skypoints), desc='Generating energy map'):
         # Time shift the data
         frequency_domain_strain_array_time_shifted = time_shift(interferometers=interferometers,
@@ -79,10 +82,13 @@ def run_time_frequency_clustering(interferometers,
     output = clustering(energy_filter, dt, wavelet_frequency_resolution, padding_time=time_padding, padding_freq=frequency_padding)
     # Clean the filter again
     output = output.astype(bool)
+
     if minimum_frequency is not None:
         output[:,:freq_low_idx] = False
+
     if maximum_frequency is not None:
         output[:,freq_high_idx:] = False
+
     if return_sky_maximized_spectrogram:
         return output.astype(bool), energy_map_combined
     else:

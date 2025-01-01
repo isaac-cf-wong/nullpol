@@ -1,6 +1,8 @@
 import bilby
 from bilby.gw.detector import InterferometerList
 from bilby.gw.source import lal_binary_black_hole
+from bilby.core.utils import logger
+logger.setLevel('CRITICAL')
 import numpy as np
 from tqdm import tqdm
 import scipy.stats
@@ -24,7 +26,7 @@ class TestChi2TimeFrequencyLikelihood(unittest.TestCase):
         self.wavelet_nx = 4.
         self.minimum_frequency = 20
         self.maximum_frequency = self.sampling_frequency / 2
-        self.threshold = 0.9
+        self.threshold = 0.95
         self.time_padding = 0.1
         self.frequency_padding = 1
         self.skypoints = 10
@@ -63,7 +65,7 @@ class TestChi2TimeFrequencyLikelihood(unittest.TestCase):
                          frequency_domain_source_model=freuency_domain_source_model,
                          waveform_arguments=waveform_arguments)
         frequency_domain_strain_array = np.array([ifo.frequency_domain_strain.copy() for ifo in interferometers])        
-        self.time_frequency_filter = run_time_frequency_clustering(interferometers=interferometers,
+        self.time_frequency_filter, spectrogram = run_time_frequency_clustering(interferometers=interferometers,
                                                                    frequency_domain_strain_array=frequency_domain_strain_array,
                                                                    wavelet_frequency_resolution=self.wavelet_frequency_resolution,
                                                                    wavelet_nx=self.wavelet_nx,
@@ -72,7 +74,14 @@ class TestChi2TimeFrequencyLikelihood(unittest.TestCase):
                                                                    threshold=self.threshold,
                                                                    time_padding=self.time_padding,
                                                                    frequency_padding=self.frequency_padding,
-                                                                   skypoints=self.skypoints)        
+                                                                   skypoints=self.skypoints,
+                                                                   return_sky_maximized_spectrogram=True)
+        import matplotlib.pyplot as plt
+        plt.imshow(self.time_frequency_filter, aspect='auto')
+        plt.savefig('TF_filter.png')
+        print(np.sum(self.time_frequency_filter))
+        plt.imshow(spectrogram, aspect='auto')
+        plt.savefig('spectrogram.png') 
 
     def test_noise_residual_power(self):
         samples = []
