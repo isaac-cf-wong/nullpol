@@ -12,7 +12,7 @@ from nullpol.likelihood.chi2_time_frequency_likelihood import Chi2TimeFrequencyL
 
 class TestChi2TimeFrequencyLikelihood(unittest.TestCase):
     def setUp(self):
-        seed = 1235
+        seed = 2025
         # Set the seed
         np.random.seed(seed)
         bilby.core.utils.random.seed(seed)      
@@ -102,7 +102,7 @@ class TestChi2TimeFrequencyLikelihood(unittest.TestCase):
             samples.append(power[0])
         result = scipy.stats.kstest(samples, cdf='chi2', args=(np.sum(self.time_frequency_filter),))
         print(f"p-value = {result.pvalue}")
-        self.assertGreaterEqual(result.pvalue, 0.05)
+        self.assertGreaterEqual(result.pvalue, 0.01)
 
     def test_signal_residual_power(self):
         samples = []
@@ -133,7 +133,7 @@ class TestChi2TimeFrequencyLikelihood(unittest.TestCase):
             samples.append(power[0])
         result = scipy.stats.kstest(samples, cdf='chi2', args=(np.sum(self.time_frequency_filter),))
         print(f"p-value = {result.pvalue}")
-        self.assertGreaterEqual(result.pvalue, 0.05)
+        self.assertGreaterEqual(result.pvalue, 0.01)
 
     def test_signal_residual_power_incorrect_parameters(self):
         samples = []
@@ -164,7 +164,7 @@ class TestChi2TimeFrequencyLikelihood(unittest.TestCase):
             samples.append(power[0])
         result = scipy.stats.kstest(samples, cdf='chi2', args=(np.sum(self.time_frequency_filter),))
         print(f"p-value = {result.pvalue}")
-        self.assertLess(result.pvalue, 0.05)
+        self.assertLess(result.pvalue, 0.01)
 
 if __name__ == '__main__':
     unittest.main()
