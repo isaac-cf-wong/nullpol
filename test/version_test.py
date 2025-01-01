@@ -1,6 +1,6 @@
 import unittest
-from nullpol.utility import (get_version_information,
-                             log_version_information)
+from nullpol import (get_version_information,
+                     log_version_information)
 
 
 class TestVersion(unittest.TestCase):

@@ -11,8 +11,7 @@ import os
 import matplotlib.pyplot as plt
 from pycbc.noise import noise_from_psd
 from nullpol.calibration import build_calibration_lookup
-from nullpol.psd import (simulate_psd_from_psd,
-                         get_pycbc_psd)
+from nullpol.psd import simulate_psd_from_bilby_psd
 from nullpol.utility import logger
 from nullpol.time_frequency_transform import (transform_wavelet_freq,
                                               get_shape_of_wavelet_transform)
@@ -74,12 +73,12 @@ class TestCalibration(unittest.TestCase):
     def simulate_reference_psd(self):
         logger.info('Generating reference PSDs')
         delta_f = 1. / self.seglen
-        self.reference_psds = [simulate_psd_from_psd(psd=get_pycbc_psd(self.injected_psds[ifo.name], delta_f),
-                                                     seglen=self.seglen,
-                                                     srate=self.srate,
-                                                     wavelet_frequency_resolution=self.wavelet_frequency_resolution,
-                                                     nsample=self.simulate_psd_nsample,
-                                                     nx=self.wavelet_nx) for ifo in self.interferometers]
+        self.reference_psds = [simulate_psd_from_bilby_psd(psd=ifo.power_spectral_density,
+                                                           seglen=self.seglen,
+                                                           srate=self.srate,
+                                                           wavelet_frequency_resolution=self.wavelet_frequency_resolution,
+                                                           nsample=self.simulate_psd_nsample,
+                                                           nx=self.wavelet_nx) for ifo in self.interferometers]
 
     def simulate_envelope_file(self, fname):
         logger.info('Simulating calibration envelope files')
