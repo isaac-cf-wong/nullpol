@@ -8,3 +8,4 @@ librosa
 nds2utils
 ligo-asimov
 pycbc
+healpy
