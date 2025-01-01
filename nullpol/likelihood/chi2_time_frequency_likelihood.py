@@ -10,6 +10,8 @@ from ..null_stream import (time_shift,
                            compute_projection_squared)
 from ..time_frequency_transform import transform_wavelet_freq
 from ..detector import compute_whitened_time_frequency_domain_strain_array
+from ..detector import (get_simulated_calibrated_wavelet_psd,
+                        simulate_wavelet_psd)
 
 class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
     """A time-frequency likelihood class that calculates the chi-squared likelihood."""
@@ -68,7 +70,10 @@ class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
     def log_likelihood(self):
         null_energy_array = self._calculate_residual_power()
         log_likelihood = scipy.stats.chi2.logpdf(null_energy_array, df=self._DoF)
-        return logsumexp(log_likelihood) - np.log(len(log_likelihood))
+        if len(log_likelihood) > 1:
+            return logsumexp(log_likelihood) - np.log(len(log_likelihood))
+        else:
+            return log_likelihood[0]
     
     def _calculate_residual_power(self):
         # Time shift the data
@@ -86,12 +91,34 @@ class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
         F_matrix = self._compute_antenna_pattern_matrix()
 
         # Compute the null energy
-        null_energy_array = compute_null_energy(time_frequency_domain_strain_array_time_shifted,
-                                                self.psd_draws,
-                                                F_matrix,
-                                                self.time_frequency_filter,
-                                                self.time_frequency_filter_collapsed,
-                                                self.interferometers[0].sampling_frequency)
+        if self.calibration_marginalization:
+            null_energy_array = compute_null_energy_array(time_frequency_domain_strain_array_time_shifted,
+                                                          self.psd_draws,
+                                                          F_matrix,
+                                                          self.time_frequency_filter,
+                                                          self.time_frequency_filter_collapsed,
+                                                          self.interferometers[0].sampling_frequency)
+        elif self._sample_calibration_parameters:
+            # Simulate the PSD.
+            psd_array = np.array([get_simulated_calibrated_wavelet_psd(interferometer=ifo,
+                                                                       parameters=self.parameters,
+                                                                       wavelet_frequency_resolution=self.wavelet_frequency_resolution,
+                                                                       nx=self.wavelet_nx,
+                                                                       nsample=self.simulate_psd_nsample) for ifo in self.interferometers])
+            null_energy_array = np.array([compute_null_energy(time_frequency_domain_strain_array_time_shifted,
+                                                              psd_array,
+                                                              F_matrix,
+                                                              self.time_frequency_filter,
+                                                              self.time_frequency_filter_collapsed,
+                                                              self.interferometers[0].sampling_frequency)])            
+        else:
+            null_energy_array = np.array([compute_null_energy(time_frequency_domain_strain_array_time_shifted,
+                                                              self.psd_array,
+                                                              F_matrix,
+                                                              self.time_frequency_filter,
+                                                              self.time_frequency_filter_collapsed,
+                                                              self.interferometers[0].sampling_frequency)])
+        
         return null_energy_array
 
     def _calculate_noise_log_likelihood(self):
@@ -100,41 +127,59 @@ class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
                                                                               self._wavelet_Nf,
                                                                               self._wavelet_Nt,
                                                                               self.wavelet_nx) for data in self.frequency_domain_strain_array])
-        np.save('time_frequency_domain_strain_array.npy', time_frequency_domain_strain_array)
         # Whiten the strain data
+        psd_array = getattr(self, 'psd_array', None)
+        if psd_array is None:
+            psd_array = np.array([simulate_wavelet_psd(interferometer=ifo,
+                                                       wavelet_frequency_resolution=self.wavelet_frequency_resolution,
+                                                       nx=self.wavelet_nx,
+                                                       nsample=self.simulate_psd_nsample) for ifo in self.interferometers])
         time_frequency_domain_strain_array_whitened = compute_whitened_time_frequency_domain_strain_array(time_frequency_domain_strain_array,
-                                                                                                          self.psd_draws[:,0,:],
+                                                                                                          self.psd_array,
                                                                                                           self.time_frequency_filter)
         energy = np.sum(np.abs(time_frequency_domain_strain_array_whitened)**2)
         self._noise_log_likelihood_value = scipy.stats.chi2.logpdf(energy, df=len(self.interferometers)*np.sum(self.time_frequency_filter))
 
 @njit
 def compute_null_energy(time_frequency_domain_strain_array_time_shifted,
-                        psd_draws,
+                        psd_array,
                         F_matrix,
                         time_frequency_filter,
                         time_frequency_filter_collapsed,
                         srate):
-    _, psd_nsample, _ = psd_draws.shape
+    # Compute the whitened time-frequency domain strain array
+    time_frequency_domain_strain_array_time_shifted_whitened = compute_whitened_time_frequency_domain_strain_array(time_frequency_domain_strain_array_time_shifted,
+                                                                                                                    psd_array,
+                                                                                                                    time_frequency_filter)
+    # Compute the whitened F_matrix
+    whitened_F_matrix = compute_whitened_antenna_pattern_matrix_masked(F_matrix,
+                                                                        psd_array,
+                                                                        time_frequency_filter_collapsed,
+                                                                        srate)
+    # Compute the GW projector        
+    Pgw = compute_gw_projector_masked(whitened_F_matrix, time_frequency_filter_collapsed)
+    # Compute the null projector
+    Pnull = compute_null_projector_from_gw_projector(Pgw)
+    # Compute the projection squared
+    projection_squared = compute_projection_squared(time_frequency_domain_strain_array_time_shifted_whitened,
+                                                    Pnull,
+                                                    time_frequency_filter)        
+    return np.sum(projection_squared)
+
+@njit
+def compute_null_energy_array(time_frequency_domain_strain_array_time_shifted,
+                              psd_draw_array,
+                              F_matrix,
+                              time_frequency_filter,
+                              time_frequency_filter_collapsed,
+                              srate):
+    _, psd_nsample, _ = psd_draw_array.shape
     null_energy_array = np.zeros(psd_nsample)
     for i in range(psd_nsample):
-        psd_array = psd_draws[:,i,:]
-        # Compute the whitened time-frequency domain strain array
-        time_frequency_domain_strain_array_time_shifted_whitened = compute_whitened_time_frequency_domain_strain_array(time_frequency_domain_strain_array_time_shifted,
-                                                                                                                       psd_array,
-                                                                                                                       time_frequency_filter)
-        # Compute the whitened F_matrix
-        whitened_F_matrix = compute_whitened_antenna_pattern_matrix_masked(F_matrix,
-                                                                           psd_array,
-                                                                           time_frequency_filter_collapsed,
-                                                                           srate)
-        # Compute the GW projector        
-        Pgw = compute_gw_projector_masked(whitened_F_matrix, time_frequency_filter_collapsed)
-        # Compute the null projector
-        Pnull = compute_null_projector_from_gw_projector(Pgw)
-        # Compute the projection squared
-        projection_squared = compute_projection_squared(time_frequency_domain_strain_array_time_shifted_whitened,
-                                                        Pnull,
-                                                        time_frequency_filter)        
-        null_energy_array[i] = np.sum(projection_squared)
+        null_energy_array[i] = compute_null_energy(time_frequency_domain_strain_array_time_shifted=time_frequency_domain_strain_array_time_shifted,
+                                                   psd_array=psd_draw_array[:,i,:],
+                                                   F_matrix=F_matrix,
+                                                   time_frequency_filter=time_frequency_filter,
+                                                   time_frequency_filter_collapsed=time_frequency_filter_collapsed,
+                                                   srate=srate)
     return null_energy_array

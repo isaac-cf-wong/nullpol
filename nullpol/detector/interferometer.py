@@ -90,3 +90,31 @@ def compute_geocentric_time_shifted_time_frequency_domain_strain_array(interfero
                                   Nf=Nf,
                                   Nt=Nt,
                                   nx=nx)
+
+
+def get_simulated_calibrated_wavelet_psd(interferometer,
+                                         parameters,
+                                         wavelet_frequency_resolution,
+                                         nx,
+                                         nsample,
+                                         frequencies=None):
+    if frequencies is None:
+        mask = interferometer.frequency_mask
+        frequencies = interferometer.frequency_array[mask]
+    else:
+        mask = np.ones(len(frequencies), dtype=bool)
+    # Compute the calibration errors
+    calibration_errors = interferometer.calibration_model.get_calibration_factor(frequency_array=frequencies,
+                                                                                 prefix=f'recalib_{interferometer.name}_',
+                                                                                 **parameters)                                                                                 
+    calibrated_psd_array = interferometer.power_spectral_density_array.copy()
+    calibrated_psd_array[mask] /= np.abs(calibration_errors)**2
+    calibrated_psd = PowerSpectralDensity(frequency_array=interferometer.frequency_array.copy(),
+                                           psd_array=calibrated_psd_array)
+    wavelet_psd = simulate_psd_from_bilby_psd(psd=calibrated_psd,
+                                              seglen=interferometer.duration,
+                                              srate=interferometer.sampling_frequency,
+                                              wavelet_frequency_resolution=wavelet_frequency_resolution,
+                                              nsample=nsample,
+                                              nx=nx)
+    return wavelet_psd                                           

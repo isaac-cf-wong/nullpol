@@ -1,9 +1,8 @@
 import numpy as np
 import bilby
 from bilby.core.likelihood import Likelihood
-from pathlib import Path
-from pycbc.types.frequencyseries import FrequencySeries
 from bilby.core.prior import DeltaFunction
+from bilby.gw.detector import Recalibrate
 from ..null_stream import (encode_polarization,
                            get_antenna_pattern_matrix,
                            get_collapsed_antenna_pattern_matrix,
@@ -16,6 +15,7 @@ from ..time_frequency_transform import (transform_wavelet_freq,
                                         get_shape_of_wavelet_transform)
 from ..calibration import build_calibration_lookup
 from ..detector import simulate_wavelet_psd
+from ..utility import logger
 
 
 class TimeFrequencyLikelihood(Likelihood):
@@ -83,13 +83,18 @@ class TimeFrequencyLikelihood(Likelihood):
         self.calibration_marginalization = calibration_marginalization
         self.priors = priors
         if self.calibration_marginalization:
+            logger.warning('Calibration marginalization is not tested.')
             self.number_of_response_curves = number_of_response_curves
             self.starting_index = starting_index
             self._setup_calibration_marginalization(calibration_lookup_table, calibration_psd_lookup_table, priors)
             self._marginalized_parameters.append('recalib_index')
-        else:
+            self._sample_calibration_parameters = False
+        elif np.all([isinstance(ifo.calibration_model, Recalibrate) for ifo in self.interferometers]):
             # Simulate the TF domain PSDs
-            self.simulate_psd() 
+            self._sample_calibration_parameters = False
+            self.simulate_psd()
+        else:
+            self._sample_calibration_parameters = True
         
     def _setup_calibration_marginalization(self,
                                            calibration_lookup_table,
@@ -117,7 +122,7 @@ class TimeFrequencyLikelihood(Likelihood):
         """
         Simulate the PSDs from the PSDs of the interferometers.
         """
-        self.psd_draws = self._get_resolution_matching_psd(self.interferometers)
+        self.psd_array = self._get_resolution_matching_psd(self.interferometers)
 
     def _validate_interferometers(self, interferometers):
         if not all([interferometer.frequency_array[1] - interferometer.frequency_array[0] == interferometers[0].frequency_array[1] - interferometers[0].frequency_array[0] for interferometer in interferometers[1:]]):
@@ -164,33 +169,10 @@ class TimeFrequencyLikelihood(Likelihood):
                                                   wavelet_frequency_resolution=self.wavelet_frequency_resolution,
                                                   nx=self.wavelet_nx,
                                                   nsample=self.simulate_psd_nsample))
-        return np.array(psd_array)[:,None,:]
+        return np.array(psd_array)
 
     def log_likelihood(self):
         raise NotImplementedError("The log_likelihood method must be implemented in a subclass.")
-
-    def compute_gw_projector(self):
-        # Evaluate the antenna pattern function
-        F_matrix = get_antenna_pattern_matrix(self.interferometers,
-                                              right_ascension=self.parameters['ra'],
-                                              declination=self.parameters['dec'],
-                                              polarization_angle=self.parameters['psi'],
-                                              gps_time=self.parameters['geocent_time'],
-                                              polarization=self.polarization_modes)
-        # Evaluate the collapsed antenna pattern function
-        # Compute the relative amplification factor
-        if self.relative_amplification_factor_map.size > 0:
-            relative_amplification_factor = relative_amplification_factor_helper(self.relative_amplification_factor_map,
-                                                                                 self.parameters)
-            F_matrix = get_collapsed_antenna_pattern_matrix(F_matrix,
-                                                            self.polarization_basis,
-                                                            self.polarization_derived,
-                                                            relative_amplification_factor)
-        # Compute the whitened F_matrix
-        whitened_F_matrix = compute_whitened_antenna_pattern_matrix_masked(F_matrix, self.psd_array, self.time_frequency_filter_collapsed)
-        # Compute the GW projector
-        Pgw = compute_gw_projector_masked(whitened_F_matrix, self.time_frequency_filter_collapsed)
-        return Pgw
 
     def _compute_antenna_pattern_matrix(self):
         # Evaluate the antenna pattern function
@@ -212,17 +194,7 @@ class TimeFrequencyLikelihood(Likelihood):
         return F_matrix
 
     def _calculate_noise_log_likelihood(self):
-        # Transform the time-shifted data to the time-freuency domain
-        time_frequency_domain_strain_array = np.array([transform_wavelet_freq(data,
-                                                                              self._wavelet_Nf,
-                                                                              self._wavelet_Nt,
-                                                                              self.wavelet_nx) for data in self.frequency_domain_strain_array])
-        # Whiten the strain data
-        time_frequency_domain_strain_array_whitened = compute_whitened_time_frequency_domain_strain_array(time_frequency_domain_strain_array,
-                                                                                                          self.psd_draws[:,0,:],
-                                                                                                          self.time_frequency_filter)        
-        # Compute the noise log likelihood
-        self._noise_log_likelihood_value = -np.sum(np.sum(np.abs(time_frequency_domain_strain_array_whitened)**2)) * 0.5 + self.log_normalization_constant
+        return None
 
     def noise_log_likelihood(self):
         """

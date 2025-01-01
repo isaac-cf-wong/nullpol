@@ -51,3 +51,6 @@ nullpol_pipe = "nullpol.tools.main:main"
 nullpol_pipe_analysis = "nullpol.tools.data_analysis:main"
 nullpol_pipe_generation = "nullpol.tools.data_generation:main"
 nullpol_pipe_write_default_ini = "nullpol.tools.parser:main"
+
+[tool.poetry.plugins."asimov.pipelines"]
+nullpol = "nullpol.asimov.nullpol:Nullpol"
