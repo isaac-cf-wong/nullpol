@@ -6,6 +6,12 @@
 Welcome to nullpol's documentation!
 ===================================
 
+nullpol is a Python package designed to facilitate model-agnostic tests of gravitational-wave polarizations.
+Built upon the robust parameter estimation capabilities of the bilby_ framework,
+nullpol seamlessly integrates with bilby_pipe_ to automate the workflow,
+enabling efficient and reproducible analyses.
+
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
@@ -13,6 +19,7 @@ Welcome to nullpol's documentation!
    installation
    citing-nullpol
    examples
+   injections
 
 .. toctree::
    :maxdepth: 1
@@ -26,3 +33,7 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+
+.. _bilby: https://lscsoft.docs.ligo.org/bilby/
+.. _bilby_pipe: https://lscsoft.docs.ligo.org/bilby_pipe/master/index.html
