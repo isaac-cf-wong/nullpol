@@ -1,8 +1,7 @@
 import numpy as np
 from tqdm import tqdm
 from ..utility import logger
-from ..psd import (simulate_psd_from_psd,
-                   get_pycbc_psd)
+from ..psd import simulate_psd_from_bilby_psd
 from ..null_stream import (time_shift,
                            compute_whitened_time_frequency_domain_strain_array)
 from ..time_frequency_transform import (transform_wavelet_freq,
@@ -24,12 +23,12 @@ def run_time_frequency_clustering(interferometers,
                                   skypoints,
                                   return_sky_maximized_spectrogram=False):
     # Simulate the wavelet PSDs
-    psd_array = np.array([simulate_psd_from_psd(psd=get_pycbc_psd(interferometer.power_spectral_density_array, 1./interferometer.duration),
-                                                seglen=interferometer.duration,
-                                                srate=interferometer.sampling_frequency,
-                                                wavelet_frequency_resolution=wavelet_frequency_resolution,
-                                                nsample=10,
-                                                nx=wavelet_nx) for interferometer in interferometers])
+    psd_array = np.array([simulate_psd_from_bilby_psd(psd=ifo.power_spectral_density,
+                                                      seglen=ifo.duration,
+                                                      srate=ifo.sampling_frequency,
+                                                      wavelet_frequency_resolution=wavelet_frequency_resolution,
+                                                      nsample=10,
+                                                      nx=wavelet_nx) for ifo in interferometers])
     # Draw random sky points
     ra_array = np.random.uniform(0, 2 * np.pi, size=skypoints)
     dec_array = np.arcsin(np.random.uniform(-1, 1, size=skypoints))

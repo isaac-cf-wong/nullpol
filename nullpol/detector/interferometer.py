@@ -91,7 +91,6 @@ def compute_geocentric_time_shifted_time_frequency_domain_strain_array(interfero
                                   Nt=Nt,
                                   nx=nx)
 
-
 def get_simulated_calibrated_wavelet_psd(interferometer,
                                          parameters,
                                          wavelet_frequency_resolution,

@@ -1,21 +1,17 @@
 """Bilby Pipeline specification."""
 
-import glob
 import os
-import re
 import subprocess
-import configparser
 
 import time
 
-import pathlib
 import pkg_resources
-import asimov
 from asimov import config
-from asimov.pipeline import Pipeline, PipelineException, PipelineLogger, PESummaryPipeline
+from asimov.pipelines.bilby import Bilby
+from asimov.pipeline import PipelineException, PipelineLogger
 
 
-class Nullpol(asimov.pipeline.Pipeline):
+class Nullpol(Bilby):
     """
     The nullpol pipeline.
 

@@ -17,21 +17,8 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
-dependencies = [
-    "numpy<=2.0.0",
-    "bilby",
-    "bilby_pipe<=1.4.2",
-    "astropy",
-    "ligo.skymap",
-    "numba",
-    "scipy",
-    "ConfigArgParse",
-    "pycbc",
-    "gwpy",
-    "asimov",
-    "librosa"
-]
 requires-python = ">=3.9"
+
 [tool.setuptools.packages]
 find = {}
 
@@ -46,11 +33,10 @@ language_level = 3
 [project.scripts]
 nullpol-create-injection = "nullpol.tools.create_injection:main"
 nullpol-create-time-frequency-filter-from-sample = "nullpol.tools.create_time_frequency_filter_from_sample:main"
-nullpol-simulate-psd-from-psd = "nullpol.tools.simulate_psd_from_psd:main"
 nullpol_pipe = "nullpol.tools.main:main"
 nullpol_pipe_analysis = "nullpol.tools.data_analysis:main"
 nullpol_pipe_generation = "nullpol.tools.data_generation:main"
 nullpol_pipe_write_default_ini = "nullpol.tools.parser:main"
 
 [tool.poetry.plugins."asimov.pipelines"]
-nullpol = "nullpol.asimov.nullpol:Nullpol"
+nullpol = "nullpol.asimov.asimov:Nullpol"

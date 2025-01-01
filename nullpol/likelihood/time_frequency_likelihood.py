@@ -20,6 +20,48 @@ from ..utility import logger
 
 class TimeFrequencyLikelihood(Likelihood):
     """A time-frequency likelihood class.
+
+    Parameters
+    ----------
+    interferometers: list
+        List of interferometers.
+    wavelet_frequency_resolution: float
+        The frequency resolution of the wavelet transform.
+    wavelet_nx: int
+        The number of points in the wavelet transform.
+    polarization_modes: list
+        List of polarization modes.
+    polarization_basis: list
+        List of polarization basis.
+    time_frequency_filter: str
+        The time-frequency filter.
+    simulate_psd_nsample: int
+        The number of samples to simulate the PSDs.
+    calibration_marginalization: bool, optional
+        If true, marginalize over calibration response curves in the likelihood.
+        This is done numerically over a number of calibration response curve realizations.
+    calibration_lookup_table: dict, optional
+        If a dict, contains the arrays over which to marginalize for each interferometer or the filepaths of the
+        calibration files.
+        If not provided, but calibration_marginalization is used, then the appropriate file is created to
+        contain the curves.
+    calibration_psd_lookup_table: dict, optional
+        If a dict, contains the arrays over which to marginalize for each interferometer or the filepaths of the
+        calibration PSD files.
+        If not provided, but calibration_marginalization is used, then the appropriate file is created to
+        contain the curves.
+    number_of_response_curves: int, optional
+        Number of curves from the calibration lookup table to use.
+        Default is 1000.
+    starting_index: int, optional
+        Sets the index for the first realization of the calibration curve to be considered.
+        This, coupled with number_of_response_curves, allows for restricting the set of curves used. This can be used
+        when dealing with large frequency arrays to split the calculation into sections.
+        Defaults to 0.
+    priors: dict, optional            
+        If given, used in the calibration marginalization.
+        Warning: when using marginalisation the dict is overwritten which will change the
+        the dict you are passing in. If this behaviour is undesired, pass `priors.copy()`.
     """
     def __init__(self,
                  interferometers,                 
@@ -36,24 +78,6 @@ class TimeFrequencyLikelihood(Likelihood):
                  starting_index=0,
                  priors=None,
                  *args, **kwargs):
-        """
-        Parameters
-        ----------
-        interferometers: list
-            List of interferometers.
-        wavelet_frequency_resolution: float
-            The frequency resolution of the wavelet transform.
-        wavelet_nx: int
-            The number of points in the wavelet transform.
-        polarization_modes: list
-            List of polarization modes.
-        polarization_basis: list
-            List of polarization basis.
-        time_frequency_filter: str
-            The time-frequency filter.
-        simulate_psd_nsample: int
-            The number of samples to simulate the PSDs.
-        """
         super(TimeFrequencyLikelihood, self).__init__(dict())
         # Load the interferometers.
         self.interferometers = bilby.gw.detector.networks.InterferometerList(interferometers)
@@ -92,7 +116,7 @@ class TimeFrequencyLikelihood(Likelihood):
         elif np.all([isinstance(ifo.calibration_model, Recalibrate) for ifo in self.interferometers]):
             # Simulate the TF domain PSDs
             self._sample_calibration_parameters = False
-            self.simulate_psd()
+            self._simulate_psd()
         else:
             self._sample_calibration_parameters = True
         
@@ -118,7 +142,7 @@ class TimeFrequencyLikelihood(Likelihood):
         for name in self.calibration_draws:
             self.calibration_abs_draws[name] = np.abs(self.calibration_draws[name])**2        
 
-    def simulate_psd(self):
+    def _simulate_psd(self):
         """
         Simulate the PSDs from the PSDs of the interferometers.
         """
@@ -148,14 +172,6 @@ class TimeFrequencyLikelihood(Likelihood):
             return self._time_frequency_filter_collapsed
         return output
 
-    @property
-    def log_normalization_constant(self):
-        output = getattr(self, '_log_normalization_constant', None)
-        if output is None:
-            output = -np.log(2 * np.pi) * len(self.interferometers) / 2 * np.sum(self.time_frequency_filter)
-            self._log_normalization_constant = output
-        return output
-
     def _validate_time_frequency_filter(self):
         # Get the shape of the time_frequency_filter        
         ntime, nfreq = self.time_frequency_filter.shape
@@ -172,6 +188,13 @@ class TimeFrequencyLikelihood(Likelihood):
         return np.array(psd_array)
 
     def log_likelihood(self):
+        """Log likelihood function.
+
+        Raises
+        ------
+        NotImplementedError:
+            The log_likelihood method must be implemented in a subclass.
+        """
         raise NotImplementedError("The log_likelihood method must be implemented in a subclass.")
 
     def _compute_antenna_pattern_matrix(self):
@@ -199,6 +222,11 @@ class TimeFrequencyLikelihood(Likelihood):
     def noise_log_likelihood(self):
         """
         Compute the noise log likelihood.
+
+        Returns
+        -------
+        float:
+            The noise log likelihood.
         """
         if self._noise_log_likelihood_value is None:            
             self._calculate_noise_log_likelihood()

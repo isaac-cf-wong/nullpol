@@ -14,7 +14,50 @@ from ..detector import (get_simulated_calibrated_wavelet_psd,
                         simulate_wavelet_psd)
 
 class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
-    """A time-frequency likelihood class that calculates the chi-squared likelihood."""
+    """A time-frequency likelihood class that calculates the chi-squared likelihood.
+
+    Parameters
+    ----------
+    interferometers: list
+        List of interferometers.
+    wavelet_frequency_resolution: float
+        The frequency resolution of the wavelet transform.
+    wavelet_nx: int
+        The number of points in the wavelet transform.
+    polarization_modes: list
+        List of polarization modes.
+    polarization_basis: list
+        List of polarization basis.
+    time_frequency_filter: str
+        The time-frequency filter.
+    simulate_psd_nsample: int
+        The number of samples to simulate the PSDs.
+    calibration_marginalization: bool, optional
+        If true, marginalize over calibration response curves in the likelihood.
+        This is done numerically over a number of calibration response curve realizations.
+    calibration_lookup_table: dict, optional
+        If a dict, contains the arrays over which to marginalize for each interferometer or the filepaths of the
+        calibration files.
+        If not provided, but calibration_marginalization is used, then the appropriate file is created to
+        contain the curves.
+    calibration_psd_lookup_table: dict, optional
+        If a dict, contains the arrays over which to marginalize for each interferometer or the filepaths of the
+        calibration PSD files.
+        If not provided, but calibration_marginalization is used, then the appropriate file is created to
+        contain the curves.
+    number_of_response_curves: int, optional
+        Number of curves from the calibration lookup table to use.
+        Default is 1000.
+    starting_index: int, optional
+        Sets the index for the first realization of the calibration curve to be considered.
+        This, coupled with number_of_response_curves, allows for restricting the set of curves used. This can be used
+        when dealing with large frequency arrays to split the calculation into sections.
+        Defaults to 0.
+    priors: dict, optional            
+        If given, used in the calibration marginalization.
+        Warning: when using marginalisation the dict is overwritten which will change the
+        the dict you are passing in. If this behaviour is undesired, pass `priors.copy()`.
+    """    
     def __init__(self,
                  interferometers,                 
                  wavelet_frequency_resolution,
@@ -30,24 +73,6 @@ class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
                  starting_index=0,
                  priors=None,
                  *args, **kwargs):
-        """
-        Parameters
-        ----------
-        interferometers: list
-            List of interferometers.
-        wavelet_frequency_resolution: float
-            The frequency resolution of the wavelet transform.
-        wavelet_nx: int
-            The number of points in the wavelet transform.
-        polarization_modes: list
-            List of polarization modes.
-        polarization_basis: list
-            List of polarization basis.
-        time_frequency_filter: array_like
-            The time-frequency filter.
-        simulate_psd_nsample: int
-            The number of samples to simulate the PSDs.
-        """
         super(Chi2TimeFrequencyLikelihood, self).__init__(interferometers=interferometers,
                                                           wavelet_frequency_resolution=wavelet_frequency_resolution,
                                                           wavelet_nx=wavelet_nx,

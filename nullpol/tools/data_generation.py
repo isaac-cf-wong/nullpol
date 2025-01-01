@@ -8,14 +8,14 @@ import numpy as np
 import json
 from .input import Input
 from .parser import create_nullpol_parser
-from ..utility import (log_version_information,
-                       logger,
+from ..utility import (logger,
                        get_file_extension)
 from ..calibration import build_calibration_lookup
 from ..clustering import (run_time_frequency_clustering,
                           plot_spectrogram)
 from .. import prior as nullpol_prior
-from .. import __version__
+from .. import (__version__,
+                log_version_information)
 bilby_pipe.utils.logger = logger
 
 

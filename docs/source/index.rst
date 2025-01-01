@@ -10,7 +10,15 @@ Welcome to nullpol's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   installation
+   citing-nullpol
+   examples
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Reference:
+
+   API Reference <autoapi/nullpol/index>
 
 Indices and tables
 ==================

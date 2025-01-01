@@ -7,11 +7,11 @@ from bilby_pipe.input import Input
 from bilby_pipe.main import MainInput as BilbyMainInput
 import bilby_pipe.utils
 import importlib
-from ..utility import (log_version_information,
-                       logger)
-from ..job_creation import generate_dag
 from .parser import create_nullpol_parser
 from .input import Input
+from .. import log_version_information
+from ..utility import logger
+from ..job_creation import generate_dag
 
 
 bilby_pipe.utils.logger = logger

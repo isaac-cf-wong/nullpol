@@ -3,13 +3,12 @@ from bilby.gw.detector.calibration import (read_calibration_file,
                                            _generate_calibration_draws,
                                            Precomputed,
                                            Recalibrate)
+from bilby.gw.detector import PowerSpectralDensity
 import os
 import numpy as np
 import pandas as pd
-from pycbc.types.frequencyseries import FrequencySeries
 from ..utility import logger
-from ..psd import (simulate_psd_from_psd,
-                   get_pycbc_psd)
+from ..psd import simulate_psd_from_bilby_psd
 
 def build_calibration_lookup(
     interferometers,
@@ -122,11 +121,17 @@ def _generate_calibration_psd_draws(interferometer,
                                     wavelet_frequency_resolution,
                                     simulate_psd_nsample,
                                     wavelet_nx):
-    delta_f = interferometer.frequency_array[1]-interferometer.frequency_array[0]
     psd_draws = []
-    for calibration_draw in calibration_draws:
+    for calibration_draw in calibration_draws:        
         psd_array = interferometer.power_spectral_density_array.copy()
         psd_array[interferometer.frequency_mask] = psd_array[interferometer.frequency_mask] / np.abs(calibration_draw)**2
-        psd_pycbc = get_pycbc_psd(psd_array, delta_f=delta_f)
-        psd_draws.append(simulate_psd_from_psd(psd_pycbc,interferometer.duration,interferometer.sampling_frequency,wavelet_frequency_resolution,simulate_psd_nsample,wavelet_nx))
+        calibrated_psd = PowerSpectralDensity(frequency_array=interferometer.frequency_array.copy(),
+                                              psd_array=psd_array)
+        wavelet_psd = simulate_psd_from_bilby_psd(psd=calibrated_psd,
+                                                  seglen=interferometer.duration,
+                                                  srate=interferometer.sampling_frequency,
+                                                  wavelet_frequency_resolution=wavelet_frequency_resolution,
+                                                  nsample=simulate_psd_nsample,
+                                                  nx=wavelet_nx)
+        psd_draws.append(wavelet_psd)
     return np.array(psd_draws)

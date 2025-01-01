@@ -12,8 +12,8 @@ import inspect
 from importlib import import_module
 from .parser import create_nullpol_parser
 from .input import Input
-from ..utility import (logger,
-                       log_version_information)
+from .. import log_version_information
+from ..utility import logger
 from ..result import PolarizationResult
 from ..likelihood import Chi2TimeFrequencyLikelihood
 
