@@ -21,6 +21,7 @@ stages:
   stage: initial
   image: python
   script:
+    - python -m pip install -r requirements.txt
     - python -m pip install .
     - *list-env
     - for script in $(pip show -f nullpol | grep "bin\/" | xargs -I {} basename {}); do
