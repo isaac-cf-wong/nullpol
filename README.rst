@@ -1,3 +1,5 @@
+|pipeline status|
+
 nullpol
 =======
 
@@ -5,14 +7,11 @@ nullpol
 Installation
 ------------
 
-To install the conda dependencies, first activate your conda environment::
-
-    conda activate <your environment>
-
-Install the conda dependencies::
-
-    conda env update --file environment.yml
-
 To install the package, run the following command::
 
+    pip install -r requirements.txt
     pip install .
+
+
+.. |pipeline status| image:: https://git.ligo.org/bayesian-null-stream/nullpol/badges/master/pipeline.svg
+   :target: https://git.ligo.org/bayesian-null-stream/nullpol/commits/master

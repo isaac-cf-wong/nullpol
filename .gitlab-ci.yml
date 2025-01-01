@@ -37,6 +37,7 @@ basic-3.10:
 .unit-tests: &unit-test
   stage: test
   script:
+    - python -m pip install -r requirements.txt
     - python -m pip install .
     - pip install -r test_requirements.txt
     - *list-env
