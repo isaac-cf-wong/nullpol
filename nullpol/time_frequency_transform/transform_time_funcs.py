@@ -2,21 +2,28 @@
 import numpy as np
 from numba import njit, prange
 from .transform_freq_funcs import phitilde_vec
-from .fft_funcs import single_frequency_fourier_transform
 
 def transform_wavelet_time_helper(data,Nf,Nt,phi,mult):
     """Helper function to do the wavelet transform in the time domain.
 
-    Args:
-        data (1D numpy array): Data.
-        Nf (int): Number of frequency bins.
-        Nt (int): Number of time bins.
-        phi (1D numpy array): Wavelet.
-        mult (int): mult
+    Parameters
+    ----------
+    data: 1D numpy array
+        Data.
+    Nf: int
+        Number of frequency bins.
+    Nt: int
+        Number of time bins.
+    phi: 1D numpy array
+        Wavelet.
+    mult: int
+        mult
 
-    Returns:
-        2D numpy array: Data in wavelet domain.
-    """
+    Returns
+    -------
+    2D numpy array
+        Data in wavelet domain.
+    """    
     # the time domain data stream
     ND = Nf*Nt
 
@@ -44,15 +51,23 @@ def transform_wavelet_time_helper(data,Nf,Nt,phi,mult):
 def assign_wdata(i,K,ND,Nf,wdata,data_pad,phi):
     """Assign wdata to be fftd in loop, data_pad needs K extra values on the right to loop.
 
-    Args:
-        i (int): Time index.
-        K (int): Frequency cutoff.
-        ND (int): ND.
-        Nf (int): Number of frequency bins.
-        wdata (1D numpy array): wdata.
-        data_pad (1D numpy array): Padded data.
-        phi (1D numpy array): Wavelet.
-    """
+    Parameters
+    ----------
+    i: int
+        Time index.
+    K: int
+        Frequency cutoff.
+    ND: int
+        ND.
+    Nf: int
+        Number of frequency bins.
+    wdata: 1D numpy array
+        wdata.
+    data_pad: 1D numpy array
+        Padded data.
+    phi: 1D numpy array
+        Wavelet.
+    """    
     #half_K = np.int64(K/2)
     jj = i*Nf-K//2
     if jj<0:
@@ -70,12 +85,18 @@ def assign_wdata(i,K,ND,Nf,wdata,data_pad,phi):
 def pack_wave(i,mult,Nf,wdata_trans,wave):
     """Pack fftd wdata into wave array.
 
-    Args:
-        i (int): Time index.
-        mult (int): mult.
-        Nf (int): Number of frequency bins.
-        wdata_trans (1D complex numpy array): wdata_trans.
-        wave (2D numpy array): wdata.
+    Parameters
+    ----------
+    i: int
+        Time index.
+    mult: int
+        mult.
+    Nf: int
+        Number of frequency bins.
+    wdata_trans: 1D complex numpy array
+        wdata_trans.
+    wave: 2D numpy array
+        wdata.
     """    
     if i%2==0 and i<wave.shape[0]-1:
         #m=0 value at even Nt and
@@ -91,14 +112,20 @@ def pack_wave(i,mult,Nf,wdata_trans,wave):
 def phi_vec(Nf,nx=4.,mult=16):
     """Get time domain phi as Fourier transform of phitilde_vec.
 
-    Args:
-        Nf (int): Number of frequency bins.
-        nx (float, optional): Steepness of filter. Defaults to 4..
-        mult (int, optional): mult. Defaults to 16.
+    Parameters
+    ----------
+    Nf: int
+        Number of frequency bins.
+    nx: float, optional
+        Steepness of filter. Defaults to 4..
+    mult: int, optional
+        mult. Defaults to 16.
 
-    Returns:
-        1D numpy array: Time domain phi.
-    """
+    Returns
+    -------
+    1D numpy array
+        Time domain phi.
+    """    
     #TODO fix mult
 
     OM = np.pi

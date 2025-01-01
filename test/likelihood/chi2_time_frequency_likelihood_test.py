@@ -12,7 +12,7 @@ from nullpol.likelihood.chi2_time_frequency_likelihood import Chi2TimeFrequencyL
 
 class TestChi2TimeFrequencyLikelihood(unittest.TestCase):
     def setUp(self):
-        seed = 1234
+        seed = 1235
         # Set the seed
         np.random.seed(seed)
         bilby.core.utils.random.seed(seed)      
@@ -76,6 +76,7 @@ class TestChi2TimeFrequencyLikelihood(unittest.TestCase):
 
     def test_noise_residual_power(self):
         samples = []
+
         for i in tqdm(range(200), desc='test_noise_residual_power'):
             # Create a noise injection
             interferometers = InterferometerList(['H1', 'L1', 'V1'])
@@ -105,6 +106,7 @@ class TestChi2TimeFrequencyLikelihood(unittest.TestCase):
 
     def test_signal_residual_power(self):
         samples = []
+
         for i in tqdm(range(200), desc='test_signal_residual_power'):
             # Create a noise injection
             interferometers = InterferometerList(['H1', 'L1', 'V1'])
@@ -135,6 +137,7 @@ class TestChi2TimeFrequencyLikelihood(unittest.TestCase):
 
     def test_signal_residual_power_incorrect_parameters(self):
         samples = []
+
         for i in tqdm(range(200), desc='test_signal_residual_power_incorrect_parameters'):
             # Create a noise injection
             interferometers = InterferometerList(['H1', 'L1', 'V1'])
