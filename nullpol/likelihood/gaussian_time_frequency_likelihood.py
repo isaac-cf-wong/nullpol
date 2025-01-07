@@ -1,5 +1,4 @@
 import numpy as np
-import scipy.stats
 from numba import njit
 from scipy.special import logsumexp
 from .time_frequency_likelihood import TimeFrequencyLikelihood
