@@ -23,17 +23,12 @@ def get_detectors_list(inputs):
     detectors_list.append(inputs.detectors)
     return detectors_list
 
-def get_polarization_models(inputs):
-    polarization_models = []
-    polarization_models.append(inputs.polarization_models)
-    return polarization_models
-
 def generate_dag(inputs):
     """Core logic setting up parent-child structure between nodes"""
     inputs = copy.deepcopy(inputs)
     dag = Dag(inputs)
     trigger_times = get_trigger_time_list(inputs)
-    polarization_model_list = get_polarization_models(inputs)
+    polarization_model_list = inputs.polarization_models
 
     # Iterate over all generation nodes and store them in a list
     generation_node_list = []

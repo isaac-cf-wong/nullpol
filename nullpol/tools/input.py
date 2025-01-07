@@ -2,7 +2,9 @@ from importlib import import_module
 import bilby
 from bilby_pipe.input import Input as BilbyInput
 import bilby_pipe.utils
-from bilby_pipe.utils import convert_string_to_dict
+from bilby_pipe.utils import (convert_string_to_dict,
+                              BilbyPipeError,
+                              strip_quotes)
 from ..utility import logger
 from ..likelihood import Chi2TimeFrequencyLikelihood
 from .. import prior as nullpol_prior
@@ -121,12 +123,24 @@ class Input(BilbyInput):
     
     @polarization_models.setter
     def polarization_models(self, models):
+        if models is None:
+            raise BilbyPipeError("No polarization-models input")
+        if isinstance(models, list):
+            models = ",".join(models)
+        if isinstance(models, str) is False:
+            raise BilbyPipeError(f"polarization-models input {models} not understood")
+        # Remove square brackets
+        models = models.replace("[", "").replace("]", "")
+        # Remove added quotes
+        models = strip_quotes(models)
+        # Replace multiple spaces with a single space
+        models = " ".join(models.split())
+        # Spaces can be either space or comma in input, convert to comma
+        models = models.replace(" ,", ",").replace(", ", ",").replace(" ", ",")
+
+        models = models.split(",")
+
         self._polarization_models = models
-        if models is not None:
-            logger.debug(f"Polarization modes set to {models}")
-        else:
-            self._polarization_models = ['pc']
-            logger.debug(f"Polarization modes set to default value of {self._polarization_models}")
 
     @property
     def polarization_basis(self):
