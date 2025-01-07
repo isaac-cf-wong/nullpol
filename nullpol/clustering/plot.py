@@ -21,7 +21,7 @@ def plot_spectrogram(spectrogram,
     cmap = plt.get_cmap("viridis")
     levels = MaxNLocator(nbins=15).tick_values(np.min(spectrogram),np.max(spectrogram))
     norm = BoundaryNorm(levels,ncolors=cmap.N,clip=True)
-    fig, ax = plt.subplot()
+    fig, ax = plt.subplots()
     img = librosa.display.specshow(spectrogram.T,y_axis="log",x_axis="s",cmap=cmap,norm=norm,x_coords=sampling_times,y_coords=sampling_frequencies,snap=True, ax=ax)
     ax.set_title(title)
     ax.set_ylabel("Frequency (Hz)")
