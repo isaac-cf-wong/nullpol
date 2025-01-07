@@ -23,11 +23,17 @@ def get_detectors_list(inputs):
     detectors_list.append(inputs.detectors)
     return detectors_list
 
+def get_polarization_models(inputs):
+    polarization_models = []
+    polarization_models.append(inputs.polarization_models)
+    return polarization_models
+
 def generate_dag(inputs):
     """Core logic setting up parent-child structure between nodes"""
     inputs = copy.deepcopy(inputs)
     dag = Dag(inputs)
     trigger_times = get_trigger_time_list(inputs)
+    polarization_model_list = get_polarization_models(inputs)
 
     # Iterate over all generation nodes and store them in a list
     generation_node_list = []
@@ -51,30 +57,32 @@ def generate_dag(inputs):
     merged_node_list = []
     all_parallel_node_list = []
     for generation_node in generation_node_list:
-        for detectors in detectors_list:
-            parallel_node_list = []
-            for parallel_idx in parallel_list:
-                analysis_node = AnalysisNode(
-                    inputs,
-                    generation_node=generation_node,
-                    detectors=detectors,
-                    parallel_idx=parallel_idx,
-                    dag=dag,
-                    sampler=inputs.sampler,
-                )
-            parallel_node_list.append(analysis_node)
-            all_parallel_node_list.append(analysis_node)
+        for polarization_model in polarization_model_list:
+            for detectors in detectors_list:
+                parallel_node_list = []
+                for parallel_idx in parallel_list:
+                    analysis_node = AnalysisNode(
+                        inputs,
+                        generation_node=generation_node,
+                        detectors=detectors,
+                        parallel_idx=parallel_idx,
+                        dag=dag,
+                        sampler=inputs.sampler,
+                        polarization_modes=polarization_model,
+                    )
+                parallel_node_list.append(analysis_node)
+                all_parallel_node_list.append(analysis_node)
 
-        if len(parallel_node_list) == 1:
-            merged_node_list.append(analysis_node)
-        else:
-            merge_node = MergeNode(
-                inputs=inputs,
-                parallel_node_list=parallel_node_list,
-                detectors=detectors,
-                dag=dag,
-            )
-            merged_node_list.append(merge_node)
+                if len(parallel_node_list) == 1:
+                    merged_node_list.append(analysis_node)
+                else:
+                    merge_node = MergeNode(
+                        inputs=inputs,
+                        parallel_node_list=parallel_node_list,
+                        detectors=detectors,
+                        dag=dag,
+                    )
+                    merged_node_list.append(merge_node)
 
     plot_nodes_list = []
     for merged_node in merged_node_list:

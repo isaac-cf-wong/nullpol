@@ -16,8 +16,8 @@ class Input(BilbyInput):
         super(Input, self).__init__(args=args,
                                     unknown_args=unknown_args,
                                     print_msg=print_msg)
-        self.polarization_modes = args.polarization_modes
-        self.polarization_basis = args.polarization_modes
+        self.polarization_models = args.polarization_models
+        self.polarization_basis = args.polarization_basis
         self.wavelet_frequency_resolution = args.wavelet_frequency_resolution
         self.wavelet_nx = args.wavelet_nx
         self.simulate_psd_nsample = args.simulate_psd_nsample
@@ -116,17 +116,17 @@ class Input(BilbyInput):
         self._calibration_correction_type = correction_type
 
     @property
-    def polarization_modes(self):
-        return getattr(self, '_polarization_modes', None)
+    def polarization_models(self):
+        return getattr(self, '_polarization_models', None)
     
-    @polarization_modes.setter
-    def polarization_modes(self, modes):
-        self._polarization_modes = modes
-        if modes is not None:
-            logger.debug(f"Polarization modes set to {modes}")
+    @polarization_models.setter
+    def polarization_models(self, models):
+        self._polarization_models = models
+        if models is not None:
+            logger.debug(f"Polarization modes set to {models}")
         else:
-            self._polarization_modes = 'pc'
-            logger.debug(f"Polarization modes set to default value of {self._polarization_modes}")
+            self._polarization_models = ['pc']
+            logger.debug(f"Polarization modes set to default value of {self._polarization_models}")
 
     @property
     def polarization_basis(self):

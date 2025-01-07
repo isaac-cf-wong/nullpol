@@ -7,10 +7,7 @@ from ..null_stream import (encode_polarization,
                            get_antenna_pattern_matrix,
                            get_collapsed_antenna_pattern_matrix,
                            relative_amplification_factor_map,
-                           relative_amplification_factor_helper,
-                           compute_whitened_antenna_pattern_matrix_masked,
-                           compute_whitened_time_frequency_domain_strain_array,
-                           compute_gw_projector_masked)
+                           relative_amplification_factor_helper)
 from ..time_frequency_transform import (transform_wavelet_freq,
                                         get_shape_of_wavelet_transform)
 from ..calibration import build_calibration_lookup

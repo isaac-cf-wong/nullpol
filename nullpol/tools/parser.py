@@ -129,10 +129,10 @@ def create_nullpol_parser(top_level=True):
     add_argument_to_group(parser, "Likelihood arguments", "--calibration-psd-lookup-table", type=nonestr, help=("Dictionary of calibration PSD lookup files for use with calibration "
                                                                                                                 "marginalization/the precomputed model. If these files don't "
                                                                                                                 "exist, they will be generated from the passed uncertainties."))
-    add_argument_to_group(parser, "Likelihood arguments", "--polarization-modes", type=nonestr, default="pc", help=("Polarization modes. A token consists of labels for the polarization modes. "
+    add_argument_to_group(parser, "Likelihood arguments", "--polarization-models", action="append", help=("Polarization models. A token consists of labels for the polarization modes. "
                                                                                                                     "`plus`: `p`, `cross`: `c`, `breathing`: `b`, `longitudinal`: `l`, "
                                                                                                                     "`vector_x`: `x`, `vector_y`: `y`. "
-                                                                                                                    "For example, `pc` means plus and cross polarization modes."))
+                                                                                                                    "For example, [pc, pcb] represents running over pc and pcb models."))
     add_argument_to_group(parser, "Likelihood arguments", "--polarization-basis", type=nonestr, default="pc", help=("Polarization basis. A token consists of labels for the polarization bases. "
                                                                                                                     "`plus`: `p`, `cross`: `c`, `breathing`: `b`, `longitudinal`: `l`, "
                                                                                                                     "`vector_x`: `x`, `vector_y`: `y`. "

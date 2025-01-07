@@ -14,7 +14,8 @@ from ..utility import (logger,
 from ..calibration import build_calibration_lookup
 from ..clustering import (run_time_frequency_clustering,
                           plot_spectrogram)
-from .. import prior as nullpol_prior
+from ..null_stream import (encode_polarization,
+                           relative_amplification_factor_map)
 from .. import (__version__,
                 log_version_information)
 bilby_pipe.utils.logger = logger
@@ -144,8 +145,47 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
         """Read in and compose the prior at run-time"""
         if getattr(self, "_priors", None) is None:
             self._priors = self._get_priors()
+            self._add_default_relative_polarization_prior()
         return self._priors
 
+    def _add_default_relative_polarization_prior(self):
+        # Encode the polarization modes
+        polarization_modes, polarization_basis, polarization_derived = encode_polarization(self.polarization_modes,
+                                                                                           self.polarization_basis)
+        
+        # Obtain the keywords
+        relative_polarization_parameters = relative_amplification_factor_map(polarization_basis=polarization_basis,
+                                                                             polarization_derived=polarization_derived).flatten()
+        prior_remove_list = []
+        for prior in self._priors:
+            if prior[:4] == 'amp_' and prior[4:] not in relative_polarization_parameters:
+                prior_remove_list.append(prior)
+            elif prior[:6] == 'phase_' and prior[6:] not in relative_polarization_parameters:
+                prior_remove_list.append(prior)
+
+        # Remove the redundant parameters
+        for i in range(len(prior_remove_list)):
+            logger.debug(f'Removed irrelevant prior: {self._prior[prior_remove_list[i]]}')
+            self._prior.pop(prior_remove_list[i])
+            
+        # Add missing prior
+        missing_priors = {}
+        for label in relative_polarization_parameters:
+            name = f'amp_{label}'
+            if name not in self._priors:
+                missing_priors[name] = bilby.core.prior.Uniform(name=name,
+                                                                minimum=0.0,
+                                                                maximum=1.0)
+                logger.debug(f'Added missing relative polarization prior: {missing_priors[name]}')
+            name = f'phase_{label}'
+            if name not in self._priors:
+                missing_priors[name] = bilby.core.prior.Uniform(name=name,
+                                                                minimum=0.0,
+                                                                maximum=2. * np.pi,
+                                                                boundary='periodic')
+                logger.debug(f'Added missing relative polarization prior: {missing_priors[name]}')
+        self._priors.update(missing_priors)
+        
     @priors.setter
     def priors(self, priors):
         self._priors = priors
