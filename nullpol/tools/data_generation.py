@@ -373,6 +373,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
             time_frequency_filter = np.load(self.time_frequency_clustering_method)
             logger.info(f'Loaded time-frequency filter from {self.time_frequency_clustering_method}.')
         self.meta_data['time_frequency_filter'] = time_frequency_filter
+        print(time_frequency_filter)
         plot_spectrogram(spectrogram=time_frequency_filter,
                          duration=self.interferometers[0].duration,
                          sampling_frequency=self.interferometers[0].sampling_frequency,

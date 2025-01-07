@@ -1,5 +1,3 @@
-import matplotlib as mpl
-mpl.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.colors import BoundaryNorm
 from matplotlib.ticker import MaxNLocator
@@ -13,6 +11,8 @@ def plot_spectrogram(spectrogram,
                      sampling_frequency,
                      wavelet_frequency_resolution,
                      title=None, savefig=None, dpi=100):
+    import matplotlib as mpl
+    mpl.use("Agg")
     Nt, Nf = get_shape_of_wavelet_transform(duration=duration,
                                             sampling_frequency=sampling_frequency,
                                             wavelet_frequency_resolution=wavelet_frequency_resolution)
