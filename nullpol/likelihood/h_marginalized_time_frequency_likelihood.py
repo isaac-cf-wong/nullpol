@@ -13,8 +13,8 @@ from ..detector import compute_whitened_time_frequency_domain_strain_array
 from ..detector import (get_simulated_calibrated_wavelet_psd,
                         simulate_wavelet_psd)
 
-class GaussianTimeFrequencyLikelihood(TimeFrequencyLikelihood):
-    """A time-frequency likelihood class that calculates the Gaussian likelihood.
+class HMarginalizedTimeFrequencyLikelihood(TimeFrequencyLikelihood):
+    """A time-frequency likelihood class that calculates the h-marginalized likelihood.
 
     Parameters
     ----------
@@ -73,7 +73,7 @@ class GaussianTimeFrequencyLikelihood(TimeFrequencyLikelihood):
                  starting_index=0,
                  priors=None,
                  *args, **kwargs):
-        super(GaussianTimeFrequencyLikelihood, self).__init__(interferometers=interferometers,
+        super(HMarginalizedTimeFrequencyLikelihood, self).__init__(interferometers=interferometers,
                                                               wavelet_frequency_resolution=wavelet_frequency_resolution,
                                                               wavelet_nx=wavelet_nx,
                                                               polarization_modes=polarization_modes,
@@ -87,7 +87,7 @@ class GaussianTimeFrequencyLikelihood(TimeFrequencyLikelihood):
                                                               starting_index=starting_index,
                                                               priors=priors,
                                                               *args, **kwargs)
-        self._log_normalization_constant = -np.log(2. * np.pi) * 0.5 * (len(self.interferometers) - np.sum(self.polarization_basis)) * np.sum(self.time_frequency_filter)
+        self._log_normalization_constant = (-np.log(2. * np.pi) * len(self.interferometers) / 2 - np.log(2.) * np.sum(self.polarization_basis) / 2) * np.sum(self.time_frequency_filter)
     
     def log_likelihood(self):
         null_energy_array = self._calculate_residual_power()
@@ -181,7 +181,7 @@ def compute_null_energy(time_frequency_domain_strain_array_time_shifted,
     # Compute the GW projector        
     Pgw = compute_gw_projector_masked(whitened_F_matrix, time_frequency_filter_collapsed)
     # Compute the null projector
-    Pnull = compute_null_projector_from_gw_projector(Pgw)
+    Pnull = compute_null_projector_from_gw_projector(Pgw * 0.5)
     # Compute the projection squared
     projection_squared = compute_projection_squared(time_frequency_domain_strain_array_time_shifted_whitened,
                                                     Pnull,

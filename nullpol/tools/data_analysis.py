@@ -15,7 +15,9 @@ from .input import Input
 from .. import log_version_information
 from ..utility import logger
 from ..result import PolarizationResult
-from ..likelihood import Chi2TimeFrequencyLikelihood
+from ..likelihood import (Chi2TimeFrequencyLikelihood,
+                          GaussianTimeFrequencyLikelihood,
+                          HMarginalizedTimeFrequencyLikelihood)
 
 # fmt: off
 import matplotlib  # isort:skip
@@ -171,6 +173,10 @@ class DataAnalysisInput(BilbyDataAnalysisInput, Input):
         )
         if self.likelihood_type == "Chi2TimeFrequencyLikelihood":
             Likelihood = Chi2TimeFrequencyLikelihood
+        elif self.likelihood_type == "GaussianTimeFrequencyLikelihood":
+            Likelihood = GaussianTimeFrequencyLikelihood
+        elif self.likelihood_type == "HMarginalizedTimeFrequencyLikelihood":
+            Likelihood = HMarginalizedTimeFrequencyLikelihood
         elif "." in self.likelihood_type:
             split_path = self.likelihood_type.split(".")
             module = ".".join(split_path[:-1])
