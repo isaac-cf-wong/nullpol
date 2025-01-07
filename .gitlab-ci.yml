@@ -21,7 +21,6 @@ stages:
   stage: initial
   image: python
   script:
-    - python -m pip install -r requirements.txt
     - python -m pip install .
     - *list-env
     - for script in $(pip show -f nullpol | grep "bin\/" | xargs -I {} basename {}); do
@@ -37,9 +36,7 @@ basic-3.10:
 .unit-tests: &unit-test
   stage: test
   script:
-    - python -m pip install -r requirements.txt
-    - python -m pip install .
-    - pip install -r test_requirements.txt
+    - python -m pip install .[test]
     - *list-env
     - pytest test/ --cov=nullpol --durations 10
 

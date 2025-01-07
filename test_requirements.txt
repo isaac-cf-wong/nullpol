@@ -1,4 +1,0 @@
-pycbc
-pytest
-pytest-cov
-pytest-cython
