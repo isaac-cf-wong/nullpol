@@ -1,5 +1,7 @@
 import unittest
-from nullpol.utility import get_file_extension
+import tempfile
+from nullpol.utility import (get_file_extension,
+                             is_file)
 
 
 class TestFilesystem(unittest.TestCase):
@@ -7,6 +9,12 @@ class TestFilesystem(unittest.TestCase):
         filename = "filename.txt"
         extension = get_file_extension(filename)
         self.assertEqual(extension, ".txt")
+
+    def test_is_file(self):
+        with tempfile.NamedTemporaryFile() as temp_file:
+            temp_file_name = temp_file.name
+            self.assertTrue(is_file(temp_file_name))
+        self.assertFalse(is_file(temp_file_name))
 
 if __name__ == '__main__':
     unittest.main()

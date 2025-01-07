@@ -5,7 +5,7 @@ def lal_binary_black_hole_non_gr_simple_map(
     frequency_array, mass_1, mass_2, luminosity_distance,
     a_1, tilt_1, phi_12, a_2, tilt_2, phi_jl,
     theta_jn, phase,
-    amp_plus=1., amp_cross=1., amp_x=0., amp_y=0., amp_b=0., amp_l=0.,
+    amp_p=1., amp_c=1., amp_x=0., amp_y=0., amp_b=0., amp_l=0.,
     **kwargs,
 ):
     waveform_kwargs = dict(
@@ -23,6 +23,6 @@ def lal_binary_black_hole_non_gr_simple_map(
     wf_dict['y'] = wf_dict['cross'] * amp_y
     wf_dict['breathing'] = wf_dict['plus'] * amp_b
     wf_dict['longitudinal'] = wf_dict['plus'] * amp_l
-    wf_dict['plus'] = wf_dict['plus'] * amp_plus
-    wf_dict['cross'] = wf_dict['cross'] * amp_cross
+    wf_dict['plus'] = wf_dict['plus'] * amp_p
+    wf_dict['cross'] = wf_dict['cross'] * amp_c
     return wf_dict

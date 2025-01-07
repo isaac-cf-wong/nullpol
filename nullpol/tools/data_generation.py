@@ -9,7 +9,8 @@ import json
 from .input import Input
 from .parser import create_nullpol_parser
 from ..utility import (logger,
-                       get_file_extension)
+                       get_file_extension,
+                       is_file)
 from ..calibration import build_calibration_lookup
 from ..clustering import (run_time_frequency_clustering,
                           plot_spectrogram)
@@ -247,7 +248,32 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
     def time_frequency_clustering_skypoints(self, skypoints):
         self._time_frequency_clustering_skypoints = skypoints
 
+    def _get_interferometers_from_injection_in_gaussian_noise(self):
+        # Copy the interferometers
+        interferometers = bilby.gw.detector.InterferometerList([ifo.name for ifo in self.interferometers])
+        for i in range(len(interferometers)):            
+            power_spectral_density = bilby.gw.detector.PowerSpectralDensity(frequency_array=self.interferometers[i].frequency_array.copy(),
+                                                                            psd_array=self.interferometers[i].power_spectral_density_array.copy())
+            interferometers[i].power_spectral_density = power_spectral_density
+        injection_parameters = self.injection_df.iloc[self.idx].to_dict()
+        # Set the strain data from zero noise.
+        interferometers.set_strain_data_from_zero_noise(sampling_frequency=self.sampling_frequency,
+                                                        duration=self.duration,
+                                                        start_time=self.start_time)
+        waveform_arguments = self.get_injection_waveform_arguments()
+        waveform_generator = self.waveform_generator_class(duration=self.duration,
+                                                           start_time=self.start_time,
+                                                           sampling_frequency=self.sampling_frequency,
+                                                           frequency_domain_source_model=self.bilby_frequency_domain_source_model,
+                                                           parameter_conversion=self.parameter_conversion,
+                                                           waveform_arguments=waveform_arguments)
+        interferometers.inject_signal(waveform_generator=waveform_generator,
+                                      parameters=injection_parameters,
+                                      raise_error=self.enforce_signal_duration)
+        return interferometers
+
     def run_time_frequency_clustering(self):
+        time_frequency_filter_file_provided = False
         logger.info(f"Running time-frequency clustering with method: {self.time_frequency_clustering_method}")
         # Build the strain data for time-frequency clustering
         if self.time_frequency_clustering_method == "data":
@@ -256,7 +282,8 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
                                                        "injection_parameters_file",
                                                        "maxL",
                                                        "maP",
-                                                       "random"]:
+                                                       "random",
+                                                       "time_frequency_filter_file"]:
             if self.time_frequency_clustering_method == "injection":
                 parameters = self.meta_data["injection_parameters"]
             elif self.time_frequency_clustering_method == "injection_parameters_file":
@@ -324,6 +351,9 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
                 raise_error=self.enforce_signal_duration,
             )
             frequency_domain_strain_array = np.array([ifo.frequency_domain_strain for ifo in self.interferometers])
+        elif is_file(self.time_frequency_clustering_method):
+            frequency_domain_strain_array = np.array([ifo.frequency_domain_strain for ifo in self.interferometers])
+            time_frequency_filter_file_provided = True
         else:
             raise ValueError(
                 f"Unknown time-frequency clustering method {self.time_frequency_clustering_method}"
@@ -339,6 +369,9 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
                                                                                          frequency_padding=self.time_frequency_clustering_frequency_padding,
                                                                                          skypoints=self.time_frequency_clustering_skypoints,
                                                                                          return_sky_maximized_spectrogram=True)
+        if time_frequency_filter_file_provided:
+            time_frequency_filter = np.load(self.time_frequency_clustering_method)
+            logger.info(f'Loaded time-frequency filter from {self.time_frequency_clustering_method}.')
         self.meta_data['time_frequency_filter'] = time_frequency_filter
         plot_spectrogram(spectrogram=time_frequency_filter,
                          duration=self.interferometers[0].duration,

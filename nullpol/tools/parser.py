@@ -154,7 +154,7 @@ def create_nullpol_parser(top_level=True):
                                                                                                  "provide the path to the injection parameters file."))
     clustering_parser.add("--time-frequency-clustering-pe-samples-filename", type=nonestr, help=("If `maxL`, `maxP` or `random` is chosen in --time-frequency-clustering-method, "
                                                                                                  "provide the path to the bilby result file."))
-    clustering_parser.add('--time-frequency-clustering-threshold', type=float, default=0.9, help="Quantile threshold to filter the excess power.")
+    clustering_parser.add('--time-frequency-clustering-threshold', type=float, default=0.95, help="Quantile threshold to filter the excess power.")
     clustering_parser.add('--time-frequency-clustering-time-padding', type=float, default=0.1, help="Time padding in second to pad on both sides of the cluster.")
     clustering_parser.add('--time-frequency-clustering-frequency-padding', type=float, default=1, help="Frequency padding in Hz to pad on both sides of the cluster.")
     clustering_parser.add('--time-frequency-clustering-skypoints', type=int, default=100, help="Number of skypoints to compute the sky-maximized energy map.")
