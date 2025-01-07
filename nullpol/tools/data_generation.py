@@ -373,24 +373,26 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
             time_frequency_filter = np.load(self.time_frequency_clustering_method)
             logger.info(f'Loaded time-frequency filter from {self.time_frequency_clustering_method}.')
         self.meta_data['time_frequency_filter'] = time_frequency_filter
-        print(time_frequency_filter)
+        time_frequency_filter_fig_fname = f"{self.data_directory}/{self.label}_time_frequency_filter_spectrogram.png"
         plot_spectrogram(spectrogram=time_frequency_filter,
                          duration=self.interferometers[0].duration,
                          sampling_frequency=self.interferometers[0].sampling_frequency,
                          wavelet_frequency_resolution=self.wavelet_frequency_resolution,
+                         t0=self.start_time,
                          title="Time-frequency Filter Spectrogram",
-                         savefig=f"{self.label}_time_frequency_filter_spectrogram.png",
+                         savefig=time_frequency_filter_fig_fname,
                          dpi=100)
-        logger.info(f"Saved plot of time-frequency filter spectrogram to {self.label}_time_frequency_filter_spectrogram.png.")
+        logger.info(f"Saved plot of time-frequency filter spectrogram to {time_frequency_filter_fig_fname}.")
+        spectrogram_fig_fname = f"{self.data_directory}/{self.label}_sky_maximized_spectrogram.png"
         plot_spectrogram(spectrogram=sky_maximized_spectrogram,
                          duration=self.interferometers[0].duration,
                          sampling_frequency=self.interferometers[0].sampling_frequency,
                          wavelet_frequency_resolution=self.wavelet_frequency_resolution,
+                         t0=self.start_time,
                          title="Sky-maximized Spectrogram",
-                         savefig=f"{self.label}_sky_maximized_spectrogram.png",
+                         savefig=spectrogram_fig_fname,
                          dpi=100)
-        logger.info(f"Saved plot of sky-maximized spectrogram to {self.label}_sky_maximized_spectrogram.png.")
-
+        logger.info(f"Saved plot of sky-maximized spectrogram to {spectrogram_fig_fname}.")
 
     def save_data_dump(self):
         """Method to dump the saved data to disk for later analysis"""
