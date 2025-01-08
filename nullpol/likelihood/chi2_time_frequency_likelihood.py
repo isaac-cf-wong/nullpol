@@ -10,8 +10,7 @@ from ..null_stream import (time_shift,
                            compute_projection_squared)
 from ..time_frequency_transform import transform_wavelet_freq
 from ..detector import compute_whitened_time_frequency_domain_strain_array
-from ..detector import (get_simulated_calibrated_wavelet_psd,
-                        simulate_wavelet_psd)
+from ..detector import get_simulated_calibrated_wavelet_psd
 
 class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
     """A time-frequency likelihood class that calculates the chi-squared likelihood.
@@ -64,8 +63,9 @@ class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
                  wavelet_nx,
                  polarization_modes,
                  polarization_basis=None,
+                 wavelet_psd_array=None,
                  time_frequency_filter=None,
-                 simulate_psd_nsample=100,
+                 simulate_psd_nsample=1000,
                  calibration_marginalization=False,
                  calibration_lookup_table=None,
                  calibration_psd_lookup_table=None,
@@ -78,6 +78,7 @@ class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
                                                           wavelet_nx=wavelet_nx,
                                                           polarization_modes=polarization_modes,
                                                           polarization_basis=polarization_basis,
+                                                          wavelet_psd_array=wavelet_psd_array,
                                                           time_frequency_filter=time_frequency_filter,
                                                           simulate_psd_nsample=simulate_psd_nsample,
                                                           calibration_marginalization=calibration_marginalization,
@@ -138,7 +139,7 @@ class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
                                                               self.interferometers[0].sampling_frequency)])            
         else:
             null_energy_array = np.array([compute_null_energy(time_frequency_domain_strain_array_time_shifted,
-                                                              self.psd_array,
+                                                              self.wavelet_psd_array,
                                                               F_matrix,
                                                               self.time_frequency_filter,
                                                               self.time_frequency_filter_collapsed,
@@ -152,15 +153,8 @@ class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
                                                                               self._wavelet_Nf,
                                                                               self._wavelet_Nt,
                                                                               self.wavelet_nx) for data in self.frequency_domain_strain_array])
-        # Whiten the strain data
-        psd_array = getattr(self, 'psd_array', None)
-        if psd_array is None:
-            psd_array = np.array([simulate_wavelet_psd(interferometer=ifo,
-                                                       wavelet_frequency_resolution=self.wavelet_frequency_resolution,
-                                                       nx=self.wavelet_nx,
-                                                       nsample=simulate_psd_nsample) for ifo in self.interferometers])
         time_frequency_domain_strain_array_whitened = compute_whitened_time_frequency_domain_strain_array(time_frequency_domain_strain_array,
-                                                                                                          self.psd_array,
+                                                                                                          self.wavelet_psd_array,
                                                                                                           self.time_frequency_filter)
         energy = np.sum(np.abs(time_frequency_domain_strain_array_whitened)**2)
         self._noise_log_likelihood_value = scipy.stats.chi2.logpdf(energy, df=len(self.interferometers)*np.sum(self.time_frequency_filter))

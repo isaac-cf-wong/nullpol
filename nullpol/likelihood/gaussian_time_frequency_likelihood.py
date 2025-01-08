@@ -63,8 +63,9 @@ class GaussianTimeFrequencyLikelihood(TimeFrequencyLikelihood):
                  wavelet_nx,
                  polarization_modes,
                  polarization_basis=None,
+                 wavelet_psd_array=None,
                  time_frequency_filter=None,
-                 simulate_psd_nsample=100,
+                 simulate_psd_nsample=1000,
                  calibration_marginalization=False,
                  calibration_lookup_table=None,
                  calibration_psd_lookup_table=None,
@@ -77,6 +78,7 @@ class GaussianTimeFrequencyLikelihood(TimeFrequencyLikelihood):
                                                               wavelet_nx=wavelet_nx,
                                                               polarization_modes=polarization_modes,
                                                               polarization_basis=polarization_basis,
+                                                              wavelet_psd_array=wavelet_psd_array,
                                                               time_frequency_filter=time_frequency_filter,
                                                               simulate_psd_nsample=simulate_psd_nsample,
                                                               calibration_marginalization=calibration_marginalization,
@@ -134,7 +136,7 @@ class GaussianTimeFrequencyLikelihood(TimeFrequencyLikelihood):
                                                               self.interferometers[0].sampling_frequency)])            
         else:
             null_energy_array = np.array([compute_null_energy(time_frequency_domain_strain_array_time_shifted,
-                                                              self.psd_array,
+                                                              self.wavelet_psd_array,
                                                               F_matrix,
                                                               self.time_frequency_filter,
                                                               self.time_frequency_filter_collapsed,
@@ -156,7 +158,7 @@ class GaussianTimeFrequencyLikelihood(TimeFrequencyLikelihood):
                                                        nx=self.wavelet_nx,
                                                        nsample=self.simulate_psd_nsample) for ifo in self.interferometers])
         time_frequency_domain_strain_array_whitened = compute_whitened_time_frequency_domain_strain_array(time_frequency_domain_strain_array,
-                                                                                                          self.psd_array,
+                                                                                                          self.wavelet_psd_array,
                                                                                                           self.time_frequency_filter)
         energy = np.sum(np.abs(time_frequency_domain_strain_array_whitened)**2)
         self._noise_log_likelihood_value = -0.5 * energy + self._log_normalization_constant

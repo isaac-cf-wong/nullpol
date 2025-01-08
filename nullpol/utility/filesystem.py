@@ -1,6 +1,21 @@
 from pathlib import Path
 
 
+def get_absolute_path(file_path):
+    """Get absolute path.
+    
+    Parameters
+    ----------
+    file_path: str
+        Path to the file.
+
+    Returns
+    -------
+    str:
+        Absolute path.
+    """
+    return str(Path(file_path).resolve())
+
 def get_file_extension(file_path):
     """Get the file extension.
 

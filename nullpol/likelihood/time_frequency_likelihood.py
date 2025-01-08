@@ -8,8 +8,7 @@ from ..null_stream import (encode_polarization,
                            get_collapsed_antenna_pattern_matrix,
                            relative_amplification_factor_map,
                            relative_amplification_factor_helper)
-from ..time_frequency_transform import (transform_wavelet_freq,
-                                        get_shape_of_wavelet_transform)
+from ..time_frequency_transform import get_shape_of_wavelet_transform
 from ..calibration import build_calibration_lookup
 from ..detector import simulate_wavelet_psd
 from ..utility import logger
@@ -66,8 +65,9 @@ class TimeFrequencyLikelihood(Likelihood):
                  wavelet_nx,
                  polarization_modes,
                  polarization_basis=None,
+                 wavelet_psd_array=None,
                  time_frequency_filter=None,
-                 simulate_psd_nsample=100,
+                 simulate_psd_nsample=1000,
                  calibration_marginalization=False,
                  calibration_lookup_table=None,
                  calibration_psd_lookup_table=None,
@@ -94,6 +94,7 @@ class TimeFrequencyLikelihood(Likelihood):
         self.polarization_derived_collapsed = np.array([self.polarization_derived[i] for i in range(len(self.polarization_modes)) if self.polarization_modes[i]]).astype(bool)
         self.relative_amplification_factor_map = relative_amplification_factor_map(self.polarization_basis,
                                                                                    self.polarization_derived)
+        self.wavelet_psd_array = wavelet_psd_array
         # Load the time_frequency_filter
         self.time_frequency_filter = time_frequency_filter
         self._time_frequency_filter_collapsed = None
@@ -114,9 +115,7 @@ class TimeFrequencyLikelihood(Likelihood):
             self._marginalized_parameters.append('recalib_index')
             self._sample_calibration_parameters = False
         elif np.all([isinstance(ifo.calibration_model, Recalibrate) for ifo in self.interferometers]):
-            # Simulate the TF domain PSDs
             self._sample_calibration_parameters = False
-            self._simulate_psd()
         else:
             self._sample_calibration_parameters = True
         
@@ -142,11 +141,20 @@ class TimeFrequencyLikelihood(Likelihood):
         for name in self.calibration_draws:
             self.calibration_abs_draws[name] = np.abs(self.calibration_draws[name])**2        
 
-    def _simulate_psd(self):
-        """
-        Simulate the PSDs from the PSDs of the interferometers.
-        """
-        self.psd_array = self._get_resolution_matching_psd(self.interferometers)
+    @property
+    def wavelet_psd_array(self):
+        output = getattr(self, "_wavelet_psd_array", None)
+        if output is None:
+            output = np.array([simulate_wavelet_psd(interferometer=ifo,
+                                                    wavelet_frequency_resolution=self.wavelet_frequency_resolution,
+                                                    nx=self.wavelet_nx,
+                                                    nsample=self.simulate_psd_nsample) for ifo in self.interferometers])
+            self._wavelet_psd_array = output       
+        return output
+
+    @wavelet_psd_array.setter
+    def wavelet_psd_array(self, wavelet_psd_array):
+        self._wavelet_psd_array = wavelet_psd_array
 
     def _validate_interferometers(self, interferometers):
         if not all([interferometer.frequency_array[1] - interferometer.frequency_array[0] == interferometers[0].frequency_array[1] - interferometers[0].frequency_array[0] for interferometer in interferometers[1:]]):
@@ -177,15 +185,6 @@ class TimeFrequencyLikelihood(Likelihood):
         ntime, nfreq = self.time_frequency_filter.shape
         assert nfreq==self._wavelet_Nf, "The length of frequency axis in the wavelet domain does not match the time frequency filter."
         assert ntime==self._wavelet_Nt, "The length of time axis in the wavelet domain does not match the time frequency filter."
-
-    def _get_resolution_matching_psd(self, interferometers):
-        psd_array = []
-        for interferometer in interferometers:
-            psd_array.append(simulate_wavelet_psd(interferometer=interferometer,
-                                                  wavelet_frequency_resolution=self.wavelet_frequency_resolution,
-                                                  nx=self.wavelet_nx,
-                                                  nsample=self.simulate_psd_nsample))
-        return np.array(psd_array)
 
     def log_likelihood(self):
         """Log likelihood function.

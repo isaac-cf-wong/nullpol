@@ -16,9 +16,6 @@ from .. import log_version_information
 from ..utility import (logger,
                        NullpolError)
 from ..result import PolarizationResult
-from ..likelihood import (Chi2TimeFrequencyLikelihood,
-                          GaussianTimeFrequencyLikelihood,
-                          HMarginalizedTimeFrequencyLikelihood)
 from ..null_stream import (encode_polarization,
                            relative_amplification_factor_map)
 
@@ -238,57 +235,7 @@ class DataAnalysisInput(BilbyDataAnalysisInput, Input):
             save=self.result_format,
             **self.sampler_kwargs,
         )
-
-    @property
-    def likelihood(self):
-        self.search_priors = self.priors.copy()
-        likelihood_kwargs = dict(
-            interferometers=self.interferometers,
-            wavelet_frequency_resolution=self.wavelet_frequency_resolution,
-            wavelet_nx=self.wavelet_nx,
-            polarization_modes=self.polarization_modes,
-            polarization_basis=self.polarization_basis,
-            time_frequency_filter=self.meta_data['time_frequency_filter'],
-            simulate_psd_nsample=self.simulate_psd_nsample,
-            calibration_marginalization=self.calibration_marginalization,
-            calibration_lookup_table=self.calibration_lookup_table,
-            calibration_psd_lookup_table=self.calibration_psd_lookup_table,
-            number_of_response_curves=self.number_of_response_curves,
-            priors=self.search_priors,            
-        )
-        if self.likelihood_type == "Chi2TimeFrequencyLikelihood":
-            Likelihood = Chi2TimeFrequencyLikelihood
-        elif self.likelihood_type == "GaussianTimeFrequencyLikelihood":
-            Likelihood = GaussianTimeFrequencyLikelihood
-        elif self.likelihood_type == "HMarginalizedTimeFrequencyLikelihood":
-            Likelihood = HMarginalizedTimeFrequencyLikelihood
-        elif "." in self.likelihood_type:
-            split_path = self.likelihood_type.split(".")
-            module = ".".join(split_path[:-1])
-            likelihood_class = split_path[-1]
-            Likelihood = getattr(import_module(module), likelihood_class)
-            likelihood_kwargs.update(self.extra_likelihood_kwargs)            
-        else:
-            raise ValueError(f"Unknown Likelihood class {self.likelihood_type}")
-
-        likelihood_kwargs = {
-            key: likelihood_kwargs[key]
-            for key in likelihood_kwargs
-            if key in inspect.getfullargspec(Likelihood.__init__).args
-        }
-
-        logger.debug(
-            f"Initialise likelihood {Likelihood} with kwargs: \n{likelihood_kwargs}"
-        )
-        likelihood = Likelihood(**likelihood_kwargs)        
-
-        # If requested, use a zero likelihood: for testing purposes
-        if self.likelihood_type == "zero":
-            logger.debug("Using a ZeroLikelihood")
-            likelihood = bilby.core.likelihood.ZeroLikelihood(likelihood)
-
-        return likelihood        
-
+    
 def create_analysis_parser(usage=__doc__):
     """Data analysis parser creation"""
     return create_nullpol_parser(top_level=False)

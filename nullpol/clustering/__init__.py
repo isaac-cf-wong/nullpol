@@ -21,14 +21,17 @@ def run_time_frequency_clustering(interferometers,
                                   time_padding,
                                   frequency_padding,
                                   skypoints,
-                                  return_sky_maximized_spectrogram=False):
+                                  return_sky_maximized_spectrogram=False,
+                                  psd_array=None,
+                                  simulate_psd_nsample=1000):
     # Simulate the wavelet PSDs
-    psd_array = np.array([simulate_psd_from_bilby_psd(psd=ifo.power_spectral_density,
-                                                      seglen=ifo.duration,
-                                                      srate=ifo.sampling_frequency,
-                                                      wavelet_frequency_resolution=wavelet_frequency_resolution,
-                                                      nsample=100,
-                                                      nx=wavelet_nx) for ifo in interferometers])
+    if psd_array is None:
+        psd_array = np.array([simulate_psd_from_bilby_psd(psd=ifo.power_spectral_density,
+                                                        seglen=ifo.duration,
+                                                        srate=ifo.sampling_frequency,
+                                                        wavelet_frequency_resolution=wavelet_frequency_resolution,
+                                                        nsample=simulate_psd_nsample,
+                                                        nx=wavelet_nx) for ifo in interferometers])
     # Draw random sky points
     ra_array = np.random.uniform(0, 2 * np.pi, size=skypoints)
     dec_array = np.arcsin(np.random.uniform(-1, 1, size=skypoints))

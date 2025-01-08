@@ -8,6 +8,7 @@ import numpy as np
 import json
 from .input import Input
 from .parser import create_nullpol_parser
+from ..psd import simulate_psd_from_bilby_psd
 from ..utility import (logger,
                        get_file_extension,
                        is_file)
@@ -346,6 +347,17 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
             raise ValueError(
                 f"Unknown time-frequency clustering method {self.time_frequency_clustering_method}"
             )
+        # Estimate the wavelet PSD
+        logger.info('Estimating wavelet PSDs...')
+        psd_array = np.array([simulate_psd_from_bilby_psd(psd=ifo.power_spectral_density,
+                                                          seglen=ifo.duration,
+                                                          srate=ifo.sampling_frequency,
+                                                          wavelet_frequency_resolution=self.wavelet_frequency_resolution,
+                                                          nsample=self.simulate_psd_nsample,
+                                                          nx=self.wavelet_nx) for ifo in self.interferometers])
+        # Save the wavelet PSD to disk.
+        self.meta_data['wavelet_psd_array'] = psd_array
+
         time_frequency_filter, sky_maximized_spectrogram = run_time_frequency_clustering(interferometers=self.interferometers,
                                                                                          frequency_domain_strain_array=frequency_domain_strain_array,
                                                                                          wavelet_frequency_resolution=self.wavelet_frequency_resolution,
@@ -356,7 +368,8 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
                                                                                          time_padding=self.time_frequency_clustering_time_padding,
                                                                                          frequency_padding=self.time_frequency_clustering_frequency_padding,
                                                                                          skypoints=self.time_frequency_clustering_skypoints,
-                                                                                         return_sky_maximized_spectrogram=True)
+                                                                                         return_sky_maximized_spectrogram=True,
+                                                                                         psd_array=psd_array)
         if time_frequency_filter_file_provided:
             time_frequency_filter = np.load(self.time_frequency_clustering_method)
             logger.info(f'Loaded time-frequency filter from {self.time_frequency_clustering_method}.')

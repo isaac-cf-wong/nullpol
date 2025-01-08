@@ -6,8 +6,11 @@ from bilby_pipe.utils import (convert_string_to_dict,
                               BilbyPipeError,
                               strip_quotes)
 import numpy as np
-from ..utility import logger
-from ..likelihood import Chi2TimeFrequencyLikelihood
+from ..utility import (logger,
+                       get_absolute_path)
+from ..likelihood import (Chi2TimeFrequencyLikelihood,
+                          GaussianTimeFrequencyLikelihood,
+                          HMarginalizedTimeFrequencyLikelihood)
 from .. import prior as nullpol_prior
 import inspect
 
@@ -81,7 +84,8 @@ class Input(BilbyInput):
             wavelet_nx=self.wavelet_nx,
             polarization_modes=self.polarization_modes,
             polarization_basis=self.polarization_basis,
-            time_frequency_filter=f"{self.label}_time_frequency_filter.npy",
+            wavelet_psd_array=self.meta_data["wavelet_psd_array"],
+            time_frequency_filter=self.meta_data['time_frequency_filter'],
             simulate_psd_nsample=self.simulate_psd_nsample,
             calibration_marginalization=self.calibration_marginalization,
             calibration_lookup_table=self.calibration_lookup_table,
@@ -91,6 +95,10 @@ class Input(BilbyInput):
         )
         if self.likelihood_type == "Chi2TimeFrequencyLikelihood":
             Likelihood = Chi2TimeFrequencyLikelihood
+        elif self.likelihood_type == "GaussianTimeFrequencyLikelihood":
+            Likelihood = GaussianTimeFrequencyLikelihood
+        elif self.likelihood_type == "HMarginalizedTimeFrequencyLikelihood":
+            Likelihood = HMarginalizedTimeFrequencyLikelihood
         elif "." in self.likelihood_type:
             split_path = self.likelihood_type.split(".")
             module = ".".join(split_path[:-1])
