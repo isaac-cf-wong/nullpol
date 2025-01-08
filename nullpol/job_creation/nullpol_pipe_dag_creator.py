@@ -13,7 +13,8 @@ from bilby_pipe.utils import get_colored_string
 import bilby_pipe.utils
 from .generation_node import GenerationNode
 from .analysis_node import AnalysisNode
-from ..utility import logger
+from ..utility import (logger,
+                       NullpolError)
 
 
 bilby_pipe.utils.logger = logger
@@ -28,8 +29,11 @@ def generate_dag(inputs):
     inputs = copy.deepcopy(inputs)
     dag = Dag(inputs)
     trigger_times = get_trigger_time_list(inputs)
-    polarization_model_list = inputs.polarization_models
-
+    polarization_modes_list = inputs.polarization_modes
+    polarization_basis_list = inputs.polarization_basis
+    number_of_polarization_runs = len(polarization_modes_list)
+    if number_of_polarization_runs != len(polarization_basis_list):
+        raise NullpolError(f'Lengths of polarization-modes = {polarization_modes_list} and polarization-basis = {polarization_basis_list} do not match.')
     # Iterate over all generation nodes and store them in a list
     generation_node_list = []
     for idx, trigger_time in enumerate(trigger_times):
@@ -52,7 +56,7 @@ def generate_dag(inputs):
     merged_node_list = []
     all_parallel_node_list = []
     for generation_node in generation_node_list:
-        for polarization_model in polarization_model_list:
+        for i in range(number_of_polarization_runs):
             for detectors in detectors_list:
                 parallel_node_list = []
                 for parallel_idx in parallel_list:
@@ -63,7 +67,8 @@ def generate_dag(inputs):
                         parallel_idx=parallel_idx,
                         dag=dag,
                         sampler=inputs.sampler,
-                        polarization_modes=polarization_model,
+                        polarization_modes=polarization_modes_list[i],
+                        polarization_basis=polarization_basis_list[i],
                     )
                 parallel_node_list.append(analysis_node)
                 all_parallel_node_list.append(analysis_node)

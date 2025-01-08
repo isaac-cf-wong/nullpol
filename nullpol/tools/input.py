@@ -5,6 +5,7 @@ import bilby_pipe.utils
 from bilby_pipe.utils import (convert_string_to_dict,
                               BilbyPipeError,
                               strip_quotes)
+import numpy as np
 from ..utility import logger
 from ..likelihood import Chi2TimeFrequencyLikelihood
 from .. import prior as nullpol_prior
@@ -18,7 +19,7 @@ class Input(BilbyInput):
         super(Input, self).__init__(args=args,
                                     unknown_args=unknown_args,
                                     print_msg=print_msg)
-        self.polarization_models = args.polarization_models
+        self.polarization_modes = args.polarization_modes
         self.polarization_basis = args.polarization_basis
         self.wavelet_frequency_resolution = args.wavelet_frequency_resolution
         self.wavelet_nx = args.wavelet_nx
@@ -47,6 +48,29 @@ class Input(BilbyInput):
         self.duration = args.duration
         self.trigger_time = args.trigger_time
         self.post_trigger_duration = args.post_trigger_duration
+
+    @property
+    def priors(self):
+        """Read in and compose the prior at run-time"""
+        if getattr(self, "_priors", None) is None:
+            self._priors = self._get_priors()
+            self._add_default_extrinsic_priors()
+        return self._priors
+
+    @priors.setter
+    def priors(self, priors):
+        self._priors = priors
+
+    def _add_default_extrinsic_priors(self):
+        if 'ra' not in self._priors:
+            self._priors['ra'] = bilby.core.prior.Uniform(name='ra', minimum=0, maximum=2 * np.pi, boundary="periodic")
+            logger.info(f"Added missing prior for ra: {self._priors['ra']}")
+        if 'dec' not in self._priors:
+            self._priors['dec'] = bilby.core.prior.Cosine(name="dec")
+            logger.info(f"Added missing prior for dec: {self._priors['dec']}")
+        if 'psi' not in self._priors:
+            self._priors['psi'] = bilby.core.prior.Uniform(name='psi', minimum=0, maximum=np.pi, boundary='periodic')
+            logger.info(f"Added missing prior for psi: {self._priors['psi']}")
 
     @property
     def likelihood(self):
@@ -118,29 +142,29 @@ class Input(BilbyInput):
         self._calibration_correction_type = correction_type
 
     @property
-    def polarization_models(self):
-        return getattr(self, '_polarization_models', None)
+    def polarization_modes(self):
+        return getattr(self, '_polarization_modes', None)
     
-    @polarization_models.setter
-    def polarization_models(self, models):
-        if models is None:
-            raise BilbyPipeError("No polarization-models input")
-        if isinstance(models, list):
-            models = ",".join(models)
-        if isinstance(models, str) is False:
-            raise BilbyPipeError(f"polarization-models input {models} not understood")
+    @polarization_modes.setter
+    def polarization_modes(self, modes):
+        if modes is None:
+            raise BilbyPipeError("No polarization-modes input")
+        if isinstance(modes, list):
+            modes = ",".join(modes)
+        if isinstance(modes, str) is False:
+            raise BilbyPipeError(f"polarization-modes input {modes} not understood")
         # Remove square brackets
-        models = models.replace("[", "").replace("]", "")
+        modes = modes.replace("[", "").replace("]", "")
         # Remove added quotes
-        models = strip_quotes(models)
+        modes = strip_quotes(modes)
         # Replace multiple spaces with a single space
-        models = " ".join(models.split())
+        modes = " ".join(modes.split())
         # Spaces can be either space or comma in input, convert to comma
-        models = models.replace(" ,", ",").replace(", ", ",").replace(" ", ",")
+        modes = modes.replace(" ,", ",").replace(", ", ",").replace(" ", ",")
 
-        models = models.split(",")
+        modes = modes.split(",")
 
-        self._polarization_models = models
+        self._polarization_modes = modes
 
     @property
     def polarization_basis(self):

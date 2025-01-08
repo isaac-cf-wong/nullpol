@@ -158,7 +158,7 @@ class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
             psd_array = np.array([simulate_wavelet_psd(interferometer=ifo,
                                                        wavelet_frequency_resolution=self.wavelet_frequency_resolution,
                                                        nx=self.wavelet_nx,
-                                                       nsample=self.simulate_psd_nsample) for ifo in self.interferometers])
+                                                       nsample=simulate_psd_nsample) for ifo in self.interferometers])
         time_frequency_domain_strain_array_whitened = compute_whitened_time_frequency_domain_strain_array(time_frequency_domain_strain_array,
                                                                                                           self.psd_array,
                                                                                                           self.time_frequency_filter)

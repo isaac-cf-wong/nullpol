@@ -15,8 +15,8 @@ def compute_gw_projector_masked(whitened_antenna_pattern_matrix,
 
 @njit
 def compute_null_projector_from_gw_projector(gw_projector):
-    nfreq, ndet, _ = gw_projector.shape
-    output = -gw_projector
+    nfreq, ndet, _ = gw_projector.shape    
+    output = -gw_projector.copy()
     for i in range(nfreq):
         for j in range(ndet):
             output[i,j,j] += 1.
@@ -31,10 +31,10 @@ def compute_projection_squared(time_frequency_domain_strain_array,
     ## projector: (freq, detector, detector)
     ## time_freuency_filter: (time, frequency)
     ndet, ntime, nfreq = time_frequency_domain_strain_array.shape
-    output = np.zeros((ntime,nfreq), dtype=np.float64)    
+    output = np.zeros((ntime,nfreq), dtype=np.float64)
     for i in range(ntime):
         for j in range(nfreq):
             if time_freuency_filter[i,j]:
-                d = np.ascontiguousarray(time_frequency_domain_strain_array[:,i,j])
-                output[i,j] = np.abs(np.dot(np.conj(d), projector[j] @ d))
+                d = np.ascontiguousarray(time_frequency_domain_strain_array[:,i,j].astype(projector.dtype))
+                output[i,j] = np.abs(np.conj(d) @ projector[j] @ d)
     return output

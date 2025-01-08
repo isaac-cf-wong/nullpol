@@ -129,17 +129,19 @@ def create_nullpol_parser(top_level=True):
     add_argument_to_group(parser, "Likelihood arguments", "--calibration-psd-lookup-table", type=nonestr, help=("Dictionary of calibration PSD lookup files for use with calibration "
                                                                                                                 "marginalization/the precomputed model. If these files don't "
                                                                                                                 "exist, they will be generated from the passed uncertainties."))
-    add_argument_to_group(parser, "Likelihood arguments", "--polarization-models", action="append", help=("Polarization models. A token consists of labels for the polarization modes. "
+    add_argument_to_group(parser, "Likelihood arguments", "--polarization-modes", action="append", help=("Polarization models. A token consists of labels for the polarization modes. "
                                                                                                                     "`plus`: `p`, `cross`: `c`, `breathing`: `b`, `longitudinal`: `l`, "
                                                                                                                     "`vector_x`: `x`, `vector_y`: `y`. "
-                                                                                                                    "For example, [pc, pcb] represents running over pc and pcb models."))
-    add_argument_to_group(parser, "Likelihood arguments", "--polarization-basis", type=nonestr, default="pc", help=("Polarization basis. A token consists of labels for the polarization bases. "
-                                                                                                                    "`plus`: `p`, `cross`: `c`, `breathing`: `b`, `longitudinal`: `l`, "
-                                                                                                                    "`vector_x`: `x`, `vector_y`: `y`. "
-                                                                                                                    "For example, `pc` means plus and cross polarization modes as the bases."))
+                                                                                                                    "For example, [pc, pcb] represents running over pc and pcb models."
+                                                                                                                    "pc represents only running the pc model."))
+    add_argument_to_group(parser, "Likelihood arguments", "--polarization-basis", action="append", help=("Polarization basis. A token consists of labels for the polarization bases. "
+                                                                                                         "`plus`: `p`, `cross`: `c`, `breathing`: `b`, `longitudinal`: `l`, "
+                                                                                                         "`vector_x`: `x`, `vector_y`: `y`. "
+                                                                                                         "For example, [p, b] represents using basis p for the first model, and basis b for the second model."
+                                                                                                         "For a single run, you can also specify a single label e.g. `p` to indicate the basis."))
     add_argument_to_group(parser, "Likelihood arguments", "--wavelet-frequency-resolution", type=float, default=32., help="Frequency resolution in Hz in the time-frequency domain.")
     add_argument_to_group(parser, "Likelihood arguments", "--wavelet-nx", type=float, default=4., help="Sharpness of the wavelet.")
-    add_argument_to_group(parser, "Likelihood arguments", "--simulate-psd-nsample", type=int, default=10, help="Number of samples to estimate the PSD in the time-frequency domain.")
+    add_argument_to_group(parser, "Likelihood arguments", "--simulate-psd-nsample", type=int, default=1000, help="Number of samples to estimate the PSD in the time-frequency domain.")
     add_argument_to_group(parser, "Prior arguments", "--default-prior", type=str, default="PolarizationPriorDict", help="The name of the prior set to base the prior on.")
     add_argument_to_group(parser, "Calibration arguments", "--calibration-correction-type", type=nonestr, default="data", help=("Type of calibration correction: can be either `data` or `template`. "
                                                                                                                                 "See https://bilby-dev.github.io/bilby/api/bilby.gw.detector.calibration.html "

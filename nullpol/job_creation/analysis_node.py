@@ -4,9 +4,10 @@ from bilby_pipe.job_creation.nodes.analysis_node import touch_checkpoint_files
 
 
 class AnalysisNode(Node):
-    def __init__(self, inputs, generation_node, detectors, sampler, parallel_idx, dag, polarization_modes):
+    def __init__(self, inputs, generation_node, detectors, sampler, parallel_idx, dag, polarization_modes, polarization_basis):
         super().__init__(inputs=inputs, retry=3)
         self.polarization_modes = polarization_modes
+        self.polarization_basis = polarization_basis
         self.dag = dag
         self.generation_node = generation_node
         self.detectors = detectors
@@ -35,6 +36,10 @@ class AnalysisNode(Node):
         self.arguments.add(
             'polarization-modes',
             self.polarization_modes
+        )
+        self.arguments.add(
+            'polarization-basis',
+            self.polarization_basis
         )
 
         if self.inputs.transfer_files or self.inputs.osg:
@@ -75,10 +80,6 @@ class AnalysisNode(Node):
 
         self.process_node()
         self.job.add_parent(generation_node.job)
-
-    @property
-    def polarization_basis(self):
-        return self.inputs.polarization_basis
 
     @property
     def executable(self):

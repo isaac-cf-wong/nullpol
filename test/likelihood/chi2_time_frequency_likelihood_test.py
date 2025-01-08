@@ -79,9 +79,32 @@ class TestChi2TimeFrequencyLikelihood(unittest.TestCase):
         import matplotlib.pyplot as plt
         plt.imshow(self.time_frequency_filter, aspect='auto')
         plt.savefig('TF_filter.png')
-        print(np.sum(self.time_frequency_filter))
         plt.imshow(spectrogram, aspect='auto')
         plt.savefig('spectrogram.png') 
+
+    def test_collapsed_antenna_pattern(self):
+        interferometers = InterferometerList(['H1', 'L1', 'V1'])
+        create_injection(interferometers=interferometers,
+                        duration=self.duration,
+                        sampling_frequency=self.sampling_frequency,
+                        start_time=self.start_time,
+                        noise_type='noise')
+        polarization_modes = 'pc'
+        polarization_basis = 'c'
+        likelihood = Chi2TimeFrequencyLikelihood(interferometers=interferometers,
+                                                wavelet_frequency_resolution=self.wavelet_frequency_resolution,
+                                                wavelet_nx=self.wavelet_nx,
+                                                polarization_modes=polarization_modes,
+                                                polarization_basis=polarization_basis,
+                                                time_frequency_filter=self.time_frequency_filter,
+                                                simulate_psd_nsample=100)
+        likelihood.parameters = dict(ra=0,
+                                    dec=0,
+                                    psi=0,
+                                    amplitude_pc=1.,
+                                    phase_pc=0.1,
+                                    geocent_time=self.geocent_time)
+        print(likelihood.log_likelihood())
 
     def test_noise_residual_power(self):
         samples = []

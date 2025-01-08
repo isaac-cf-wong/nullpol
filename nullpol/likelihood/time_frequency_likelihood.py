@@ -89,6 +89,9 @@ class TimeFrequencyLikelihood(Likelihood):
                                                                             self.wavelet_frequency_resolution)
         # Encode the polarization labels
         self.polarization_modes, self.polarization_basis, self.polarization_derived = encode_polarization(polarization_modes, polarization_basis)
+        # Collapse the polarization encoding
+        self.polarization_basis_collapsed = np.array([self.polarization_basis[i] for i in range(len(self.polarization_modes)) if self.polarization_modes[i]]).astype(bool)
+        self.polarization_derived_collapsed = np.array([self.polarization_derived[i] for i in range(len(self.polarization_modes)) if self.polarization_modes[i]]).astype(bool)
         self.relative_amplification_factor_map = relative_amplification_factor_map(self.polarization_basis,
                                                                                    self.polarization_derived)
         # Load the time_frequency_filter
@@ -208,8 +211,8 @@ class TimeFrequencyLikelihood(Likelihood):
             relative_amplification_factor = relative_amplification_factor_helper(self.relative_amplification_factor_map,
                                                                                  self.parameters)
             F_matrix = get_collapsed_antenna_pattern_matrix(F_matrix,
-                                                            self.polarization_basis,
-                                                            self.polarization_derived,
+                                                            self.polarization_basis_collapsed,
+                                                            self.polarization_derived_collapsed,
                                                             relative_amplification_factor)
         return F_matrix
 
