@@ -100,6 +100,7 @@ class WeightedGaussianTimeFrequencyLikelihood(TimeFrequencyLikelihood):
         self.regularization_constant = regularization_constant
         self._log_normalization_constant_noise_tf = -np.log(2. * np.pi) * 0.5 * len(self.interferometers)
         self._log_normalization_constant_signal_tf = self._log_normalization_constant_noise_tf + np.log(1. - regularization_constant) * 0.5 * np.sum(self.polarization_basis)
+        self._compute_noise_log_likelihood_time_frequency_map()
     
     def log_likelihood(self):
         joint_log_likelihood_array = self._calculate_joint_log_likelihood()
@@ -132,8 +133,8 @@ class WeightedGaussianTimeFrequencyLikelihood(TimeFrequencyLikelihood):
                                                                             time_frequency_filter_collapsed=self.time_frequency_filter_collapsed,
                                                                             srate=self.interferometers[0].sampling_frequency,
                                                                             regularization_constant=self.regularization_constant,
-                                                                            log_normalization_constant_signal_tf=self._log_normalization_constant_signal_tf,
-                                                                            log_normalization_constant_noise_tf=self._log_normalization_constant_noise_tf)
+                                                                            noise_log_likelihood_time_frequency_map=self._noise_log_likelihood_time_frequency_map,
+                                                                            log_normalization_constant_signal_tf=self._log_normalization_constant_signal_tf)
         elif self._sample_calibration_parameters:
             # Simulate the PSD.
             psd_array = np.array([get_simulated_calibrated_wavelet_psd(interferometer=ifo,
@@ -148,8 +149,8 @@ class WeightedGaussianTimeFrequencyLikelihood(TimeFrequencyLikelihood):
                                                                                 time_frequency_filter_collapsed=self.time_frequency_filter_collapsed,
                                                                                 srate=self.interferometers[0].sampling_frequency,
                                                                                 regularization_constant=self.regularization_constant,
-                                                                                log_normalization_constant_signal_tf=self._log_normalization_constant_signal_tf,
-                                                                                log_normalization_constant_noise_tf=self._log_normalization_constant_noise_tf)])
+                                                                                noise_log_likelihood_time_frequency_map=self._noise_log_likelihood_time_frequency_map,
+                                                                                log_normalization_constant_signal_tf=self._log_normalization_constant_signal_tf)])
         else:
             joint_log_likelihood_array = np.array([compute_joint_log_likelihood(time_frequency_domain_strain_array_time_shifted,
                                                                                 psd_array=self.wavelet_psd_array,
@@ -158,13 +159,15 @@ class WeightedGaussianTimeFrequencyLikelihood(TimeFrequencyLikelihood):
                                                                                 time_frequency_filter_collapsed=self.time_frequency_filter_collapsed,
                                                                                 srate=self.interferometers[0].sampling_frequency,
                                                                                 regularization_constant=self.regularization_constant,
-                                                                                log_normalization_constant_signal_tf=self._log_normalization_constant_signal_tf,
-                                                                                log_normalization_constant_noise_tf=self._log_normalization_constant_noise_tf)])
+                                                                                noise_log_likelihood_time_frequency_map=self._noise_log_likelihood_time_frequency_map,
+                                                                                log_normalization_constant_signal_tf=self._log_normalization_constant_signal_tf)])
         
         return joint_log_likelihood_array
 
     def _calculate_noise_log_likelihood(self):
-        # Transform the time-shifted data to the time-freuency domain
+        self._noise_log_likelihood_value = np.sum(self._noise_log_likelihood_time_frequency_map)
+
+    def _compute_noise_log_likelihood_time_frequency_map(self):
         time_frequency_domain_strain_array = np.array([transform_wavelet_freq(data,
                                                                               self._wavelet_Nf,
                                                                               self._wavelet_Nt,
@@ -172,8 +175,14 @@ class WeightedGaussianTimeFrequencyLikelihood(TimeFrequencyLikelihood):
         time_frequency_domain_strain_array_whitened = compute_whitened_time_frequency_domain_strain_array(time_frequency_domain_strain_array,
                                                                                                           self.wavelet_psd_array,
                                                                                                           self.time_frequency_filter)
-        energy = np.sum(np.abs(time_frequency_domain_strain_array_whitened)**2)
-        self._noise_log_likelihood_value = -0.5 * energy + self._log_normalization_constant_noise_tf * np.count_nonzero(self.time_frequency_filter)
+        energy = np.sum(np.abs(time_frequency_domain_strain_array_whitened)**2, axis=0)
+        self._noise_log_likelihood_time_frequency_map = -0.5 * energy
+        ntime, nfreq = energy.shape
+        for i in range(ntime):
+            for j in range(nfreq):
+                if self.time_frequency_filter[i,j]:
+                    self._noise_log_likelihood_time_frequency_map[i,j] += self._log_normalization_constant_noise_tf
+        
 
 @njit
 def compute_joint_log_likelihood(time_frequency_domain_strain_array_time_shifted,
@@ -183,8 +192,8 @@ def compute_joint_log_likelihood(time_frequency_domain_strain_array_time_shifted
                                  time_frequency_filter_collapsed,
                                  srate,
                                  regularization_constant,
-                                 log_normalization_constant_signal_tf,
-                                 log_normalization_constant_noise_tf):
+                                 noise_log_likelihood_time_frequency_map,
+                                 log_normalization_constant_signal_tf):
     ndet, ntime, nfreq = time_frequency_domain_strain_array_time_shifted.shape
     # Compute the whitened time-frequency domain strain array
     time_frequency_domain_strain_array_time_shifted_whitened = compute_whitened_time_frequency_domain_strain_array(time_frequency_domain_strain_array_time_shifted,
@@ -210,10 +219,7 @@ def compute_joint_log_likelihood(time_frequency_domain_strain_array_time_shifted
             if time_frequency_filter[i,j]:
                 log_likelihood_tf = -0.5 * projection_squared[i,j] + log_normalization_constant_signal_tf + np.log(time_frequency_filter[i,j])
                 if time_frequency_filter[i,j] != 1.:
-                    # If the noise probability is not zero in this pixel, calculate the noise log likelihood
-                    d_w_tf = np.ascontiguousarray(time_frequency_domain_strain_array_time_shifted_whitened[:,i,j])
-                    d_w_tf_squared = np.abs(np.conj(d_w_tf) @ d_w_tf)
-                    log_likelihood_tf_noise = -0.5 * d_w_tf_squared + log_normalization_constant_noise_tf + np.log(1. - time_frequency_filter[i,j])
+                    log_likelihood_tf_noise = noise_log_likelihood_time_frequency_map[i,j] + np.log(1. - time_frequency_filter[i,j])
                     # Add the noise joint log likelihood to the total log likelihood using the logexpsum trick.
                     if log_likelihood_tf >= log_likelihood_tf_noise:
                         log_likelihood_tf = log_likelihood_tf + np.log(1. + np.exp(log_likelihood_tf_noise - log_likelihood_tf))
@@ -230,8 +236,8 @@ def compute_joint_log_likelihood_array(time_frequency_domain_strain_array_time_s
                                        time_frequency_filter_collapsed,
                                        srate,
                                        regularization_constant,
-                                       log_normalization_constant_signal_tf,
-                                       log_normalization_constant_noise_tf):
+                                       noise_log_likelihood_time_frequency_map,
+                                       log_normalization_constant_signal_tf):
     _, psd_nsample, _ = psd_draw_array.shape
     joint_log_likelihood_array = np.zeros(psd_nsample)
     for i in range(psd_nsample):
@@ -242,6 +248,6 @@ def compute_joint_log_likelihood_array(time_frequency_domain_strain_array_time_s
                                                             time_frequency_filter_collapsed=time_frequency_filter_collapsed,
                                                             srate=srate,
                                                             regularization_constant=regularization_constant,
-                                                            log_normalization_constant_signal_tf=log_normalization_constant_signal_tf,
-                                                            log_normalization_constant_noise_tf=log_normalization_constant_noise_tf)
+                                                            noise_log_likelihood_time_frequency_map=noise_log_likelihood_time_frequency_map,
+                                                            log_normalization_constant_signal_tf=log_normalization_constant_signal_tf)
     return joint_log_likelihood_array
