@@ -10,7 +10,8 @@ from ..utility import (logger,
                        get_absolute_path)
 from ..likelihood import (Chi2TimeFrequencyLikelihood,
                           GaussianTimeFrequencyLikelihood,
-                          HMarginalizedTimeFrequencyLikelihood)
+                          HMarginalizedTimeFrequencyLikelihood,
+                          WeightedGaussianTimeFrequencyLikelihood)
 from .. import prior as nullpol_prior
 import inspect
 
@@ -95,16 +96,22 @@ class Input(BilbyInput):
         )
         if self.likelihood_type == "Chi2TimeFrequencyLikelihood":
             Likelihood = Chi2TimeFrequencyLikelihood
+            likelihood_kwargs.update(self.extra_likelihood_kwargs)
         elif self.likelihood_type == "GaussianTimeFrequencyLikelihood":
             Likelihood = GaussianTimeFrequencyLikelihood
+            likelihood_kwargs.update(self.extra_likelihood_kwargs)
         elif self.likelihood_type == "HMarginalizedTimeFrequencyLikelihood":
             Likelihood = HMarginalizedTimeFrequencyLikelihood
+            likelihood_kwargs.update(self.extra_likelihood_kwargs)
+        elif self.likelihood_type == "WeightedGaussianTimeFrequencyLikelihood":
+            Likelihood = WeightedGaussianTimeFrequencyLikelihood
+            likelihood_kwargs.update(self.extra_likelihood_kwargs)
         elif "." in self.likelihood_type:
             split_path = self.likelihood_type.split(".")
             module = ".".join(split_path[:-1])
             likelihood_class = split_path[-1]
             Likelihood = getattr(import_module(module), likelihood_class)
-            likelihood_kwargs.update(self.extra_likelihood_kwargs)            
+            likelihood_kwargs.update(self.extra_likelihood_kwargs)
         else:
             raise ValueError(f"Unknown Likelihood class {self.likelihood_type}")
 

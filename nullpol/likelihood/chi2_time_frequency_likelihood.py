@@ -12,6 +12,7 @@ from ..time_frequency_transform import transform_wavelet_freq
 from ..detector import compute_whitened_time_frequency_domain_strain_array
 from ..detector import get_simulated_calibrated_wavelet_psd
 
+
 class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
     """A time-frequency likelihood class that calculates the chi-squared likelihood.
 

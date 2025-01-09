@@ -8,9 +8,9 @@ from ..null_stream import (time_shift,
                            compute_null_projector_from_gw_projector,
                            compute_projection_squared)
 from ..time_frequency_transform import transform_wavelet_freq
-from ..detector import compute_whitened_time_frequency_domain_strain_array
-from ..detector import (get_simulated_calibrated_wavelet_psd,
-                        simulate_wavelet_psd)
+from ..detector import (compute_whitened_time_frequency_domain_strain_array,
+                        get_simulated_calibrated_wavelet_psd)
+
 
 class GaussianTimeFrequencyLikelihood(TimeFrequencyLikelihood):
     """A time-frequency likelihood class that calculates the Gaussian likelihood.
@@ -150,13 +150,6 @@ class GaussianTimeFrequencyLikelihood(TimeFrequencyLikelihood):
                                                                               self._wavelet_Nf,
                                                                               self._wavelet_Nt,
                                                                               self.wavelet_nx) for data in self.frequency_domain_strain_array])
-        # Whiten the strain data
-        psd_array = getattr(self, 'psd_array', None)
-        if psd_array is None:
-            psd_array = np.array([simulate_wavelet_psd(interferometer=ifo,
-                                                       wavelet_frequency_resolution=self.wavelet_frequency_resolution,
-                                                       nx=self.wavelet_nx,
-                                                       nsample=self.simulate_psd_nsample) for ifo in self.interferometers])
         time_frequency_domain_strain_array_whitened = compute_whitened_time_frequency_domain_strain_array(time_frequency_domain_strain_array,
                                                                                                           self.wavelet_psd_array,
                                                                                                           self.time_frequency_filter)

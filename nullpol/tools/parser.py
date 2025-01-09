@@ -160,6 +160,8 @@ def create_nullpol_parser(top_level=True):
     clustering_parser.add('--time-frequency-clustering-time-padding', type=float, default=0.1, help="Time padding in second to pad on both sides of the cluster.")
     clustering_parser.add('--time-frequency-clustering-frequency-padding', type=float, default=1, help="Frequency padding in Hz to pad on both sides of the cluster.")
     clustering_parser.add('--time-frequency-clustering-skypoints', type=int, default=100, help="Number of skypoints to compute the sky-maximized energy map.")
+    clustering_parser.add('--time-frequency-probability-map-confidence-threshold', type=float, default=0.9, help="Confidence threshold to reject noise hypothesis.")
+    clustering_parser.add('--time-frequency-probability-map-steepness', type=float, default=1., help="Steepness to transit from noise hypothesis to signal hypothesis.")
     parser.add("--version", action="version", version=f"%(prog)s={__version__}")
     return parser
 

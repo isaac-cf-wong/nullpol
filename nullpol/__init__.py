@@ -12,7 +12,6 @@ from . import result
 from . import source
 from . import time_frequency_transform
 from . import utility
-from . import waveform
 from ._version import __version__
 from .utility import logger
 

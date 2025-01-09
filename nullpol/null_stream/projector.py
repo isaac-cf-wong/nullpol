@@ -29,7 +29,7 @@ def compute_projection_squared(time_frequency_domain_strain_array,
     # Dimensions
     ## time_frequency_domain_strain_array: (detector, time, frequency)
     ## projector: (freq, detector, detector)
-    ## time_freuency_filter: (time, frequency)
+    ## time_frequency_filter: (time, frequency)
     ndet, ntime, nfreq = time_frequency_domain_strain_array.shape
     output = np.zeros((ntime,nfreq), dtype=np.float64)
     for i in range(ntime):
@@ -37,4 +37,19 @@ def compute_projection_squared(time_frequency_domain_strain_array,
             if time_freuency_filter[i,j]:
                 d = np.ascontiguousarray(time_frequency_domain_strain_array[:,i,j].astype(projector.dtype))
                 output[i,j] = np.abs(np.conj(d) @ projector[j] @ d)
+    return output
+
+@njit
+def compute_time_frequency_domain_strain_array_squared(time_frequency_domain_strain_array,
+                                                       time_frequency_filter):
+    # Dimensions
+    ## time_frequency_domain_strain_array: (detector, time, frequency)
+    ## time_freuency_filter: (time, frequency)
+    ndet, ntime, nfreq = time_frequency_domain_strain_array.shape
+    output = np.zeros((ntime,nfreq), dtype=np.float64)
+    for i in range(ntime):
+        for j in range(nfreq):
+            if time_frequency_filter[i,j]:
+                d = np.ascontiguousarray(time_frequency_domain_strain_array[:,i,j])
+                output[i,j] = np.abs(np.conj(d) @ d)
     return output
