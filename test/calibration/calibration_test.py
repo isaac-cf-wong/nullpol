@@ -15,7 +15,7 @@ from nullpol.psd import simulate_psd_from_bilby_psd
 from nullpol.utility import logger
 from nullpol.time_frequency_transform import (transform_wavelet_freq,
                                               get_shape_of_wavelet_transform)
-from nullpol.null_stream import compute_whitened_time_frequency_domain_strain_array                                              
+from nullpol.detector import compute_whitened_time_frequency_domain_strain_array                                              
 
 
 class TestCalibration(unittest.TestCase):
@@ -134,8 +134,7 @@ class TestCalibration(unittest.TestCase):
                 # Whiten
         whitened_time_frequency_domain_strain_array = compute_whitened_time_frequency_domain_strain_array(time_frequency_domain_strain_array=time_frequency_domain_strain_array,
                                                                                                           psd_array=psd_array,
-                                                                                                          time_frequency_filter=self.time_frequency_filter,
-                                                                                                          srate=self.srate)
+                                                                                                          time_frequency_filter=self.time_frequency_filter)
         print(whitened_time_frequency_domain_strain_array)                                                                                                        
         print(np.var(whitened_time_frequency_domain_strain_array[:,:int(np.ceil(self.minimum_frequency/self.wavelet_frequency_resolution))]))
         
