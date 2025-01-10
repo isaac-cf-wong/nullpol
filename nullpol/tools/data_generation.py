@@ -368,7 +368,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
                 )
                 ifos.inject_signal(
                     waveform_generator=waveform_generator,
-                    parameters=self.injection_parameters,
+                    parameters=parameters,
                     raise_error=self.enforce_signal_duration,
                 )
                 frequency_domain_strain_array = np.array([ifo.frequency_domain_strain for ifo in ifos])
