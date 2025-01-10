@@ -1,0 +1,66 @@
+kind: configuration
+data:
+  channels:
+    H1: H1:GDS-CALIB_STRAIN_CLEAN
+    L1: L1:GDS-CALIB_STRAIN_CLEAN
+    V1: V1:Hrec_hoft_16384Hz
+  frame types:
+    H1: H1_HOFT_C00
+    L1: L1_HOFT_C00
+    V1: V1Online
+pipelines:
+  gwdata:
+    scheduler:
+      accounting group: ligo.prod.o4.cbc.testgr.tiger
+      request cpus: 1
+  peconfigurator:
+    scheduler:
+      accounting group: ligo.prod.o4.cbc.testgr.tiger
+      request cpus: 1
+  nullpol:
+   template: 
+  bayeswave:
+    quality:
+      state vector:
+        L1: L1:GDS-CALIB_STRAIN_CLEAN
+        H1: H1:GDS-CALIB_STRAIN_CLEAN
+        V1: V1:Hrec_hoft_16384Hz
+    scheduler:
+      accounting group: ligo.prod.o4.cbc.testgr.tiger
+      request memory: 1024
+      request post memory: 16384
+    likelihood:
+      iterations: 100000
+      chains: 8
+      threads: 4
+postprocessing:
+  pesummary:
+    accounting group: ligo.prod.o4.cbc.testgr.tiger
+    cosmology: Planck15_lal
+    evolve spins: forwards
+    multiprocess: 4
+    redshift: exact
+    regenerate posteriors:
+    - redshift
+    - mass_1_source
+    - mass_2_source
+    - chirp_mass_source
+    - total_mass_source
+    - final_mass_source
+    - final_mass_source_non_evolved
+    - radiated_energy
+    skymap samples: 2000
+quality:
+  minimum frequency:
+    H1: 20
+    L1: 20
+    V1: 20
+    G1: 20
+    K1: 20
+priors:
+    dec:
+        type: Cosine
+    psi:
+        type: Uniform
+    ra:
+        type: Uniform
