@@ -12,7 +12,7 @@ from ..utility import (logger,
                        NullpolError,
                        is_file)
 from ..calibration import build_calibration_lookup
-from ..clustering import (run_time_frequency_clustering,
+from ..clustering import (run_time_frequency_clustering as _run_time_frequency_clustering,
                           compute_sky_maximized_spectrogram,
                           plot_spectrogram,
                           compute_logistic_probability_map)
@@ -376,7 +376,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
                 raise ValueError(
                     f"Unknown time-frequency clustering method {self.time_frequency_clustering_method}"
                 )
-            time_frequency_filter, sky_maximized_spectrogram = run_time_frequency_clustering(interferometers=self.interferometers,
+            time_frequency_filter, sky_maximized_spectrogram = _run_time_frequency_clustering(interferometers=self.interferometers,
                                                                                              frequency_domain_strain_array=frequency_domain_strain_array,
                                                                                              wavelet_frequency_resolution=self.wavelet_frequency_resolution,
                                                                                              wavelet_nx=self.wavelet_nx,
