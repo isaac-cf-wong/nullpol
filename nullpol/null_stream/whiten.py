@@ -4,8 +4,7 @@ from numba import njit
 @njit
 def compute_whitened_antenna_pattern_matrix_masked(antenna_pattern_matrix,
                                                    psd_array,
-                                                   frequency_mask,
-                                                   srate):
+                                                   frequency_mask):
     """
     Whiten the antenna pattern matrix with the given PSD array.
     

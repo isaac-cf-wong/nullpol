@@ -133,6 +133,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
         self.time_frequency_clustering_injection_parameters_filename = args.time_frequency_clustering_injection_parameters_filename
         self.time_frequency_clustering_pe_samples_filename = args.time_frequency_clustering_pe_samples_filename
         self.time_frequency_clustering_threshold = args.time_frequency_clustering_threshold
+        self.time_frequency_clustering_threshold_type = args.time_frequency_clustering_threshold_type
         self.time_frequency_clustering_time_padding = args.time_frequency_clustering_time_padding
         self.time_frequency_clustering_frequency_padding = args.time_frequency_clustering_frequency_padding
         self.time_frequency_clustering_skypoints = args.time_frequency_clustering_skypoints
@@ -215,6 +216,14 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
     @time_frequency_clustering_threshold.setter
     def time_frequency_clustering_threshold(self, threshold):
         self._time_frequency_clustering_threshold = threshold
+
+    @property
+    def time_frequency_clustering_threshold_type(self):
+        return getattr(self, "_time_frequency_clustering_threshold_type", None)
+
+    @time_frequency_clustering_threshold_type.setter
+    def time_frequency_clustering_threshold_type(self, threshold_type):
+        self._time_frequency_clustering_threshold_type = threshold_type
 
     @property
     def time_frequency_clustering_time_padding(self):
@@ -378,7 +387,8 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
                                                                                              frequency_padding=self.time_frequency_clustering_frequency_padding,
                                                                                              skypoints=self.time_frequency_clustering_skypoints,
                                                                                              return_sky_maximized_spectrogram=True,
-                                                                                             psd_array=self.meta_data['wavelet_psd_array'])
+                                                                                             psd_array=self.meta_data['wavelet_psd_array'],
+                                                                                             threshold_type=self.time_frequency_clustering_threshold_type)
         elif is_file(self.time_frequency_clustering_method):
             time_frequency_filter = np.load(self.time_frequency_clustering_method)
             sky_maximized_spectrogram = None

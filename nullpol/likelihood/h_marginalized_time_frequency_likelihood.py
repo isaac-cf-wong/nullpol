@@ -119,8 +119,7 @@ class HMarginalizedTimeFrequencyLikelihood(TimeFrequencyLikelihood):
                                                           self.psd_draws,
                                                           F_matrix,
                                                           self.time_frequency_filter,
-                                                          self.time_frequency_filter_collapsed,
-                                                          self.interferometers[0].sampling_frequency)
+                                                          self.time_frequency_filter_collapsed)
         elif self._sample_calibration_parameters:
             # Simulate the PSD.
             psd_array = np.array([get_simulated_calibrated_wavelet_psd(interferometer=ifo,
@@ -132,15 +131,13 @@ class HMarginalizedTimeFrequencyLikelihood(TimeFrequencyLikelihood):
                                                               psd_array,
                                                               F_matrix,
                                                               self.time_frequency_filter,
-                                                              self.time_frequency_filter_collapsed,
-                                                              self.interferometers[0].sampling_frequency)])            
+                                                              self.time_frequency_filter_collapsed,)])            
         else:
             null_energy_array = np.array([compute_null_energy(time_frequency_domain_strain_array_time_shifted,
                                                               self.wavelet_psd_array,
                                                               F_matrix,
                                                               self.time_frequency_filter,
-                                                              self.time_frequency_filter_collapsed,
-                                                              self.interferometers[0].sampling_frequency)])
+                                                              self.time_frequency_filter_collapsed)])
         
         return null_energy_array
 
@@ -161,8 +158,7 @@ def compute_null_energy(time_frequency_domain_strain_array_time_shifted,
                         psd_array,
                         F_matrix,
                         time_frequency_filter,
-                        time_frequency_filter_collapsed,
-                        srate):
+                        time_frequency_filter_collapsed):
     # Compute the whitened time-frequency domain strain array
     time_frequency_domain_strain_array_time_shifted_whitened = compute_whitened_time_frequency_domain_strain_array(time_frequency_domain_strain_array_time_shifted,
                                                                                                                     psd_array,
@@ -170,8 +166,7 @@ def compute_null_energy(time_frequency_domain_strain_array_time_shifted,
     # Compute the whitened F_matrix
     whitened_F_matrix = compute_whitened_antenna_pattern_matrix_masked(F_matrix,
                                                                         psd_array,
-                                                                        time_frequency_filter_collapsed,
-                                                                        srate)
+                                                                        time_frequency_filter_collapsed)
     # Compute the GW projector        
     Pgw = compute_gw_projector_masked(whitened_F_matrix, time_frequency_filter_collapsed)
     # Compute the null projector
@@ -187,8 +182,7 @@ def compute_null_energy_array(time_frequency_domain_strain_array_time_shifted,
                               psd_draw_array,
                               F_matrix,
                               time_frequency_filter,
-                              time_frequency_filter_collapsed,
-                              srate):
+                              time_frequency_filter_collapsed):
     _, psd_nsample, _ = psd_draw_array.shape
     null_energy_array = np.zeros(psd_nsample)
     for i in range(psd_nsample):
@@ -196,6 +190,5 @@ def compute_null_energy_array(time_frequency_domain_strain_array_time_shifted,
                                                    psd_array=psd_draw_array[:,i,:],
                                                    F_matrix=F_matrix,
                                                    time_frequency_filter=time_frequency_filter,
-                                                   time_frequency_filter_collapsed=time_frequency_filter_collapsed,
-                                                   srate=srate)
+                                                   time_frequency_filter_collapsed=time_frequency_filter_collapsed)
     return null_energy_array

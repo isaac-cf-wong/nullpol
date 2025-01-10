@@ -11,7 +11,8 @@ from ..utility import (logger,
 from ..likelihood import (Chi2TimeFrequencyLikelihood,
                           GaussianTimeFrequencyLikelihood,
                           HMarginalizedTimeFrequencyLikelihood,
-                          WeightedGaussianTimeFrequencyLikelihood)
+                          WeightedGaussianTimeFrequencyLikelihood,
+                          FractionalProjectionTimeFrequencyLikelihood)
 from .. import prior as nullpol_prior
 import inspect
 
@@ -105,6 +106,9 @@ class Input(BilbyInput):
             likelihood_kwargs.update(self.extra_likelihood_kwargs)
         elif self.likelihood_type == "WeightedGaussianTimeFrequencyLikelihood":
             Likelihood = WeightedGaussianTimeFrequencyLikelihood
+            likelihood_kwargs.update(self.extra_likelihood_kwargs)
+        elif self.likelihood_type == "FractionalProjectionTimeFrequencyLikelihood":
+            Likelihood = FractionalProjectionTimeFrequencyLikelihood
             likelihood_kwargs.update(self.extra_likelihood_kwargs)
         elif "." in self.likelihood_type:
             split_path = self.likelihood_type.split(".")

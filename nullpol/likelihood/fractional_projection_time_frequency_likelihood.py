@@ -1,5 +1,4 @@
 import numpy as np
-import scipy.stats
 from numba import njit
 from scipy.special import logsumexp
 from .time_frequency_likelihood import TimeFrequencyLikelihood
@@ -9,12 +8,12 @@ from ..null_stream import (time_shift,
                            compute_null_projector_from_gw_projector,
                            compute_projection_squared)
 from ..time_frequency_transform import transform_wavelet_freq
-from ..detector import compute_whitened_time_frequency_domain_strain_array
-from ..detector import get_simulated_calibrated_wavelet_psd
+from ..detector import (compute_whitened_time_frequency_domain_strain_array,
+                        get_simulated_calibrated_wavelet_psd)
 
 
-class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
-    """A time-frequency likelihood class that calculates the chi-squared likelihood.
+class FractionalProjectionTimeFrequencyLikelihood(TimeFrequencyLikelihood):
+    """A time-frequency likelihood class that calculates the fractional projection likelihood.
 
     Parameters
     ----------
@@ -74,33 +73,34 @@ class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
                  starting_index=0,
                  priors=None,
                  *args, **kwargs):
-        super(Chi2TimeFrequencyLikelihood, self).__init__(interferometers=interferometers,
-                                                          wavelet_frequency_resolution=wavelet_frequency_resolution,
-                                                          wavelet_nx=wavelet_nx,
-                                                          polarization_modes=polarization_modes,
-                                                          polarization_basis=polarization_basis,
-                                                          wavelet_psd_array=wavelet_psd_array,
-                                                          time_frequency_filter=time_frequency_filter,
-                                                          simulate_psd_nsample=simulate_psd_nsample,
-                                                          calibration_marginalization=calibration_marginalization,
-                                                          calibration_lookup_table=calibration_lookup_table,
-                                                          calibration_psd_lookup_table=calibration_psd_lookup_table,
-                                                          number_of_response_curves=number_of_response_curves,
-                                                          starting_index=starting_index,
-                                                          priors=priors,
-                                                          *args, **kwargs)
+        super(FractionalProjectionTimeFrequencyLikelihood, self).__init__(interferometers=interferometers,
+                                                                          wavelet_frequency_resolution=wavelet_frequency_resolution,
+                                                                          wavelet_nx=wavelet_nx,
+                                                                          polarization_modes=polarization_modes,
+                                                                          polarization_basis=polarization_basis,
+                                                                          wavelet_psd_array=wavelet_psd_array,
+                                                                          time_frequency_filter=time_frequency_filter,
+                                                                          simulate_psd_nsample=simulate_psd_nsample,
+                                                                          calibration_marginalization=calibration_marginalization,
+                                                                          calibration_lookup_table=calibration_lookup_table,
+                                                                          calibration_psd_lookup_table=calibration_psd_lookup_table,
+                                                                          number_of_response_curves=number_of_response_curves,
+                                                                          starting_index=starting_index,
+                                                                          priors=priors,
+                                                                          *args, **kwargs)
+        self._log_normalization_constant = -np.log(2. * np.pi) * 0.5 * len(self.interferometers) * np.count_nonzero(time_frequency_filter)
+        self._log_normalization_constant_fractional_projection_scaling = 0.5 * np.sum(self.polarization_basis) * np.count_nonzero(time_frequency_filter)
     
-    @property
-    def _DoF(self):
-        return (len(self.interferometers)-np.sum(self.polarization_basis)) * np.sum(self.time_frequency_filter)
-
     def log_likelihood(self):
+        if self.parameters['projection_fraction'] >= 1.:
+            return -np.inf
         null_energy_array = self._calculate_residual_power()
-        log_likelihood = scipy.stats.chi2.logpdf(null_energy_array, df=self._DoF)
+        log_likelihood = -0.5 * null_energy_array + self._log_normalization_constant
         if len(log_likelihood) > 1:
-            return logsumexp(log_likelihood) - np.log(len(log_likelihood))
+            log_likelihood = logsumexp(log_likelihood) - np.log(len(log_likelihood))
         else:
-            return log_likelihood[0]
+            log_likelihood = log_likelihood[0]
+        return log_likelihood + self._log_normalization_constant_fractional_projection_scaling * np.log(1. - self.parameters['projection_fraction'])
     
     def _calculate_residual_power(self):
         # Time shift the data
@@ -119,11 +119,12 @@ class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
 
         # Compute the null energy
         if self.calibration_marginalization:
-            null_energy_array = compute_null_energy_array(time_frequency_domain_strain_array_time_shifted,
-                                                          self.psd_draws,
-                                                          F_matrix,
-                                                          self.time_frequency_filter,
-                                                          self.time_frequency_filter_collapsed)
+            null_energy_array = compute_fractional_null_energy_array(time_frequency_domain_strain_array_time_shifted=time_frequency_domain_strain_array_time_shifted,
+                                                                     psd_draw_array=self.psd_draws,
+                                                                     F_matrix=F_matrix,
+                                                                     time_frequency_filter=self.time_frequency_filter,
+                                                                     time_frequency_filter_collapsed=self.time_frequency_filter_collapsed,
+                                                                     projection_fraction=self.parameters['projection_fraction'])
         elif self._sample_calibration_parameters:
             # Simulate the PSD.
             psd_array = np.array([get_simulated_calibrated_wavelet_psd(interferometer=ifo,
@@ -131,17 +132,19 @@ class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
                                                                        wavelet_frequency_resolution=self.wavelet_frequency_resolution,
                                                                        nx=self.wavelet_nx,
                                                                        nsample=self.simulate_psd_nsample) for ifo in self.interferometers])
-            null_energy_array = np.array([compute_null_energy(time_frequency_domain_strain_array_time_shifted,
-                                                              psd_array,
-                                                              F_matrix,
-                                                              self.time_frequency_filter,
-                                                              self.time_frequency_filter_collapsed)])            
+            null_energy_array = np.array([compute_fractional_null_energy(time_frequency_domain_strain_array_time_shifted=time_frequency_domain_strain_array_time_shifted,
+                                                                         psd_array=psd_array,
+                                                                         F_matrix=F_matrix,
+                                                                         time_frequency_filter=self.time_frequency_filter,
+                                                                         time_frequency_filter_collapsed=self.time_frequency_filter_collapsed,
+                                                                         projection_fraction=self.parameters['projection_fraction'])])
         else:
-            null_energy_array = np.array([compute_null_energy(time_frequency_domain_strain_array_time_shifted,
-                                                              self.wavelet_psd_array,
-                                                              F_matrix,
-                                                              self.time_frequency_filter,
-                                                              self.time_frequency_filter_collapsed)])
+            null_energy_array = np.array([compute_fractional_null_energy(time_frequency_domain_strain_array_time_shifted=time_frequency_domain_strain_array_time_shifted,
+                                                                         psd_array=self.wavelet_psd_array,
+                                                                         F_matrix=F_matrix,
+                                                                         time_frequency_filter=self.time_frequency_filter,
+                                                                         time_frequency_filter_collapsed=self.time_frequency_filter_collapsed,
+                                                                         projection_fraction=self.parameters['projection_fraction'])])
         
         return null_energy_array
 
@@ -155,14 +158,15 @@ class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
                                                                                                           self.wavelet_psd_array,
                                                                                                           self.time_frequency_filter)
         energy = np.sum(np.abs(time_frequency_domain_strain_array_whitened)**2)
-        self._noise_log_likelihood_value = scipy.stats.chi2.logpdf(energy, df=len(self.interferometers)*np.sum(self.time_frequency_filter))
+        self._noise_log_likelihood_value = -0.5 * energy + self._log_normalization_constant
 
 @njit
-def compute_null_energy(time_frequency_domain_strain_array_time_shifted,
-                        psd_array,
-                        F_matrix,
-                        time_frequency_filter,
-                        time_frequency_filter_collapsed):
+def compute_fractional_null_energy(time_frequency_domain_strain_array_time_shifted,
+                                   psd_array,
+                                   F_matrix,
+                                   time_frequency_filter,
+                                   time_frequency_filter_collapsed,
+                                   projection_fraction):
     # Compute the whitened time-frequency domain strain array
     time_frequency_domain_strain_array_time_shifted_whitened = compute_whitened_time_frequency_domain_strain_array(time_frequency_domain_strain_array_time_shifted,
                                                                                                                     psd_array,
@@ -172,7 +176,7 @@ def compute_null_energy(time_frequency_domain_strain_array_time_shifted,
                                                                         psd_array,
                                                                         time_frequency_filter_collapsed)
     # Compute the GW projector        
-    Pgw = compute_gw_projector_masked(whitened_F_matrix, time_frequency_filter_collapsed)
+    Pgw = compute_gw_projector_masked(whitened_F_matrix, time_frequency_filter_collapsed) * projection_fraction
     # Compute the null projector
     Pnull = compute_null_projector_from_gw_projector(Pgw)
     # Compute the projection squared
@@ -182,17 +186,19 @@ def compute_null_energy(time_frequency_domain_strain_array_time_shifted,
     return np.sum(projection_squared)
 
 @njit
-def compute_null_energy_array(time_frequency_domain_strain_array_time_shifted,
-                              psd_draw_array,
-                              F_matrix,
-                              time_frequency_filter,
-                              time_frequency_filter_collapsed):
+def compute_fractional_null_energy_array(time_frequency_domain_strain_array_time_shifted,
+                                         psd_draw_array,
+                                         F_matrix,
+                                         time_frequency_filter,
+                                         time_frequency_filter_collapsed,
+                                         projection_fraction):
     _, psd_nsample, _ = psd_draw_array.shape
     null_energy_array = np.zeros(psd_nsample)
     for i in range(psd_nsample):
-        null_energy_array[i] = compute_null_energy(time_frequency_domain_strain_array_time_shifted=time_frequency_domain_strain_array_time_shifted,
-                                                   psd_array=psd_draw_array[:,i,:],
-                                                   F_matrix=F_matrix,
-                                                   time_frequency_filter=time_frequency_filter,
-                                                   time_frequency_filter_collapsed=time_frequency_filter_collapsed)
+        null_energy_array[i] = compute_fractional_null_energy(time_frequency_domain_strain_array_time_shifted=time_frequency_domain_strain_array_time_shifted,
+                                                              psd_array=psd_draw_array[:,i,:],
+                                                              F_matrix=F_matrix,
+                                                              time_frequency_filter=time_frequency_filter,
+                                                              time_frequency_filter_collapsed=time_frequency_filter_collapsed,
+                                                              projection_fraction=projection_fraction)
     return null_energy_array

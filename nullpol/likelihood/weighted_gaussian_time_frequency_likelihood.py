@@ -131,7 +131,6 @@ class WeightedGaussianTimeFrequencyLikelihood(TimeFrequencyLikelihood):
                                                                             F_matrix=F_matrix,
                                                                             time_frequency_filter=self.time_frequency_filter,
                                                                             time_frequency_filter_collapsed=self.time_frequency_filter_collapsed,
-                                                                            srate=self.interferometers[0].sampling_frequency,
                                                                             regularization_constant=self.regularization_constant,
                                                                             noise_log_likelihood_time_frequency_map=self._noise_log_likelihood_time_frequency_map,
                                                                             log_normalization_constant_signal_tf=self._log_normalization_constant_signal_tf)
@@ -147,7 +146,6 @@ class WeightedGaussianTimeFrequencyLikelihood(TimeFrequencyLikelihood):
                                                                                 F_matrix=F_matrix,
                                                                                 time_frequency_filter=self.time_frequency_filter,                                                                       
                                                                                 time_frequency_filter_collapsed=self.time_frequency_filter_collapsed,
-                                                                                srate=self.interferometers[0].sampling_frequency,
                                                                                 regularization_constant=self.regularization_constant,
                                                                                 noise_log_likelihood_time_frequency_map=self._noise_log_likelihood_time_frequency_map,
                                                                                 log_normalization_constant_signal_tf=self._log_normalization_constant_signal_tf)])
@@ -157,7 +155,6 @@ class WeightedGaussianTimeFrequencyLikelihood(TimeFrequencyLikelihood):
                                                                                 F_matrix=F_matrix,
                                                                                 time_frequency_filter=self.time_frequency_filter,                                                                       
                                                                                 time_frequency_filter_collapsed=self.time_frequency_filter_collapsed,
-                                                                                srate=self.interferometers[0].sampling_frequency,
                                                                                 regularization_constant=self.regularization_constant,
                                                                                 noise_log_likelihood_time_frequency_map=self._noise_log_likelihood_time_frequency_map,
                                                                                 log_normalization_constant_signal_tf=self._log_normalization_constant_signal_tf)])
@@ -190,7 +187,6 @@ def compute_joint_log_likelihood(time_frequency_domain_strain_array_time_shifted
                                  F_matrix,
                                  time_frequency_filter,
                                  time_frequency_filter_collapsed,
-                                 srate,
                                  regularization_constant,
                                  noise_log_likelihood_time_frequency_map,
                                  log_normalization_constant_signal_tf):
@@ -202,8 +198,7 @@ def compute_joint_log_likelihood(time_frequency_domain_strain_array_time_shifted
     # Compute the whitened F_matrix
     whitened_F_matrix = compute_whitened_antenna_pattern_matrix_masked(F_matrix,
                                                                         psd_array,
-                                                                        time_frequency_filter_collapsed,
-                                                                        srate)
+                                                                        time_frequency_filter_collapsed)
     # Compute the GW projector        
     Pgw = compute_gw_projector_masked(whitened_F_matrix, time_frequency_filter_collapsed) * regularization_constant
     # Compute the null projector
@@ -234,7 +229,6 @@ def compute_joint_log_likelihood_array(time_frequency_domain_strain_array_time_s
                                        F_matrix,
                                        time_frequency_filter,
                                        time_frequency_filter_collapsed,
-                                       srate,
                                        regularization_constant,
                                        noise_log_likelihood_time_frequency_map,
                                        log_normalization_constant_signal_tf):
@@ -246,7 +240,6 @@ def compute_joint_log_likelihood_array(time_frequency_domain_strain_array_time_s
                                                             F_matrix=F_matrix,
                                                             time_frequency_filter=time_frequency_filter,
                                                             time_frequency_filter_collapsed=time_frequency_filter_collapsed,
-                                                            srate=srate,
                                                             regularization_constant=regularization_constant,
                                                             noise_log_likelihood_time_frequency_map=noise_log_likelihood_time_frequency_map,
                                                             log_normalization_constant_signal_tf=log_normalization_constant_signal_tf)
