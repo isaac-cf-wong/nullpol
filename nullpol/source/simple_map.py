@@ -22,7 +22,7 @@ def lal_binary_black_hole_non_gr_simple_map(
     wf_dict['x'] = wf_dict['plus'] * amp_x
     wf_dict['y'] = wf_dict['cross'] * amp_y
     wf_dict['breathing'] = wf_dict['plus'] * amp_b
-    wf_dict['longitudinal'] = wf_dict['plus'] * amp_l
+    wf_dict['longitudinal'] = wf_dict['cross'] * amp_l
     wf_dict['plus'] = wf_dict['plus'] * amp_p
     wf_dict['cross'] = wf_dict['cross'] * amp_c
     return wf_dict
