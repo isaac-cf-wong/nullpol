@@ -268,7 +268,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
     def _get_interferometers_from_injection_in_gaussian_noise(self):
         # Copy the interferometers
         interferometers = bilby.gw.detector.InterferometerList([ifo.name for ifo in self.interferometers])
-        for i in range(len(interferometers)):            
+        for i in range(len(interferometers)):
             power_spectral_density = bilby.gw.detector.PowerSpectralDensity(frequency_array=self.interferometers[i].frequency_array.copy(),
                                                                             psd_array=self.interferometers[i].power_spectral_density_array.copy())
             interferometers[i].power_spectral_density = power_spectral_density
@@ -309,7 +309,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
                                                      "injection_parameters_file",
                                                      "maxL",
                                                      "maP",
-                                                     "random"]:        
+                                                     "random"]:
             if self.time_frequency_clustering_method == "data":
                 frequency_domain_strain_array = np.array([ifo.frequency_domain_strain for ifo in self.interferometers])
             elif self.time_frequency_clustering_method in ["injection",
@@ -420,6 +420,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
                          duration=self.interferometers[0].duration,
                          sampling_frequency=self.interferometers[0].sampling_frequency,
                          wavelet_frequency_resolution=self.wavelet_frequency_resolution,
+                         frequency_range=(self.minimum_frequency, self.maximum_frequency),
                          t0=self.start_time,
                          title="Time-frequency Filter Spectrogram",
                          savefig=time_frequency_filter_fig_fname,
@@ -432,6 +433,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
                             duration=self.interferometers[0].duration,
                             sampling_frequency=self.interferometers[0].sampling_frequency,
                             wavelet_frequency_resolution=self.wavelet_frequency_resolution,
+                            frequency_range=(self.minimum_frequency, self.maximum_frequency),
                             t0=self.start_time,
                             title="Sky-maximized Spectrogram",
                             savefig=spectrogram_fig_fname,
@@ -443,6 +445,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
                          duration=self.interferometers[0].duration,
                          sampling_frequency=self.interferometers[0].sampling_frequency,
                          wavelet_frequency_resolution=self.wavelet_frequency_resolution,
+                         frequency_range=(self.minimum_frequency, self.maximum_frequency),
                          t0=self.start_time,
                          title="Sky-maximized Spectrogram Data",
                          savefig=spectrogram_data_fig_fname,
