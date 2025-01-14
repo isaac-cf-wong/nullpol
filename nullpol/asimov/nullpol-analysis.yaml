@@ -1,5 +1,0 @@
-kind: analysis
-name: testing
-pipeline: nullpol
-comment: testing nullpol
-priors:
