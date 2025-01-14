@@ -106,12 +106,12 @@ class DataAnalysisInput(BilbyDataAnalysisInput, Input):
         self.injection_waveform_approximant = args.injection_waveform_approximant
 
         if test is False:
-            self._load_data_dump()            
+            self._load_data_dump()
 
     @property
     def polarization_modes(self):
         return getattr(self, '_polarization_modes', None)
-    
+
     @polarization_modes.setter
     def polarization_modes(self, modes):
         if isinstance(modes, str):
@@ -127,7 +127,7 @@ class DataAnalysisInput(BilbyDataAnalysisInput, Input):
     @property
     def polarization_basis(self):
         return getattr(self, '_polarization_basis', None)
-    
+
     @polarization_basis.setter
     def polarization_basis(self, modes):
         if isinstance(modes, str):
@@ -158,7 +158,7 @@ class DataAnalysisInput(BilbyDataAnalysisInput, Input):
     def result_class(self):
         """The nullpol result class to store results in"""
         return PolarizationResult
-    
+
     def get_likelihood_and_priors(self):
         """Read in the likelihood and prior from the data dump
 
@@ -184,7 +184,7 @@ class DataAnalysisInput(BilbyDataAnalysisInput, Input):
         # Encode the polarization modes
         polarization_modes, polarization_basis, polarization_derived = encode_polarization(self.polarization_modes,
                                                                                            self.polarization_basis)
-        
+
         # Obtain the keywords
         relative_polarization_parameters = relative_amplification_factor_map(polarization_basis=polarization_basis,
                                                                              polarization_derived=polarization_derived).flatten()
@@ -199,17 +199,25 @@ class DataAnalysisInput(BilbyDataAnalysisInput, Input):
         for i in range(len(prior_remove_list)):
             logger.info(f'Removed irrelevant prior: {self.priors[prior_remove_list[i]]}')
             self.priors.pop(prior_remove_list[i])
-            
+
         # Add missing prior
         missing_priors = {}
         for label in relative_polarization_parameters:
-            for parameter in ['amplitude', 'phase']:
-                name = f'{parameter}_{label}'
-                if name not in self.priors:
-                    missing_priors[name] = bilby.core.prior.Uniform(name=name,
-                                                                    minimum=0.0,
-                                                                    maximum=1.0)
-                    logger.info(f'Added missing relative polarization prior: {missing_priors[name]}')
+            amplitude_name = f'amplitude_{label}'
+            if amplitude_name not in self.priors:
+                missing_priors[amplitude_name] = bilby.core.prior.Uniform(name=amplitude_name,
+                                                                          minimum=0.0,
+                                                                          maximum=1.0,
+                                                                          latex_label"$A_{{{label}}}$")
+                logger.info(f'Added missing relative polarization prior: {missing_priors[amplitude_name]}')
+            phase_name = f'phase_{label}'
+            if phase_name not in self.priors:
+                missing_priors[phase_name] = bilby.core.prior.Uniform(name=phase_name,
+                                                                      minimum=0.0,
+                                                                      maximum=2. * np.pi,
+                                                                      latex_label"$\phi_{{{label}}}$",
+                                                                      boundary="periodic")
+                logger.info(f'Added missing relative polarization prior: {missing_priors[phase_name]}')
         self.priors.update(missing_priors)
 
     def _add_likelihood_specific_default_prior(self):
@@ -246,7 +254,7 @@ class DataAnalysisInput(BilbyDataAnalysisInput, Input):
             save=self.result_format,
             **self.sampler_kwargs,
         )
-    
+
 def create_analysis_parser(usage=__doc__):
     """Data analysis parser creation"""
     return create_nullpol_parser(top_level=False)
