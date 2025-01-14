@@ -208,14 +208,14 @@ class DataAnalysisInput(BilbyDataAnalysisInput, Input):
                 missing_priors[amplitude_name] = bilby.core.prior.Uniform(name=amplitude_name,
                                                                           minimum=0.0,
                                                                           maximum=1.0,
-                                                                          latex_label"$A_{{{label}}}$")
+                                                                          latex_label=f"$A_{{{label}}}$")
                 logger.info(f'Added missing relative polarization prior: {missing_priors[amplitude_name]}')
             phase_name = f'phase_{label}'
             if phase_name not in self.priors:
                 missing_priors[phase_name] = bilby.core.prior.Uniform(name=phase_name,
                                                                       minimum=0.0,
                                                                       maximum=2. * np.pi,
-                                                                      latex_label"$\phi_{{{label}}}$",
+                                                                      latex_label=f"$\phi_{{{label}}}$",
                                                                       boundary="periodic")
                 logger.info(f'Added missing relative polarization prior: {missing_priors[phase_name]}')
         self.priors.update(missing_priors)
