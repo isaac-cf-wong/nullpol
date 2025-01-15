@@ -29,7 +29,8 @@ dependencies = [
     "nds2utils",
     "ligo-asimov",
     "pycbc",
-    "healpy"
+    "healpy",
+    "bilby-tgr",
 ]
 
 [project.optional-dependencies]
@@ -62,3 +63,9 @@ nullpol_pipe_write_default_ini = "nullpol.tools.parser:main"
 
 [tool.poetry.plugins."asimov.pipelines"]
 nullpol = "nullpol.asimov.asimov:Nullpol"
+
+[project.entry-points.'asimov.hooks.postmonitor']
+tgrflow = 'nullpol.asimov.tgrflow:Collector'
+
+[project.entry-points.'asimov.hooks.applicator']
+tgrflow = 'nullpol.asimov.tgrflow:Applicator'

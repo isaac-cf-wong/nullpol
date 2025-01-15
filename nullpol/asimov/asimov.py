@@ -1,4 +1,4 @@
-"""Bilby Pipeline specification."""
+"""Nullpol Pipeline specification."""
 
 import os
 import subprocess
