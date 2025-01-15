@@ -27,7 +27,7 @@ dependencies = [
     "scipy",
     "ConfigArgParse",
     "nds2utils",
-    "ligo-asimov",
+    "asimov",
     "pycbc",
     "healpy",
     "bilby-tgr",
