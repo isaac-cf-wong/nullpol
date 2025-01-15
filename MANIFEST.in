@@ -1,4 +1,5 @@
 include nullpol/tools/*.ini
 include nullpol/tools/*.json
 include nullpol/asimov/*.ini
+include nullpol/asimov/*.yaml
 include nullpol/prior/prior_files/*.prior
