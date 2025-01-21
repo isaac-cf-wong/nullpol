@@ -14,8 +14,7 @@ from ..utility import (logger,
 from ..calibration import build_calibration_lookup
 from ..clustering import (run_time_frequency_clustering as _run_time_frequency_clustering,
                           compute_sky_maximized_spectrogram,
-                          plot_spectrogram,
-                          compute_logistic_probability_map)
+                          plot_spectrogram)
 from .. import (__version__,
                 log_version_information)
 bilby_pipe.utils.logger = logger
@@ -137,8 +136,6 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
         self.time_frequency_clustering_time_padding = args.time_frequency_clustering_time_padding
         self.time_frequency_clustering_frequency_padding = args.time_frequency_clustering_frequency_padding
         self.time_frequency_clustering_skypoints = args.time_frequency_clustering_skypoints
-        self.time_frequency_probability_map_confidence_threshold = args.time_frequency_probability_map_confidence_threshold
-        self.time_frequency_probability_map_steepness = args.time_frequency_probability_map_steepness
 
         if create_data:
             self.create_data(args)
@@ -248,22 +245,6 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
     @time_frequency_clustering_skypoints.setter
     def time_frequency_clustering_skypoints(self, skypoints):
         self._time_frequency_clustering_skypoints = skypoints
-
-    @property
-    def time_frequency_probability_map_confidence_threshold(self):
-        return getattr(self, "_time_frequency_probability_map_confidence_threshold", None)
-
-    @time_frequency_probability_map_confidence_threshold.setter
-    def time_frequency_probability_map_confidence_threshold(self, threshold):
-        self._time_frequency_probability_map_confidence_threshold = threshold
-
-    @property
-    def time_frequency_probability_map_steepness(self):
-        return getattr(self, "_time_frequency_probability_map_steepness", None)
-
-    @time_frequency_probability_map_steepness.setter
-    def time_frequency_probability_map_steepness(self, steepness):
-        self._time_frequency_probability_map_steepness = steepness
 
     def _get_interferometers_from_injection_in_gaussian_noise(self):
         # Copy the interferometers
@@ -404,13 +385,6 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
                                                                            maximum_frequency=self.maximum_frequency,
                                                                            skypoints=self.time_frequency_clustering_skypoints,
                                                                            psd_array=self.meta_data['wavelet_psd_array'])
-        if self.likelihood_type == 'WeightedGaussianTimeFrequencyLikelihood':
-            logger.info('Computing logistic probability map...')
-            time_frequency_filter = compute_logistic_probability_map(whitened_time_frequency_spectrogram=sky_maximized_spectrogram_data,
-                                                                     confidence_threshold=self.time_frequency_probability_map_confidence_threshold,
-                                                                     df=len(self.interferometers),
-                                                                     time_frequency_filter=time_frequency_filter,
-                                                                     steepness=self.time_frequency_probability_map_steepness)
         self.meta_data['time_frequency_filter'] = time_frequency_filter
         self.meta_data['sky_maximized_spectrogram'] = sky_maximized_spectrogram
         self.meta_data['sky_maximized_spectrogram_data'] = sky_maximized_spectrogram_data
