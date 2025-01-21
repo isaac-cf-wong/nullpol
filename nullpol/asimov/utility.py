@@ -1,5 +1,33 @@
 import bilby_pipe
+import configparser
+from ast import literal_eval
 
+
+def read_bilby_ini_file(file: str) -> dict:
+    """
+    Read a bilby ini file and return the contents as a dictionary
+
+    Parameters
+    ==========
+    file : str
+        The path to the bilby ini file
+
+    Returns
+    =======
+    dict
+        The contents of the ini file as a dictionary
+    """
+    with open(file, 'r') as f:
+        file_content = f.read()
+
+    # add dummy section header
+    file_content = '[dummy]\n' + file_content
+
+    # read the file with the parser
+    config = configparser.ConfigParser()
+    config.read_string(file_content)
+
+    return dict(config['dummy'])
 
 def convert_string_to_dict(string):
     try:
@@ -46,6 +74,8 @@ def bilby_config_to_asimov(config_name):
     ifos = bilby_pipe.utils.convert_detectors_input(config['detectors'])
     output_dict['ifos'] = ifos
     output_dict['event time'] = config['trigger-time']
+    if isinstance(output_dict['event time'], str):
+        output_dict['event time'] = literal_eval(output_dict['event time'])
     output_dict['psds'] = convert_string_to_dict(config['psd-dict'])
 
     # fill in quality
@@ -76,7 +106,9 @@ def bilby_config_to_asimov(config_name):
             value = convert_string_to_dict(config[name_ini])
             if value is not None:
                 data[name_asimov] = value
-
+    if isinstance(data['segment length'], str):
+        data['segment length'] = literal_eval(data['segment length'])
+    
     output_dict['data'] = data
 
     # copy likelihood fields
@@ -100,6 +132,8 @@ def bilby_config_to_asimov(config_name):
         if name_ini in config:
             value = convert_string_to_dict(config[name_ini])
             if value is not None:
+                if isinstance(value, str):
+                    value = literal_eval(value)
                 likelihood[name_asimov] = value
 
     marginalization = {}
@@ -111,6 +145,8 @@ def bilby_config_to_asimov(config_name):
         if name_ini in config:
             value = convert_string_to_dict(config[name_ini])
             if value is not None:
+                if isinstance(value, str):
+                    value = literal_eval(value)
                 marginalization[name_asimov] = value
     likelihood['marginalization'] = marginalization
     output_dict['likelihood'] = likelihood
@@ -134,6 +170,13 @@ def bilby_config_to_asimov(config_name):
             if value is not None:
                 if name_ini != 'mode-array' or value[0] is not None:
                     waveform[name_asimov] = value
+    for name_asimov in ['pn amplitude order',
+                        'pn phase order',
+                        'pn spin order',
+                        'pn tidal order',
+                        'reference frequency']:
+        if isinstance(waveform[name_asimov], str):
+            waveform[name_asimov] = literal_eval(waveform[name_asimov])
     output_dict['waveform'] = waveform
 
     # read prior

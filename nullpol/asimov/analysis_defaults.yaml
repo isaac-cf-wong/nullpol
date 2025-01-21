@@ -1,10 +1,10 @@
 kind: configuration
 hooks:
    postmonitor:
-     nullpol:
+     tgrflow:
        library location:
    applicator:
-     nullpol:
+     tgrflow:
        library location:
 data:
   channels:

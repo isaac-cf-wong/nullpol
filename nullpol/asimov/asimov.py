@@ -8,7 +8,7 @@ import time
 import pkg_resources
 from asimov import config
 from asimov.pipelines.bilby import Bilby
-from asimov.pipeline import PipelineException, PipelineLogger
+from asimov.pipeline import Pipeline, PipelineException, PipelineLogger
 
 
 class Nullpol(Bilby):
@@ -32,11 +32,11 @@ class Nullpol(Bilby):
         return pkg_resources.resource_filename('nullpol.asimov', 'nullpol.ini')
 
     def __init__(self, production, category=None):
-        super(Nullpol, self).__init__(production, category)
+        Pipeline.__init__(self, production=production, category=category)
         self.logger.info("Using the nullpol pipeline")
 
         if not production.pipeline.lower() == "nullpol":
-            raise PipelineException
+            raise PipelineException(f'Pipeline {production.pipeline.lower()} is not recognized.')
 
     def build_dag(self, psds=None, user=None, clobber_psd=False, dryrun=False):
         """
