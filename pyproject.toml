@@ -26,7 +26,6 @@ dependencies = [
     "numba",
     "scipy",
     "ConfigArgParse",
-    "nds2utils",    
     "pycbc",
     "healpy",
     "cbcflow",

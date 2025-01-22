@@ -36,7 +36,8 @@ class Nullpol(Bilby):
         self.logger.info("Using the nullpol pipeline")
 
         if not production.pipeline.lower() == "nullpol":
-            raise PipelineException(f'Pipeline {production.pipeline.lower()} is not recognized.')
+            raise PipelineException(f'Pipeline {production.pipeline.lower()} '
+                                    'is not recognized.')
 
     def build_dag(self, psds=None, user=None, clobber_psd=False, dryrun=False):
         """
@@ -54,7 +55,8 @@ class Nullpol(Bilby):
         user : str
            The user accounting tag which should be used to run the job.
         dryrun: bool
-           If set to true the commands will not be run, but will be printed to standard output. Defaults to False.
+           If set to true the commands will not be run, but will be printed to
+           standard output. Defaults to False.
 
         Raises
         ------
@@ -90,7 +92,9 @@ class Nullpol(Bilby):
             job_label = self.production.name
 
         command = [
-            os.path.join(config.get("pipelines", "environment"), "bin", "nullpol_pipe"),
+            os.path.join(config.get("pipelines", "environment"),
+                         "bin",
+                         "nullpol_pipe"),
             ini,
             "--label",
             job_label,
@@ -120,13 +124,16 @@ class Nullpol(Bilby):
             out, err = pipe.communicate()
             self.logger.info(out)
 
-            if err or "DAG generation complete, to submit jobs" not in str(out):
+            expected_out = 'DAG generation complete, to submit jobs'
+            if err or expected_out not in str(out):
                 self.production.status = "stuck"
                 self.logger.error(err)
                 raise PipelineException(
-                    f"DAG file could not be created.\n{command}\n{out}\n\n{err}",
+                    (f'DAG file could not be created.\n'
+                     f'{command}\n{out}\n\n{err}'),
                     production=self.production.name,
                 )
             else:
                 time.sleep(10)
-                return PipelineLogger(message=out, production=self.production.name)
+                return PipelineLogger(message=out,
+                                      production=self.production.name)

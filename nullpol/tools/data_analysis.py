@@ -1,5 +1,5 @@
 import bilby
-from bilby_pipe.data_analysis import DataAnalysisInput as BilbyDataAnalysisInput
+from bilby_pipe.data_analysis import DataAnalysisInput as BInput
 from bilby_pipe.main import parse_args
 from bilby_pipe.utils import (
     CHECKPOINT_EXIT_CODE,
@@ -8,8 +8,6 @@ import bilby_pipe.utils
 import signal
 import sys
 import numpy as np
-import inspect
-from importlib import import_module
 from .parser import create_nullpol_parser
 from .input import Input
 from .. import log_version_information
@@ -30,7 +28,8 @@ def sighandler(signum, frame):
     logger.info("Performing periodic eviction")
     sys.exit(CHECKPOINT_EXIT_CODE)
 
-class DataAnalysisInput(BilbyDataAnalysisInput, Input):
+
+class DataAnalysisInput(BInput, Input):
     """Handles user-input for the data analysis script.
     """
     def __init__(self, args, unknown_args, test=False):
@@ -87,7 +86,8 @@ class DataAnalysisInput(BilbyDataAnalysisInput, Input):
         # Calibration
         self.calibration_model = args.calibration_model
         self.calibration_correction_type = args.calibration_correction_type
-        self.spline_calibration_envelope_dict = args.spline_calibration_envelope_dict
+        self.spline_calibration_envelope_dict = \
+            args.spline_calibration_envelope_dict
         self.spline_calibration_amplitude_uncertainty_dict = (
             args.spline_calibration_amplitude_uncertainty_dict
         )
@@ -103,7 +103,8 @@ class DataAnalysisInput(BilbyDataAnalysisInput, Input):
         self.number_of_response_curves = args.number_of_response_curves
 
         # Injection arguments
-        self.injection_waveform_approximant = args.injection_waveform_approximant
+        self.injection_waveform_approximant = \
+            args.injection_waveform_approximant
 
         if test is False:
             self._load_data_dump()
@@ -120,9 +121,11 @@ class DataAnalysisInput(BilbyDataAnalysisInput, Input):
             if len(modes) == 1:
                 self._polarization_modes = modes[0]
             else:
-                raise NullpolError(f'Unsupported polarization-modes input: {modes}')
+                raise NullpolError(('Unsupported polarization-modes input: '
+                                    f'{modes}'))
         else:
-            raise NullpolError(f'Unsupported polarization-modes input: {modes}')
+            raise NullpolError(('Unsupported polarization-modes input: '
+                                f'{modes}'))
 
     @property
     def polarization_basis(self):
@@ -136,16 +139,20 @@ class DataAnalysisInput(BilbyDataAnalysisInput, Input):
             if len(modes) == 1:
                 self._polarization_basis = modes[0]
             else:
-                raise NullpolError(f'Unsupported polarization-basis input: {modes}')
+                raise NullpolError(('Unsupported polarization-basis input: '
+                                    f'{modes}'))
         else:
-            raise NullpolError(f'Unsupported polarization-basis input: {modes}')
+            raise NullpolError(('Unsupported polarization-basis input: '
+                                f'{modes}'))
 
     def _validate_polarization_model_setting(self):
         supported_modes = ['b', 'c', 'b', 'l', 'x', 'y']
         # Check whether the modes are supported.
         for mode in self.polarization_modes:
             if mode not in supported_modes:
-                raise NullpolError(f'Unsupported mode `{mode}` in polarizaiton-modes = {self.polarization_modes}')
+                raise NullpolError((f'Unsupported mode `{mode}` in '
+                                    'polarizaiton-modes = '
+                                    f'{self.polarization_modes}'))
         for mode in self.polarization_basis:
             if mode not in supported_modes:
                 raise NullpolError(f'Unsupported mode `{mode}` in polarizaiton-basis = {self.polarization_basis}')
