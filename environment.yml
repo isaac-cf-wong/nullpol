@@ -2,3 +2,4 @@ channels:
     - conda-forge
 dependencies:
     - python-nds2-client
+    - python-ldas-tools-framecpp
