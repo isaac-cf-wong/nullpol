@@ -8,10 +8,10 @@ from ..null_stream import (encode_polarization,
                            get_collapsed_antenna_pattern_matrix,
                            relative_amplification_factor_map,
                            relative_amplification_factor_helper)
-from ..time_frequency_transform import get_shape_of_wavelet_transform
+from ..time_frequency_transform import get_shape_of_stft
 from ..calibration import build_calibration_lookup
 from ..detector import simulate_wavelet_psd
-from ..utility import logger
+from ..utility import logger, NullpolError
 
 
 class TimeFrequencyLikelihood(Likelihood):
@@ -84,9 +84,9 @@ class TimeFrequencyLikelihood(Likelihood):
         self.wavelet_frequency_resolution = wavelet_frequency_resolution
         self.wavelet_nx = wavelet_nx
         self.simulate_psd_nsample = simulate_psd_nsample
-        self._wavelet_Nt, self._wavelet_Nf = get_shape_of_wavelet_transform(self.interferometers[0].duration,
-                                                                            self.interferometers[0].sampling_frequency,
-                                                                            self.wavelet_frequency_resolution)
+        self.tf_Nt, self.tf_Nf = get_shape_of_stft(self.interferometers[0].duration,
+                                                   self.interferometers[0].sampling_frequency,
+                                                   self.wavelet_frequency_resolution)
         # Encode the polarization labels
         self.polarization_modes, self.polarization_basis, self.polarization_derived = encode_polarization(polarization_modes, polarization_basis)
         # Collapse the polarization encoding
@@ -108,7 +108,8 @@ class TimeFrequencyLikelihood(Likelihood):
         self.calibration_marginalization = calibration_marginalization
         self.priors = priors
         if self.calibration_marginalization:
-            logger.warning('Calibration marginalization is not tested.')
+            raise NullpolError('Calibration marginalization is not tested.')
+            # logger.warning('Calibration marginalization is not tested.')
             self.number_of_response_curves = number_of_response_curves
             self.starting_index = starting_index
             self._setup_calibration_marginalization(calibration_lookup_table, calibration_psd_lookup_table, priors)
@@ -183,8 +184,24 @@ class TimeFrequencyLikelihood(Likelihood):
     def _validate_time_frequency_filter(self):
         # Get the shape of the time_frequency_filter        
         ntime, nfreq = self.time_frequency_filter.shape
-        assert nfreq==self._wavelet_Nf, "The length of frequency axis in the wavelet domain does not match the time frequency filter."
-        assert ntime==self._wavelet_Nt, "The length of time axis in the wavelet domain does not match the time frequency filter."
+        assert nfreq==self.tf_Nf, "The length of frequency axis in the wavelet domain does not match the time frequency filter."
+        assert ntime==self.tf_Nt, "The length of time axis in the wavelet domain does not match the time frequency filter."
+
+    @property
+    def tf_Nt(self):
+        return self._tf_Nt
+    
+    @tf_Nt.setter
+    def tf_Nt(self, tf_Nt):
+        self._tf_Nt = tf_Nt
+
+    @property
+    def tf_Nf(self):
+        return self._tf_Nf
+    
+    @tf_Nf.setter
+    def tf_Nf(self, tf_Nf):
+        self._tf_Nf = tf_Nf
 
     def log_likelihood(self):
         """Log likelihood function.

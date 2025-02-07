@@ -1,5 +1,6 @@
 from importlib import import_module
 import bilby
+from bilby.core.likelihood import ZeroLikelihood
 from bilby_pipe.input import Input as BilbyInput
 import bilby_pipe.utils
 from bilby_pipe.utils import (convert_string_to_dict,
@@ -99,7 +100,7 @@ class Input(BilbyInput):
         elif self.likelihood_type == "GaussianTimeFrequencyLikelihood":
             Likelihood = GaussianTimeFrequencyLikelihood
             likelihood_kwargs.update(self.extra_likelihood_kwargs)
-        elif self.likelihood_type == "FractionalProjectionTimeFrequencyLikelihood":
+        elif self.likelihood_type in ["zero", "FractionalProjectionTimeFrequencyLikelihood"]:
             Likelihood = FractionalProjectionTimeFrequencyLikelihood
             likelihood_kwargs.update(self.extra_likelihood_kwargs)
         elif "." in self.likelihood_type:

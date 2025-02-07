@@ -3,7 +3,7 @@ import scipy.stats
 from .sky_maximized_spectrogram import compute_sky_maximized_spectrogram
 from .single import clustering
 from ..time_frequency_transform import get_shape_of_wavelet_transform
-from ..utility import logger
+from ..utility import logger, NullpolError
 
 
 def run_time_frequency_clustering(interferometers,
@@ -33,6 +33,11 @@ def run_time_frequency_clustering(interferometers,
         energy_threshold = np.quantile(sky_maximized_spectrogram[sky_maximized_spectrogram>0.], threshold)
     elif threshold_type == "confidence":
         energy_threshold = scipy.stats.chi2.ppf(threshold, df=len(interferometers))
+    elif threshold_type == "variance":
+        # Compute the median along the time axis
+        energy_threshold = threshold * len(interferometers)
+    else:
+        raise NullpolError(f'threshold_type={threshold_type} is not recognized.')
     energy_filter = sky_maximized_spectrogram > energy_threshold
     if np.all(~energy_filter):
         logger.warning(f"No time-frequency pixel passes the energy threshold = {energy_threshold}.")

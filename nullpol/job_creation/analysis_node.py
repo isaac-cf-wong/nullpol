@@ -82,6 +82,22 @@ class AnalysisNode(Node):
         self.job.add_parent(generation_node.job)
 
     @property
+    def polarization_modes(self):
+        return self._polarization_modes
+
+    @polarization_modes.setter
+    def polarization_modes(self, polarization_modes):
+        self._polarization_modes = polarization_modes.replace('"', '').replace("'", '')
+
+    @property
+    def polarization_basis(self):
+        return self._polarization_basis
+    
+    @polarization_basis.setter
+    def polarization_basis(self, polarization_basis):
+        self._polarization_basis = polarization_basis.replace('"', '').replace("'", '')
+
+    @property
     def executable(self):
         if self.inputs.use_mpi:
             return self._get_executable_path("mpiexec")

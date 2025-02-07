@@ -2,13 +2,13 @@
 
 import os
 import subprocess
-
+import glob
 import time
-
 import pkg_resources
 from asimov import config
 from asimov.pipelines.bilby import Bilby
 from asimov.pipeline import Pipeline, PipelineException, PipelineLogger
+from .pesummary import PESummaryPipeline
 
 
 class Nullpol(Bilby):
@@ -38,6 +38,55 @@ class Nullpol(Bilby):
         if not production.pipeline.lower() == "nullpol":
             raise PipelineException(f'Pipeline {production.pipeline.lower()} '
                                     'is not recognized.')
+
+    def detect_completion(self):
+        """
+        Check for the production of the posterior file to signal that the job has completed.
+        """
+        self.logger.info("Checking if the nullpol job has completed")
+        results_dir = glob.glob(f"{self.production.rundir}/result")
+        expected_number_of_result_files = len(self.production.meta['likelihood']['polarization modes'])
+        if len(results_dir) > 0:  # dynesty_merge_result.json
+            results_files = glob.glob(
+                os.path.join(results_dir[0], "*merge*_result.hdf5")
+            )
+            results_files += glob.glob(
+                os.path.join(results_dir[0], "*merge*_result.json")
+            )
+            self.logger.debug(f"results files {results_files}")
+            if len(results_files) == expected_number_of_result_files:
+                self.logger.info(f"{len(results_files)} result files found, the job is finished.")
+                return True
+            elif len(results_files) > 0:
+                self.logger.info(f"{len(results_files)} < {expected_number_of_result_files} result files found, the job is not finished.")
+            else:
+                self.logger.info("No results files found.")
+                return False
+        else:
+            self.logger.info("No results directory found")
+            return False
+
+    def subrun_samples(self, subrun_label, absolute=False):
+        """
+        Collect the combined samples file for PESummary.
+        """
+
+        if absolute:
+            rundir = os.path.abspath(self.production.rundir)
+        else:
+            rundir = self.production.rundir
+        self.logger.info(f"Rundir for samples: {rundir}")
+        return glob.glob(
+            os.path.join(rundir, "result", f"*_{subrun_label}_merge*_result.hdf5")
+        ) + glob.glob(os.path.join(rundir, "result", f"*_{subrun_label}_merge*_result.json"))
+
+    def after_completion(self):
+        post_pipeline = PESummaryPipeline(production=self.production)
+        self.logger.info("Job has completed. Running PE Summary.")
+        cluster = post_pipeline.submit_dag()
+        self.production.meta["job id"] = int(cluster)
+        self.production.status = "processing"
+        self.production.event.update_data()
 
     def build_dag(self, psds=None, user=None, clobber_psd=False, dryrun=False):
         """

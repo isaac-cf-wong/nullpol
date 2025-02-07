@@ -18,6 +18,21 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 requires-python = ">=3.9"
+dependencies = [
+    "matplotlib==3.6.0",
+    "numpy<=2.0",
+    "bilby",
+    "bilby_pipe<=1.4.2",
+    "gwpy",
+    "numba",
+    "rocket-fft",
+    "scipy",
+    "ConfigArgParse",
+    "pycbc",
+    "healpy",
+    "cbcflow",
+    "asimov"
+]
 
 [project.optional-dependencies]
 # test suite

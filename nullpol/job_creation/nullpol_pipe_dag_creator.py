@@ -70,8 +70,8 @@ def generate_dag(inputs):
                         polarization_modes=polarization_modes_list[i],
                         polarization_basis=polarization_basis_list[i],
                     )
-                parallel_node_list.append(analysis_node)
-                all_parallel_node_list.append(analysis_node)
+                    parallel_node_list.append(analysis_node)
+                    all_parallel_node_list.append(analysis_node)
 
                 if len(parallel_node_list) == 1:
                     merged_node_list.append(analysis_node)
