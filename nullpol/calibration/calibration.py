@@ -10,6 +10,7 @@ import pandas as pd
 from ..utility import logger
 from ..psd import simulate_psd_from_bilby_psd
 
+
 def build_calibration_lookup(
     interferometers,
     wavelet_frequency_resolution,

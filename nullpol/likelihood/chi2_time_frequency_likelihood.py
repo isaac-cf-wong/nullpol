@@ -3,9 +3,7 @@ import scipy.stats
 from numba import njit
 from scipy.special import logsumexp
 from .time_frequency_likelihood import TimeFrequencyLikelihood
-from ..null_stream import (time_shift,
-                           compute_whitened_antenna_pattern_matrix_masked,
-                           compute_gw_projector_masked,
+from ..null_stream import (compute_gw_projector_masked,
                            compute_null_projector_from_gw_projector,
                            compute_projection_squared)
 from ..time_frequency_transform import transform_wavelet_freq
@@ -14,87 +12,48 @@ from ..detector import get_simulated_calibrated_wavelet_psd
 
 
 class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
-    """A time-frequency likelihood class that calculates the chi-squared likelihood.
+    """Estimate frequency domain signal at geocenter.
 
-    Parameters
-    ----------
-    interferometers: list
-        List of interferometers.
-    wavelet_frequency_resolution: float
-        The frequency resolution of the wavelet transform.
-    wavelet_nx: int
-        The number of points in the wavelet transform.
-    polarization_modes: list
-        List of polarization modes.
-    polarization_basis: list
-        List of polarization basis.
-    time_frequency_filter: str
-        The time-frequency filter.
-    simulate_psd_nsample: int
-        The number of samples to simulate the PSDs.
-    calibration_marginalization: bool, optional
-        If true, marginalize over calibration response curves in the likelihood.
-        This is done numerically over a number of calibration response curve realizations.
-    calibration_lookup_table: dict, optional
-        If a dict, contains the arrays over which to marginalize for each interferometer or the filepaths of the
-        calibration files.
-        If not provided, but calibration_marginalization is used, then the appropriate file is created to
-        contain the curves.
-    calibration_psd_lookup_table: dict, optional
-        If a dict, contains the arrays over which to marginalize for each interferometer or the filepaths of the
-        calibration PSD files.
-        If not provided, but calibration_marginalization is used, then the appropriate file is created to
-        contain the curves.
-    number_of_response_curves: int, optional
-        Number of curves from the calibration lookup table to use.
-        Default is 1000.
-    starting_index: int, optional
-        Sets the index for the first realization of the calibration curve to be considered.
-        This, coupled with number_of_response_curves, allows for restricting the set of curves used. This can be used
-        when dealing with large frequency arrays to split the calculation into sections.
-        Defaults to 0.
-    priors: dict, optional            
-        If given, used in the calibration marginalization.
-        Warning: when using marginalisation the dict is overwritten which will change the
-        the dict you are passing in. If this behaviour is undesired, pass `priors.copy()`.
-    """    
+    Args:
+        frequency_array (numpy array): Frequency array (frequency).
+        frequency_mask (numpy array): A boolean array of frequency mask (frequency).
+        whitened_frequency_domain_strain_array_at_geocenter (numpy array): Whitened frequency domain strain array at geocenter (detector, frequency).
+        whitened_antenna_pattern_matrix (numpy array): Whitened antenna pattern matrix (frequency, detector, mode).
+
+    Returns:
+        numpy array: Estimated frequency domain signal at geocenter (detector, frequency).
+    """
     def __init__(self,
                  interferometers,                 
                  wavelet_frequency_resolution,
                  wavelet_nx,
                  polarization_modes,
-                 polarization_basis=None,
-                 wavelet_psd_array=None,
+                 polarization_basis=None,                 
                  time_frequency_filter=None,
-                 simulate_psd_nsample=1000,
-                 calibration_marginalization=False,
-                 calibration_lookup_table=None,
-                 calibration_psd_lookup_table=None,
-                 number_of_response_curves=1000,
-                 starting_index=0,
                  priors=None,
                  *args, **kwargs):
-        super(Chi2TimeFrequencyLikelihood, self).__init__(interferometers=interferometers,
-                                                          wavelet_frequency_resolution=wavelet_frequency_resolution,
-                                                          wavelet_nx=wavelet_nx,
-                                                          polarization_modes=polarization_modes,
-                                                          polarization_basis=polarization_basis,
-                                                          wavelet_psd_array=wavelet_psd_array,
-                                                          time_frequency_filter=time_frequency_filter,
-                                                          simulate_psd_nsample=simulate_psd_nsample,
-                                                          calibration_marginalization=calibration_marginalization,
-                                                          calibration_lookup_table=calibration_lookup_table,
-                                                          calibration_psd_lookup_table=calibration_psd_lookup_table,
-                                                          number_of_response_curves=number_of_response_curves,
-                                                          starting_index=starting_index,
-                                                          priors=priors,
-                                                          *args, **kwargs)
+        super(Chi2TimeFrequencyLikelihood, self).__init__(
+            interferometers=interferometers,
+            wavelet_frequency_resolution=wavelet_frequency_resolution,
+            wavelet_nx=wavelet_nx,
+            polarization_modes=polarization_modes,
+            polarization_basis=polarization_basis,
+            time_frequency_filter=time_frequency_filter,
+            priors=priors,
+            *args, **kwargs)
     
     @property
-    def _DoF(self):
+    def DoF(self):
+        """Degree of freedom.
+
+        Returns:
+            int: Degree of freedom.
+        """
         return (len(self.interferometers)-np.sum(self.polarization_basis)) * np.sum(self.time_frequency_filter)
 
     def log_likelihood(self):
+        s_est = self.estimate_wavelet_domain_signal_at_geocenter()
+
         null_energy_array = self._calculate_residual_power()
         log_likelihood = scipy.stats.chi2.logpdf(null_energy_array, df=self._DoF)
         if len(log_likelihood) > 1:

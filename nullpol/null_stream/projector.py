@@ -1,6 +1,7 @@
 from numba import njit
 import numpy as np
 
+
 @njit
 def compute_gw_projector_masked(whitened_antenna_pattern_matrix,
                                 frequency_mask):
@@ -10,8 +11,9 @@ def compute_gw_projector_masked(whitened_antenna_pattern_matrix,
         if frequency_mask[i]:
             F = np.ascontiguousarray(whitened_antenna_pattern_matrix[i,:,:])
             F_dagger = np.ascontiguousarray(np.conj(F).T)
-            output[i,:,:] = F @ np.linalg.inv(F_dagger @ F) @ F_dagger
+            output[i, :, :] = F @ np.linalg.inv(F_dagger @ F) @ F_dagger
     return output
+
 
 @njit
 def compute_null_projector_from_gw_projector(gw_projector):
@@ -21,6 +23,7 @@ def compute_null_projector_from_gw_projector(gw_projector):
         for j in range(ndet):
             output[i,j,j] += 1.
     return output
+
 
 @njit
 def compute_projection_squared(time_frequency_domain_strain_array,
@@ -38,6 +41,7 @@ def compute_projection_squared(time_frequency_domain_strain_array,
                 d = np.ascontiguousarray(time_frequency_domain_strain_array[:,i,j].astype(projector.dtype))
                 output[i,j] = np.abs(np.conj(d) @ projector[j] @ d)
     return output
+
 
 @njit
 def compute_time_frequency_domain_strain_array_squared(time_frequency_domain_strain_array,

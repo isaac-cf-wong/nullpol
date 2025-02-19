@@ -2,9 +2,7 @@ import numpy as np
 from numba import njit
 from scipy.special import logsumexp
 from .time_frequency_likelihood import TimeFrequencyLikelihood
-from ..null_stream import (time_shift,
-                           compute_whitened_antenna_pattern_matrix_masked,
-                           compute_gw_projector_masked,
+from ..null_stream import (compute_gw_projector_masked,
                            compute_null_projector_from_gw_projector,
                            compute_projection_squared)
 from ..time_frequency_transform import transform_wavelet_freq

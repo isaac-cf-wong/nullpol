@@ -51,9 +51,6 @@ write_to = "nullpol/_version.py"
 version_scheme = "post-release"  # Use 'post-release' or 'guess-next-dev'
 local_scheme = "node-and-date"   # This includes the full commit hash in the version
 
-[tool.cython]
-language_level = 3
-
 [project.scripts]
 nullpol-create-injection = "nullpol.tools.create_injection:main"
 nullpol-create-time-frequency-filter-from-sample = "nullpol.tools.create_time_frequency_filter_from_sample:main"
