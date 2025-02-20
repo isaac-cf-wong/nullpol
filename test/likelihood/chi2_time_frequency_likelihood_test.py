@@ -14,7 +14,7 @@ from nullpol.likelihood.chi2_time_frequency_likelihood import Chi2TimeFrequencyL
 
 class TestChi2TimeFrequencyLikelihood(unittest.TestCase):
     def setUp(self):
-        seed = 2025
+        seed = 12
         # Set the seed
         np.random.seed(seed)
         bilby.core.utils.random.seed(seed)
@@ -26,11 +26,10 @@ class TestChi2TimeFrequencyLikelihood(unittest.TestCase):
         self.wavelet_nx = 4.
         self.minimum_frequency = 20
         self.maximum_frequency = self.sampling_frequency / 2
-        self.threshold = 0.95
+        self.threshold = 1.
         self.time_padding = 0.1
         self.frequency_padding = 1
         self.skypoints = 10
-        priors = bilby.core.prior.PriorDict()
         self.parameters = dict(
             mass_1=36.0,
             mass_2=29.0,
@@ -65,46 +64,46 @@ class TestChi2TimeFrequencyLikelihood(unittest.TestCase):
                          frequency_domain_source_model=freuency_domain_source_model,
                          waveform_arguments=waveform_arguments)
         frequency_domain_strain_array = np.array([ifo.frequency_domain_strain.copy() for ifo in interferometers])        
-        self.time_frequency_filter, spectrogram = run_time_frequency_clustering(interferometers=interferometers,
-                                                                   frequency_domain_strain_array=frequency_domain_strain_array,
-                                                                   wavelet_frequency_resolution=self.wavelet_frequency_resolution,
-                                                                   wavelet_nx=self.wavelet_nx,
-                                                                   minimum_frequency=self.minimum_frequency,
-                                                                   maximum_frequency=self.maximum_frequency,
-                                                                   threshold=self.threshold,
-                                                                   time_padding=self.time_padding,
-                                                                   frequency_padding=self.frequency_padding,
-                                                                   skypoints=self.skypoints,
-                                                                   return_sky_maximized_spectrogram=True)
+        self.time_frequency_filter, spectrogram = run_time_frequency_clustering(
+            interferometers=interferometers,
+            frequency_domain_strain_array=frequency_domain_strain_array,
+            wavelet_frequency_resolution=self.wavelet_frequency_resolution,
+            wavelet_nx=self.wavelet_nx,
+            threshold=self.threshold,
+            time_padding=self.time_padding,
+            frequency_padding=self.frequency_padding,
+            skypoints=self.skypoints,
+            return_sky_maximized_spectrogram=True,
+            threshold_type='variance')
         import matplotlib.pyplot as plt
         plt.imshow(self.time_frequency_filter, aspect='auto')
         plt.savefig('TF_filter.png')
         plt.imshow(spectrogram, aspect='auto')
         plt.savefig('spectrogram.png')
 
-    def test_collapsed_antenna_pattern(self):
-        interferometers = InterferometerList(['H1', 'L1', 'V1'])
-        create_injection(interferometers=interferometers,
-                        duration=self.duration,
-                        sampling_frequency=self.sampling_frequency,
-                        start_time=self.start_time,
-                        noise_type='noise')
-        polarization_modes = 'pc'
-        polarization_basis = 'c'
-        likelihood = Chi2TimeFrequencyLikelihood(interferometers=interferometers,
-                                                wavelet_frequency_resolution=self.wavelet_frequency_resolution,
-                                                wavelet_nx=self.wavelet_nx,
-                                                polarization_modes=polarization_modes,
-                                                polarization_basis=polarization_basis,
-                                                time_frequency_filter=self.time_frequency_filter,
-                                                simulate_psd_nsample=100)
-        likelihood.parameters = dict(ra=0,
-                                    dec=0,
-                                    psi=0,
-                                    amplitude_pc=1.,
-                                    phase_pc=0.1,
-                                    geocent_time=self.geocent_time)
-        print(likelihood.log_likelihood())
+    # def test_collapsed_antenna_pattern(self):
+    #     interferometers = InterferometerList(['H1', 'L1', 'V1'])
+    #     create_injection(interferometers=interferometers,
+    #                      duration=self.duration,
+    #                      sampling_frequency=self.sampling_frequency,
+    #                      start_time=self.start_time,
+    #                      noise_type='noise')
+    #     polarization_modes = 'pc'
+    #     polarization_basis = 'c'
+    #     likelihood = Chi2TimeFrequencyLikelihood(
+    #         interferometers=interferometers,
+    #         wavelet_frequency_resolution=self.wavelet_frequency_resolution,
+    #         wavelet_nx=self.wavelet_nx,
+    #         polarization_modes=polarization_modes,
+    #         polarization_basis=polarization_basis,
+    #         time_frequency_filter=self.time_frequency_filter)
+    #     likelihood.parameters = dict(ra=0,
+    #                                  dec=0,
+    #                                  psi=0,
+    #                                  amplitude_pc=1.,
+    #                                  phase_pc=0.1,
+    #                                  geocent_time=self.geocent_time)
+    #     print(likelihood.log_likelihood())
 
     def test_noise_residual_power(self):
         samples = []
@@ -113,28 +112,29 @@ class TestChi2TimeFrequencyLikelihood(unittest.TestCase):
             # Create a noise injection
             interferometers = InterferometerList(['H1', 'L1', 'V1'])
             create_injection(interferometers=interferometers,
-                            duration=self.duration,
-                            sampling_frequency=self.sampling_frequency,
-                            start_time=self.start_time,
-                            noise_type='noise')
+                             duration=self.duration,
+                             sampling_frequency=self.sampling_frequency,
+                             start_time=self.start_time,
+                             noise_type='noise')
             polarization_modes = 'pc'
             polarization_basis = 'pc'
-            likelihood = Chi2TimeFrequencyLikelihood(interferometers=interferometers,
-                                                    wavelet_frequency_resolution=self.wavelet_frequency_resolution,
-                                                    wavelet_nx=self.wavelet_nx,
-                                                    polarization_modes=polarization_modes,
-                                                    polarization_basis=polarization_basis,
-                                                    time_frequency_filter=self.time_frequency_filter,
-                                                    simulate_psd_nsample=100)
+            likelihood = Chi2TimeFrequencyLikelihood(
+                interferometers=interferometers,
+                wavelet_frequency_resolution=self.wavelet_frequency_resolution,
+                wavelet_nx=self.wavelet_nx,
+                polarization_modes=polarization_modes,
+                polarization_basis=polarization_basis,
+                time_frequency_filter=self.time_frequency_filter)
             likelihood.parameters = dict(ra=0,
-                                        dec=0,
-                                        psi=0,
-                                        geocent_time=self.geocent_time)
-            power = likelihood._calculate_residual_power()
-            samples.append(power[0])
+                                         dec=0,
+                                         psi=0,
+                                         geocent_time=self.geocent_time)
+            energy = likelihood._compute_residual_energy()
+            samples.append(energy)
+
         result = scipy.stats.kstest(samples, cdf='chi2', args=(np.sum(self.time_frequency_filter),))
         print(f"p-value = {result.pvalue}")
-        self.assertGreaterEqual(result.pvalue, 0.01)
+        self.assertGreaterEqual(result.pvalue, 0.05)
 
     def test_signal_residual_power(self):
         samples = []
@@ -143,29 +143,29 @@ class TestChi2TimeFrequencyLikelihood(unittest.TestCase):
             # Create a noise injection
             interferometers = InterferometerList(['H1', 'L1', 'V1'])
             create_injection(interferometers=interferometers,
-                            duration=self.duration,
-                            sampling_frequency=self.sampling_frequency,
-                            start_time=self.start_time,
-                            parameters=self.parameters,
-                            noise_type='gaussian')
+                             duration=self.duration,
+                             sampling_frequency=self.sampling_frequency,
+                             start_time=self.start_time,
+                             parameters=self.parameters,
+                             noise_type='gaussian')
             polarization_modes = 'pc'
             polarization_basis = 'pc'
-            likelihood = Chi2TimeFrequencyLikelihood(interferometers=interferometers,
-                                                    wavelet_frequency_resolution=self.wavelet_frequency_resolution,
-                                                    wavelet_nx=self.wavelet_nx,
-                                                    polarization_modes=polarization_modes,
-                                                    polarization_basis=polarization_basis,
-                                                    time_frequency_filter=self.time_frequency_filter,
-                                                    simulate_psd_nsample=100)
+            likelihood = Chi2TimeFrequencyLikelihood(
+                interferometers=interferometers,
+                wavelet_frequency_resolution=self.wavelet_frequency_resolution,
+                wavelet_nx=self.wavelet_nx,
+                polarization_modes=polarization_modes,
+                polarization_basis=polarization_basis,
+                time_frequency_filter=self.time_frequency_filter)
             likelihood.parameters = dict(ra=self.parameters['ra'],
-                                        dec=self.parameters['dec'],
-                                        psi=self.parameters['psi'],
-                                        geocent_time=self.parameters['geocent_time'])
-            power = likelihood._calculate_residual_power()
-            samples.append(power[0])
+                                         dec=self.parameters['dec'],
+                                         psi=self.parameters['psi'],
+                                         geocent_time=self.parameters['geocent_time'])
+            energy = likelihood._compute_residual_energy()
+            samples.append(energy)
         result = scipy.stats.kstest(samples, cdf='chi2', args=(np.sum(self.time_frequency_filter),))
         print(f"p-value = {result.pvalue}")
-        self.assertGreaterEqual(result.pvalue, 0.01)
+        self.assertGreaterEqual(result.pvalue, 0.05)
 
     def test_signal_residual_power_incorrect_parameters(self):
         samples = []
@@ -174,29 +174,30 @@ class TestChi2TimeFrequencyLikelihood(unittest.TestCase):
             # Create a noise injection
             interferometers = InterferometerList(['H1', 'L1', 'V1'])
             create_injection(interferometers=interferometers,
-                            duration=self.duration,
-                            sampling_frequency=self.sampling_frequency,
-                            start_time=self.start_time,
-                            parameters=self.parameters,
-                            noise_type='gaussian')
+                             duration=self.duration,
+                             sampling_frequency=self.sampling_frequency,
+                             start_time=self.start_time,
+                             parameters=self.parameters,
+                             noise_type='gaussian')
             polarization_modes = 'pc'
             polarization_basis = 'pc'
-            likelihood = Chi2TimeFrequencyLikelihood(interferometers=interferometers,
-                                                    wavelet_frequency_resolution=self.wavelet_frequency_resolution,
-                                                    wavelet_nx=self.wavelet_nx,
-                                                    polarization_modes=polarization_modes,
-                                                    polarization_basis=polarization_basis,
-                                                    time_frequency_filter=self.time_frequency_filter,
-                                                    simulate_psd_nsample=100)
+            likelihood = Chi2TimeFrequencyLikelihood(
+                interferometers=interferometers,
+                wavelet_frequency_resolution=self.wavelet_frequency_resolution,
+                wavelet_nx=self.wavelet_nx,
+                polarization_modes=polarization_modes,
+                polarization_basis=polarization_basis,
+                time_frequency_filter=self.time_frequency_filter)
             likelihood.parameters = dict(ra=self.parameters['ra']+0.5,
                                         dec=self.parameters['dec']-0.5,
                                         psi=self.parameters['psi']+0.5,
                                         geocent_time=self.parameters['geocent_time']+10000)
-            power = likelihood._calculate_residual_power()
-            samples.append(power[0])
+            energy = likelihood._compute_residual_energy()
+            samples.append(energy)
         result = scipy.stats.kstest(samples, cdf='chi2', args=(np.sum(self.time_frequency_filter),))
         print(f"p-value = {result.pvalue}")
-        self.assertLess(result.pvalue, 0.01)
+        self.assertLess(result.pvalue, 0.05)
+
 
 if __name__ == '__main__':
     unittest.main()

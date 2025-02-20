@@ -43,7 +43,7 @@ class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
         """
         return (len(self.interferometers)-np.sum(self.polarization_basis)) * np.sum(self.time_frequency_filter)
 
-    def log_likelihood(self):
+    def _compute_residual_energy(self):
         s_est = self.estimate_wavelet_domain_signal_at_geocenter()
         d_wavelet = self.compute_cached_wavelet_domain_strain_array_at_geocenter()
 
@@ -52,5 +52,9 @@ class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
 
         # Compute the null energy
         E_null = np.sum(np.abs(d_null * self.time_frequency_filter)**2)
+        return E_null
+
+    def log_likelihood(self):
+        E_null = self._compute_residual_energy()
         log_likelihood = scipy.stats.chi2.logpdf(E_null, df=self.DoF)
         return log_likelihood

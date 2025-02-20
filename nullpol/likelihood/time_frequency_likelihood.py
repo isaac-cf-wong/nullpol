@@ -155,7 +155,7 @@ class TimeFrequencyLikelihood(Likelihood):
             self._filtered_frequency_mask = np.full_like(self.frequency_mask, False)
             # Check the minimum and maximum frequencies implied
             # by the time frequency filter.
-            indices = np.where(self.time_frequency_filter_collapsed)
+            indices = np.where(self.time_frequency_filter_collapsed)[0]
             minimum_frequency = indices[0] * self.wavelet_frequency_resolution
             maximum_frequency = indices[-1] * self.wavelet_frequency_resolution
             k_low = int(minimum_frequency / self.frequency_resolution)
@@ -166,7 +166,7 @@ class TimeFrequencyLikelihood(Likelihood):
     @property
     def filtered_masked_frequency_array(self):
         if self._filtered_masked_frequency_array is None:
-            self._filtered_masked_frequency_array = self.frequency_array[self.filtered_frequency_mask]
+            self._filtered_masked_frequency_array = self.frequency_array[self.frequency_mask]
         return self._filtered_masked_frequency_array
 
     @property
@@ -218,7 +218,7 @@ class TimeFrequencyLikelihood(Likelihood):
                 self.power_spectral_density_array is not None:
             self._whitened_frequency_domain_strain_array = \
                 compute_whitened_frequency_domain_strain_array(
-                    frequency_mask=self.filtered_frequency_mask,
+                    frequency_mask=self.frequency_mask,
                     frequency_resolution=self.frequency_resolution,
                     frequency_domain_strain_array=self.frequency_domain_strain_array,
                     power_spectral_density_array=self.power_spectral_density_array,
@@ -384,10 +384,10 @@ class TimeFrequencyLikelihood(Likelihood):
 
         for i in range(len(self.interferometers)):
             calibration_errors = self.interferometers[i].calibration_model.get_calibration_factor(
-                frequency_array=self.filtered_masked_frequency_array,
+                frequency_array=self.masked_frequency_array,
                 prefix=f'recalib_{self.interferometers[i].name}_',
                 **self.parameters)
-            output[i, self.filtered_frequency_mask] = calibration_errors
+            output[i, self.frequency_mask] = calibration_errors
         return output
 
     def compute_whitened_frequency_domain_strain_array_at_geocenter(self):
@@ -399,7 +399,7 @@ class TimeFrequencyLikelihood(Likelihood):
         time_delay_array = self.compute_time_delay_array()
         output = compute_time_shifted_frequency_domain_strain_array(
             frequency_array=self.frequency_array,
-            frequency_mask=self.filtered_frequency_mask,
+            frequency_mask=self.frequency_mask,
             frequency_domain_strain_array=self.whitened_frequency_domain_strain_array,
             time_delay_array=time_delay_array
         )
@@ -415,8 +415,8 @@ class TimeFrequencyLikelihood(Likelihood):
         """
         return np.array([transform_wavelet_freq(
             data=self._cached_whitened_frequency_domain_strain_array_at_geocenter[i],
-            Nf=self.tf_Nf,
-            Nt=self.tf_Nt,
+            sampling_frequency=self.sampling_frequency,
+            frequency_resolution=self.wavelet_frequency_resolution,
             nx=self.wavelet_nx) for i in range(len(self.interferometers))]
         )
 
@@ -433,16 +433,16 @@ class TimeFrequencyLikelihood(Likelihood):
         whitened_antenna_patten_matrix = compute_whitened_antenna_pattern_matrix_masked(
             antenna_pattern_matrix=antenna_pattern_matrix,
             psd_array=self.power_spectral_density_array,
-            frequency_mask=self.filtered_frequency_mask)
+            frequency_mask=self.frequency_mask)
         calibration_factor = self.compute_calibration_factor()
         calibrated_whitened_antenna_pattern_matrix = compute_calibrated_whitened_antenna_pattern_matrix(
-            frequency_mask=self.filtered_frequency_mask,
+            frequency_mask=self.frequency_mask,
             whitened_antenna_pattern_matrix=whitened_antenna_patten_matrix,
             calibration_error_matrix=calibration_factor
         )
         whitened_frequency_domain_strain_array_at_geocenter = self.compute_whitened_frequency_domain_strain_array_at_geocenter()
         return estimate_frequency_domain_signal_at_geocenter(
-            frequency_mask=self.filtered_frequency_mask,
+            frequency_mask=self.frequency_mask,
             whitened_frequency_domain_strain_array_at_geocenter=whitened_frequency_domain_strain_array_at_geocenter,
             whitened_antenna_pattern_matrix=calibrated_whitened_antenna_pattern_matrix)
 
@@ -457,8 +457,8 @@ class TimeFrequencyLikelihood(Likelihood):
         # Perform the wavelet transform
         wavelet_domain_signal = np.array([transform_wavelet_freq(
             data=frequency_domain_signal[i],
-            Nf=self.tf_Nf,
-            Nt=self.tf_Nt,
+            sampling_frequency=self.sampling_frequency,
+            frequency_resolution=self.wavelet_frequency_resolution,
             nx=self.wavelet_nx) for i in range(len(self.interferometers))]
         )
         return wavelet_domain_signal

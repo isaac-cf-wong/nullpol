@@ -29,5 +29,6 @@ def estimate_frequency_domain_signal_at_geocenter(
     for i in range(len(frequency_mask)):
         if frequency_mask[i]:
             Pgw = np.ascontiguousarray(gw_projector[i, :, :])
-            s_est[:, i] = Pgw @ whitened_frequency_domain_strain_array_at_geocenter[:, i]
+            dw = np.ascontiguousarray(whitened_frequency_domain_strain_array_at_geocenter[:, i])
+            s_est[:, i] = Pgw @ dw
     return s_est

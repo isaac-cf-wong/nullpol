@@ -6,8 +6,6 @@ from ..null_stream import (compute_gw_projector_masked,
                            compute_null_projector_from_gw_projector,
                            compute_projection_squared)
 from ..time_frequency_transform import transform_wavelet_freq
-from ..detector import (compute_whitened_time_frequency_domain_strain_array,
-                        get_simulated_calibrated_wavelet_psd)
 
 
 class GaussianTimeFrequencyLikelihood(TimeFrequencyLikelihood):
