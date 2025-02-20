@@ -57,10 +57,11 @@ class TimeFrequencyLikelihood(Likelihood):
         self._power_spectral_density_array = np.array([ifo.power_spectral_density_array for ifo in self.interferometers])        
         self._wavelet_frequency_resolution = wavelet_frequency_resolution
         self._wavelet_nx = wavelet_nx
-        self._tf_Nt, self._tf_Nf = get_shape_of_wavelet_transform(self.duration,
-                                                                  self.sampling_frequency,
-                                                                  self.wavelet_frequency_resolution)
-        
+        self._tf_Nt, self._tf_Nf = get_shape_of_wavelet_transform(
+            self.duration,
+            self.sampling_frequency,
+            self.wavelet_frequency_resolution)
+
         # Encode the polarization labels
         self._polarization_modes, self._polarization_basis, self._polarization_derived = \
             encode_polarization(polarization_modes, polarization_basis)
@@ -68,8 +69,9 @@ class TimeFrequencyLikelihood(Likelihood):
         # Collapse the polarization encoding
         self._polarization_basis_collapsed = np.array([self.polarization_basis[i] for i in range(len(self.polarization_modes)) if self.polarization_modes[i]]).astype(bool)
         self._polarization_derived_collapsed = np.array([self.polarization_derived[i] for i in range(len(self.polarization_modes)) if self.polarization_modes[i]]).astype(bool)
-        self._relative_amplification_factor_map = relative_amplification_factor_map(self.polarization_basis,
-                                                                                   self.polarization_derived)
+        self._relative_amplification_factor_map = relative_amplification_factor_map(
+            self.polarization_basis,
+            self.polarization_derived)
 
         # Load the time_frequency_filter
         self._time_frequency_filter = time_frequency_filter
@@ -262,6 +264,16 @@ class TimeFrequencyLikelihood(Likelihood):
             numpy array: A collapsed boolean array of the polarization basis.
         """
         return self._polarization_basis_collapsed
+
+    @property
+    def polarization_derived_collapsed(self):
+        """A collapsed boolean array of the derived polarization modes.
+        The modes not in polarization_modes are removed.
+
+        Returns:
+            numpy array: A collapsed boolean array of the derived polarization modes.
+        """
+        return self._polarization_derived_collapsed
 
     @property
     def relative_amplification_factor_map(self):
@@ -472,6 +484,12 @@ class TimeFrequencyLikelihood(Likelihood):
         raise NotImplementedError("The log_likelihood method must be implemented in a subclass.")    
 
     def _calculate_noise_log_likelihood(self):
+        """Calculate noise log likelihood.
+        This should be implemented in a subclass.
+
+        Returns:
+            None
+        """
         return None
 
     def noise_log_likelihood(self):
@@ -482,5 +500,6 @@ class TimeFrequencyLikelihood(Likelihood):
             float: The noise log likelihood.
         """
         if self._noise_log_likelihood_value is None:
-            self._calculate_noise_log_likelihood()
+            self._noise_log_likelihood_value = \
+                self._calculate_noise_log_likelihood()
         return self._noise_log_likelihood_value

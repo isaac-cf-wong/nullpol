@@ -19,7 +19,7 @@ class TestWhiten(unittest.TestCase):
         self.ifos.set_strain_data_from_power_spectral_densities(
             sampling_frequency=self.sampling_frequency,
             duration=self.duration
-        )            
+        )
         self.frequency_mask = np.logical_and.reduce([ifo.frequency_mask for ifo in self.ifos])
 
     def test_compute_whitened_frequency_domain_strain_array(self):
@@ -45,3 +45,4 @@ class TestWhiten(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
