@@ -9,7 +9,6 @@ Installation
 
 To install the package, run the following command::
 
-    pip install -r requirements.txt
     pip install .
 
 
