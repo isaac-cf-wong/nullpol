@@ -35,7 +35,7 @@ def time_frequency_domain_strain_array(self):
         self._frequency_domain_strain_array = np.zeros((nifo, ntime, nfreq), dtype=self[0].time_frequency_domain_strain[0, 0].dtype)
 
         for i in range(nifo):
-            self._time_frequency_domain_strain_array[i,:] = self[i].time_frequency_domain_strain
+            self._time_frequency_domain_strain_array[i, :] = self[i].time_frequency_domain_strain
 
     return self._time_frequency_domain_strain_array
 

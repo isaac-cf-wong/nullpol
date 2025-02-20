@@ -17,7 +17,7 @@ class TestChi2TimeFrequencyLikelihood(unittest.TestCase):
         seed = 2025
         # Set the seed
         np.random.seed(seed)
-        bilby.core.utils.random.seed(seed)      
+        bilby.core.utils.random.seed(seed)
         self.duration = 8
         self.sampling_frequency = 4096
         self.geocent_time = 1126259642.413
@@ -80,7 +80,7 @@ class TestChi2TimeFrequencyLikelihood(unittest.TestCase):
         plt.imshow(self.time_frequency_filter, aspect='auto')
         plt.savefig('TF_filter.png')
         plt.imshow(spectrogram, aspect='auto')
-        plt.savefig('spectrogram.png') 
+        plt.savefig('spectrogram.png')
 
     def test_collapsed_antenna_pattern(self):
         interferometers = InterferometerList(['H1', 'L1', 'V1'])

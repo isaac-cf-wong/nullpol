@@ -5,7 +5,6 @@ from .projector import compute_gw_projector_masked
 
 @njit
 def estimate_frequency_domain_signal_at_geocenter(
-    frequency_array,
     frequency_mask,
     whitened_frequency_domain_strain_array_at_geocenter,
     whitened_antenna_pattern_matrix
@@ -13,7 +12,6 @@ def estimate_frequency_domain_signal_at_geocenter(
     """Estimate frequency domain signal at geocenter.
 
     Args:
-        frequency_array (numpy array): Frequency array (frequency).
         frequency_mask (numpy array): A boolean array of frequency mask (frequency).
         whitened_frequency_domain_strain_array_at_geocenter (numpy array): Whitened frequency domain strain array at geocenter (detector, frequency).
         whitened_antenna_pattern_matrix (numpy array): Whitened antenna pattern matrix (frequency, detector, mode).
@@ -28,7 +26,7 @@ def estimate_frequency_domain_signal_at_geocenter(
     )
     # Compute the signal estimator.
     s_est = np.zeros_like(whitened_frequency_domain_strain_array_at_geocenter)
-    for i in range(len(frequency_array)):
+    for i in range(len(frequency_mask)):
         if frequency_mask[i]:
             Pgw = np.ascontiguousarray(gw_projector[i, :, :])
             s_est[:, i] = Pgw @ whitened_frequency_domain_strain_array_at_geocenter[:, i]
