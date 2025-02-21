@@ -97,11 +97,6 @@ class DataAnalysisInput(BInput, Input):
         self.spline_calibration_nodes = args.spline_calibration_nodes
         self.calibration_prior_boundary = args.calibration_prior_boundary
 
-        # Marginalization
-        self.calibration_marginalization = args.calibration_marginalization
-        self.calibration_lookup_table = args.calibration_lookup_table
-        self.number_of_response_curves = args.number_of_response_curves
-
         # Injection arguments
         self.injection_waveform_approximant = \
             args.injection_waveform_approximant
@@ -189,12 +184,14 @@ class DataAnalysisInput(BInput, Input):
 
     def _add_default_relative_polarization_prior(self):
         # Encode the polarization modes
-        polarization_modes, polarization_basis, polarization_derived = encode_polarization(self.polarization_modes,
-                                                                                           self.polarization_basis)
+        polarization_modes, polarization_basis, polarization_derived = \
+            encode_polarization(self.polarization_modes,
+                                self.polarization_basis)
 
         # Obtain the keywords
-        relative_polarization_parameters = relative_amplification_factor_map(polarization_basis=polarization_basis,
-                                                                             polarization_derived=polarization_derived).flatten()
+        relative_polarization_parameters = relative_amplification_factor_map(
+            polarization_basis=polarization_basis,
+            polarization_derived=polarization_derived).flatten()
         prior_remove_list = []
         for prior in self.priors:
             if prior[:10] == 'amplitude_' and prior[10:] not in relative_polarization_parameters:
@@ -212,28 +209,31 @@ class DataAnalysisInput(BInput, Input):
         for label in relative_polarization_parameters:
             amplitude_name = f'amplitude_{label}'
             if amplitude_name not in self.priors:
-                missing_priors[amplitude_name] = bilby.core.prior.Uniform(name=amplitude_name,
-                                                                          minimum=0.0,
-                                                                          maximum=1.0,
-                                                                          latex_label=f"$A_{{{label}}}$")
+                missing_priors[amplitude_name] = bilby.core.prior.Uniform(
+                    name=amplitude_name,
+                    minimum=0.0,
+                    maximum=1.0,
+                    latex_label=f"$A_{{{label}}}$")
                 logger.info(f'Added missing relative polarization prior: {missing_priors[amplitude_name]}')
             phase_name = f'phase_{label}'
             if phase_name not in self.priors:
-                missing_priors[phase_name] = bilby.core.prior.Uniform(name=phase_name,
-                                                                      minimum=0.0,
-                                                                      maximum=2. * np.pi,
-                                                                      latex_label=f"$\phi_{{{label}}}$",
-                                                                      boundary="periodic")
+                missing_priors[phase_name] = bilby.core.prior.Uniform(
+                    name=phase_name,
+                    minimum=0.0,
+                    maximum=2. * np.pi,
+                    latex_label=f"$\phi_{{{label}}}$",
+                    boundary="periodic")
                 logger.info(f'Added missing relative polarization prior: {missing_priors[phase_name]}')
         self.priors.update(missing_priors)
 
     def _add_likelihood_specific_default_prior(self):
         if self.likelihood_type == "FractionalProjectionTimeFrequencyLikelihood":
             if "projection_fraction" not in self.priors:
-                self.priors['projection_fraction'] = bilby.core.prior.Uniform(name="projection_fraction",
-                                                                              minimum=0.0,
-                                                                              maximum=1.0,
-                                                                              latex_label="$\zeta$")
+                self.priors['projection_fraction'] = bilby.core.prior.Uniform(
+                    name="projection_fraction",
+                    minimum=0.0,
+                    maximum=1.0,
+                    latex_label="$\zeta$")
                 logger.info("Missing prior for projection_fraction.")
                 logger.info(f"Added prior for projection_fraction: {self.priors['projection_fraction']}")
 
@@ -262,9 +262,11 @@ class DataAnalysisInput(BInput, Input):
             **self.sampler_kwargs,
         )
 
+
 def create_analysis_parser(usage=__doc__):
     """Data analysis parser creation"""
     return create_nullpol_parser(top_level=False)
+
 
 def main():
     """Data analysis main logic"""

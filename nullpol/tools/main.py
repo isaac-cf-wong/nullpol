@@ -3,7 +3,6 @@ from bilby_pipe.utils import (parse_args,
                               get_outdir_name,
                               tcolors)
 from bilby_pipe.main import write_complete_config_file
-from bilby_pipe.input import Input
 from bilby_pipe.main import MainInput as BilbyMainInput
 import bilby_pipe.utils
 import importlib
@@ -13,8 +12,8 @@ from .. import log_version_information
 from ..utility import logger
 from ..job_creation import generate_dag
 
-
 bilby_pipe.utils.logger = logger
+
 
 class MainInput(BilbyMainInput, Input):
     def __init__(self, args, unknown_args, perform_checks=True):
@@ -175,6 +174,7 @@ class MainInput(BilbyMainInput, Input):
         else:
             self._analysis_executable = "nullpol_pipe_analysis"
 
+
 def create_main_parser():
     _nullpol_pipe_doc = """
     nullpol_pipe is a command line tools for taking user input (as command line
@@ -195,6 +195,7 @@ def create_main_parser():
     will build and submit the job.
     """
     return create_nullpol_parser(top_level=True)
+
 
 def main():
     """Top-level interface for nullpol_pipe"""
@@ -219,5 +220,7 @@ def main():
     generate_dag(inputs)
 
     if len(unknown_args) > 0:
-        msg = [tcolors.WARNING, f"Unrecognized arguments {unknown_args}", tcolors.END]
+        msg = [tcolors.WARNING,
+               f"Unrecognized arguments {unknown_args}",
+               tcolors.END]
         logger.warning(" ".join(msg))

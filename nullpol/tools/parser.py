@@ -122,48 +122,104 @@ def create_nullpol_parser(top_level=True):
     remove_argument(parser, "--epsilon")
     remove_argument(parser, "--default-prior")
     remove_argument(parser, "--version")
-    add_argument_to_group(parser, "Likelihood arguments", "--likelihood-type", default="Chi2TimeFrequencyLikelihood", help=("The likelihood. Can be one of [Chi2TimeFrequencyLikelihood,] "
-                                                                                                                            "or python path to a bilby likelihood class available in the users installation."
-                                                                                                                            "If `zero` is given, a testing ZeroLikelihood is used which always "
-                                                                                                                            "return zero."))
-    add_argument_to_group(parser, "Likelihood arguments", "--calibration-psd-lookup-table", type=nonestr, help=("Dictionary of calibration PSD lookup files for use with calibration "
-                                                                                                                "marginalization/the precomputed model. If these files don't "
-                                                                                                                "exist, they will be generated from the passed uncertainties."))
-    add_argument_to_group(parser, "Likelihood arguments", "--polarization-modes", action="append", help=("Polarization models. A token consists of labels for the polarization modes. "
-                                                                                                                    "`plus`: `p`, `cross`: `c`, `breathing`: `b`, `longitudinal`: `l`, "
-                                                                                                                    "`vector_x`: `x`, `vector_y`: `y`. "
-                                                                                                                    "For example, [pc, pcb] represents running over pc and pcb models."
-                                                                                                                    "pc represents only running the pc model."))
-    add_argument_to_group(parser, "Likelihood arguments", "--polarization-basis", action="append", help=("Polarization basis. A token consists of labels for the polarization bases. "
-                                                                                                         "`plus`: `p`, `cross`: `c`, `breathing`: `b`, `longitudinal`: `l`, "
-                                                                                                         "`vector_x`: `x`, `vector_y`: `y`. "
-                                                                                                         "For example, [p, b] represents using basis p for the first model, and basis b for the second model."
-                                                                                                         "For a single run, you can also specify a single label e.g. `p` to indicate the basis."))
-    add_argument_to_group(parser, "Likelihood arguments", "--wavelet-frequency-resolution", type=float, default=32., help="Frequency resolution in Hz in the time-frequency domain.")
-    add_argument_to_group(parser, "Likelihood arguments", "--wavelet-nx", type=float, default=4., help="Sharpness of the wavelet.")
-    add_argument_to_group(parser, "Likelihood arguments", "--simulate-psd-nsample", type=int, default=1000, help="Number of samples to estimate the PSD in the time-frequency domain.")
-    add_argument_to_group(parser, "Prior arguments", "--default-prior", type=str, default="PolarizationPriorDict", help="The name of the prior set to base the prior on.")
-    add_argument_to_group(parser, "Calibration arguments", "--calibration-correction-type", type=nonestr, default="data", help=("Type of calibration correction: can be either `data` or `template`. "
-                                                                                                                                "See https://bilby-dev.github.io/bilby/api/bilby.gw.detector.calibration.html "
-                                                                                                                                "for more information."))
+    add_argument_to_group(parser,
+                          "Likelihood arguments",
+                          "--likelihood-type",
+                          default="FractionalProjectionTimeFrequencyLikelihood",
+                          help=("The likelihood. Can be one of [Chi2TimeFrequencyLikelihood, GaussianTimeFrequencyLikelihood, FractionalProjectionTimeFrequencyLikelihood, zero] "
+                                "or python path to a bilby likelihood class available in the users installation."
+                                "If `zero` is given, a testing ZeroLikelihood is used which always "
+                                "return zero."))
+    add_argument_to_group(parser,
+                          "Likelihood arguments",
+                          "--polarization-modes",
+                          action="append",
+                          help=("Polarization models. A token consists of labels for the polarization modes. "
+                                "`plus`: `p`, `cross`: `c`, `breathing`: `b`, `longitudinal`: `l`, "
+                                "`vector_x`: `x`, `vector_y`: `y`. "
+                                "For example, [pc, pcb] represents running over pc and pcb models."
+                                "pc represents only running the pc model."))
+    add_argument_to_group(parser,
+                          "Likelihood arguments",
+                          "--polarization-basis",
+                          action="append",
+                          help=("Polarization basis. A token consists of labels for the polarization bases. "
+                                "`plus`: `p`, `cross`: `c`, `breathing`: `b`, `longitudinal`: `l`, "
+                                "`vector_x`: `x`, `vector_y`: `y`. "
+                                "For example, [p, b] represents using basis p for the first model, and basis b for the second model."
+                                "For a single run, you can also specify a single label e.g. `p` to indicate the basis."))
+    add_argument_to_group(parser,
+                          "Likelihood arguments",
+                          "--wavelet-frequency-resolution",
+                          type=float, default=16.,
+                          help="Frequency resolution in Hz in the time-frequency domain.")
+    add_argument_to_group(parser,
+                          "Likelihood arguments",
+                          "--wavelet-nx",
+                          type=float,
+                          default=4.,
+                          help="Sharpness of the wavelet.")
+    add_argument_to_group(parser,
+                          "Prior arguments",
+                          "--default-prior",
+                          type=str,
+                          default="PolarizationPriorDict",
+                          help="The name of the prior set to base the prior on.")
+    add_argument_to_group(parser,
+                          "Calibration arguments",
+                          "--calibration-correction-type",
+                          type=nonestr,
+                          default="data",
+                          help=("Type of calibration correction: can be either `data` or `template`. "
+                                "See https://bilby-dev.github.io/bilby/api/bilby.gw.detector.calibration.html "
+                                "for more information."))
     clustering_parser = parser.add_argument_group(
         title="Time-frequency clustering",
         description="The configuration of time-frequency clustering.",
     )
-    clustering_parser.add("--time-frequency-clustering-method", type=nonestr, help=("Method to perform clustering. Can be one of [`data`, "
-                                                                                    "`injection`, `injection_parameters_file`, `maxL`, `maP`, `random`]."))
-    clustering_parser.add("--time-frequency-clustering-injection-parameters-filename", type=nonestr, help=("If `injection_parameters_file` is chosen in --time-frequency-clustering-method, "
-                                                                                                 "provide the path to the injection parameters file."))
-    clustering_parser.add("--time-frequency-clustering-pe-samples-filename", type=nonestr, help=("If `maxL`, `maxP` or `random` is chosen in --time-frequency-clustering-method, "
-                                                                                                 "provide the path to the bilby result file."))
-    clustering_parser.add('--time-frequency-clustering-threshold', type=float, default=0.95, help="Quantile threshold to filter the excess power.")
-    clustering_parser.add('--time-frequency-clustering-threshold-type', type=str, default="quantile", help="Type of threshold.")
-    clustering_parser.add('--time-frequency-clustering-time-padding', type=float, default=0.1, help="Time padding in second to pad on both sides of the cluster.")
-    clustering_parser.add('--time-frequency-clustering-frequency-padding', type=float, default=1, help="Frequency padding in Hz to pad on both sides of the cluster.")
-    clustering_parser.add('--time-frequency-clustering-skypoints', type=int, default=100, help="Number of skypoints to compute the sky-maximized energy map.")
-    clustering_parser.add('--time-frequency-probability-map-confidence-threshold', type=float, default=0.9, help="Confidence threshold to reject noise hypothesis.")
-    clustering_parser.add('--time-frequency-probability-map-steepness', type=float, default=1., help="Steepness to transit from noise hypothesis to signal hypothesis.")
-    parser.add("--version", action="version", version=f"%(prog)s={__version__}")
+    clustering_parser.add("--time-frequency-clustering-method",
+                          type=nonestr,
+                          help=("Method to perform clustering. Can be one of [`data`, "
+                                "`injection`, `injection_parameters_file`, `maxL`, `maP`, `random`]."))
+    clustering_parser.add("--time-frequency-clustering-injection-parameters-filename",
+                          type=nonestr,
+                          help=("If `injection_parameters_file` is chosen in --time-frequency-clustering-method, "
+                                "provide the path to the injection parameters file."))
+    clustering_parser.add("--time-frequency-clustering-pe-samples-filename",
+                          type=nonestr,
+                          help=("If `maxL`, `maxP` or `random` is chosen in --time-frequency-clustering-method, "
+                                "provide the path to the bilby result file."))
+    clustering_parser.add('--time-frequency-clustering-threshold',
+                          type=float,
+                          default=0.95,
+                          help="Quantile threshold to filter the excess power.")
+    clustering_parser.add('--time-frequency-clustering-threshold-type',
+                          type=str,
+                          default="variance",
+                          help="Type of threshold.")
+    clustering_parser.add('--time-frequency-clustering-time-padding',
+                          type=float,
+                          default=0.1,
+                          help="Time padding in second to pad on both sides of the cluster.")
+    clustering_parser.add('--time-frequency-clustering-frequency-padding',
+                          type=float,
+                          default=1,
+                          help="Frequency padding in Hz to pad on both sides of the cluster.")
+    clustering_parser.add('--time-frequency-clustering-skypoints',
+                          type=int,
+                          default=100,
+                          help="Number of skypoints to compute the sky-maximized energy map.")
+    clustering_parser.add('--time-frequency-probability-map-confidence-threshold',
+                          type=float,
+                          default=1.0,
+                          help="Confidence threshold to reject noise hypothesis.")
+    clustering_parser.add('--time-frequency-probability-map-steepness',
+                          type=float,
+                          default=1.,
+                          help="Steepness to transit from noise hypothesis to signal hypothesis.")
+    parser.add("--version",
+               action="version",
+               version=f"%(prog)s={__version__}")
     return parser
 
 def main():

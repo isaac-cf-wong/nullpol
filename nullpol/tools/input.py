@@ -3,20 +3,17 @@ import bilby
 from bilby.core.likelihood import ZeroLikelihood
 from bilby_pipe.input import Input as BilbyInput
 import bilby_pipe.utils
-from bilby_pipe.utils import (convert_string_to_dict,
-                              BilbyPipeError,
-                              strip_quotes)
+from bilby_pipe.utils import strip_quotes
 import numpy as np
-from ..utility import (logger,
-                       get_absolute_path)
+from ..utility import (logger, NullpolError)
 from ..likelihood import (Chi2TimeFrequencyLikelihood,
                           GaussianTimeFrequencyLikelihood,
                           FractionalProjectionTimeFrequencyLikelihood)
 from .. import prior as nullpol_prior
 import inspect
 
+bilby_pipe.utils.logger = logger
 
-bilby_pipe.utils.logger  = logger
 
 class Input(BilbyInput):
     def __init__(self, args, unknown_args, print_msg=True):
@@ -85,13 +82,7 @@ class Input(BilbyInput):
             wavelet_nx=self.wavelet_nx,
             polarization_modes=self.polarization_modes,
             polarization_basis=self.polarization_basis,
-            wavelet_psd_array=self.meta_data["wavelet_psd_array"],
             time_frequency_filter=self.meta_data['time_frequency_filter'],
-            simulate_psd_nsample=self.simulate_psd_nsample,
-            calibration_marginalization=self.calibration_marginalization,
-            calibration_lookup_table=self.calibration_lookup_table,
-            calibration_psd_lookup_table=self.calibration_psd_lookup_table,
-            number_of_response_curves=self.number_of_response_curves,
             priors=self.search_priors,            
         )
         if self.likelihood_type == "Chi2TimeFrequencyLikelihood":
@@ -126,7 +117,7 @@ class Input(BilbyInput):
         # If requested, use a zero likelihood: for testing purposes
         if self.likelihood_type == "zero":
             logger.debug("Using a ZeroLikelihood")
-            likelihood = bilby.core.likelihood.ZeroLikelihood(likelihood)
+            likelihood = ZeroLikelihood(likelihood)
 
         return likelihood
     
@@ -134,16 +125,6 @@ class Input(BilbyInput):
     def combined_default_prior_dicts(self):
         d = nullpol_prior.__dict__.copy()
         return d
-
-    @property
-    def calibration_psd_lookup_table(self):
-        return getattr(self, "_calibration_psd_lookup_table", None)
-
-    @calibration_psd_lookup_table.setter
-    def calibration_psd_lookup_table(self, lookup):
-        if isinstance(lookup, str):
-            lookup = convert_string_to_dict(lookup)
-        self._calibration_psd_lookup_table = lookup
 
     @property
     def calibration_correction_type(self):
@@ -160,11 +141,11 @@ class Input(BilbyInput):
     @polarization_modes.setter
     def polarization_modes(self, modes):
         if modes is None:
-            raise BilbyPipeError("No polarization-modes input")
+            raise NullpolError("No polarization-modes input")
         if isinstance(modes, list):
             modes = ",".join(modes)
         if isinstance(modes, str) is False:
-            raise BilbyPipeError(f"polarization-modes input {modes} not understood")
+            raise NullpolError(f"polarization-modes input {modes} not understood")
         # Remove square brackets
         modes = modes.replace("[", "").replace("]", "")
         # Remove added quotes
@@ -181,7 +162,7 @@ class Input(BilbyInput):
     @property
     def polarization_basis(self):
         return getattr(self, '_polarization_basis', None)
-    
+
     @polarization_basis.setter
     def polarization_basis(self, basis):
         self._polarization_basis = basis
@@ -192,17 +173,9 @@ class Input(BilbyInput):
             logger.debug(f"Polarization basis set to default value of {self._polarization_basis}")
 
     @property
-    def simulate_psd_nsample(self):
-        return getattr(self, "_simulate_psd_nsample", None)
-
-    @simulate_psd_nsample.setter
-    def simulate_psd_nsample(self, nsample):
-        self._simulate_psd_nsample = nsample     
-
-    @property
     def wavelet_nx(self):
         return getattr(self, "_wavelet_nx", None)
-    
+
     @wavelet_nx.setter
     def wavelet_nx(self, wavelet_nx):
         self._wavelet_nx = wavelet_nx

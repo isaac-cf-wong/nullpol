@@ -7,11 +7,9 @@ import bilby_pipe.utils
 import numpy as np
 from .input import Input
 from .parser import create_nullpol_parser
-from ..psd import simulate_psd_from_bilby_psd
 from ..utility import (logger,
                        NullpolError,
                        is_file)
-from ..calibration import build_calibration_lookup
 from ..clustering import (run_time_frequency_clustering as _run_time_frequency_clustering,
                           compute_sky_maximized_spectrogram,
                           plot_spectrogram)
@@ -102,7 +100,6 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
         self.psd_fractional_overlap = args.psd_fractional_overlap
         self.psd_start_time = args.psd_start_time
         self.psd_method = args.psd_method
-        self.simulate_psd_nsample = args.simulate_psd_nsample
 
         # Calibration
         self.calibration_model = args.calibration_model
@@ -139,56 +136,6 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
 
         if create_data:
             self.create_data(args)
-
-    def build_calibration_lookups_if_needed(self):
-        """
-        Build lookup files that are needed for incorporating calibration uncertainty.
-        These are needed if:
-
-          - :code:`calibration_marginalization` is used either during sampling or
-            post-processing
-          - the calibration model is :code:`Precomputed`
-        """
-        sampling_calibration = self.calibration_model
-        sampling_marginalization = self.calibration_marginalization
-        calibration_lookup = self.calibration_lookup_table
-        calibration_psd_lookup = self.calibration_psd_lookup_table
-        n_response = self.number_of_response_curves
-        if self.reweighting_configuration is not None:
-            data = self.reweighting_configuration
-            if "calibration-model" in data:
-                self.calibration_model = data["calibration-model"]
-                for ifo in self.interferometers:
-                    self.add_calibration_model_to_interferometers(ifo)
-            if "calibration-marginalization" in data:
-                self.calibration_marginalization = data["calibration-marginalization"]
-            if "calibration-lookup-table" in data:
-                self.calibration_lookup_table = data["calibration-lookup-table"]
-            if "calibration-psd-lookup-table" in data:
-                self.calibration_psd_lookup_table = data["calibration-psd-lookup-table"]
-            if "number-of-response-curves" in data:
-                self.number_of_response_curves = data["number-of-response-curves"]
-
-        if (
-            self.calibration_marginalization
-            or self.calibration_model == "Precomputed"
-            or self.calibration_lookup_table
-            or self.calibration_psd_lookup_table
-        ):
-            build_calibration_lookup(
-                interferometers=self.interferometers,
-                lookup_files=self.calibration_lookup_table,
-                psd_lookup_files=self.calibration_psd_lookup_table,
-                priors=self.calibration_prior,
-                number_of_response_curves=self.number_of_response_curves,
-            )
-        self.calibration_model = sampling_calibration
-        for ifo in self.interferometers:
-            self.add_calibration_model_to_interferometers(ifo)
-        self.calibration_marginalization = sampling_marginalization
-        self.calibration_lookup_table = calibration_lookup
-        self.calibration_psd_lookup_table = calibration_psd_lookup
-        self.number_of_response_curves = n_response
 
     @property
     def time_frequency_clustering_method(self):
@@ -250,47 +197,39 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
         # Copy the interferometers
         interferometers = bilby.gw.detector.InterferometerList([ifo.name for ifo in self.interferometers])
         for i in range(len(interferometers)):
-            power_spectral_density = bilby.gw.detector.PowerSpectralDensity(frequency_array=self.interferometers[i].frequency_array.copy(),
-                                                                            psd_array=self.interferometers[i].power_spectral_density_array.copy())
+            power_spectral_density = bilby.gw.detector.PowerSpectralDensity(
+                frequency_array=self.interferometers[i].frequency_array.copy(),
+                psd_array=self.interferometers[i].power_spectral_density_array.copy())
             interferometers[i].power_spectral_density = power_spectral_density
         injection_parameters = self.injection_df.iloc[self.idx].to_dict()
         # Set the strain data from zero noise.
-        interferometers.set_strain_data_from_zero_noise(sampling_frequency=self.sampling_frequency,
-                                                        duration=self.duration,
-                                                        start_time=self.start_time)
+        interferometers.set_strain_data_from_zero_noise(
+            sampling_frequency=self.sampling_frequency,
+            duration=self.duration,
+            start_time=self.start_time)
         waveform_arguments = self.get_injection_waveform_arguments()
-        waveform_generator = self.waveform_generator_class(duration=self.duration,
-                                                           start_time=self.start_time,
-                                                           sampling_frequency=self.sampling_frequency,
-                                                           frequency_domain_source_model=self.bilby_frequency_domain_source_model,
-                                                           parameter_conversion=self.parameter_conversion,
-                                                           waveform_arguments=waveform_arguments)
+        waveform_generator = self.waveform_generator_class(
+            duration=self.duration,
+            start_time=self.start_time,
+            sampling_frequency=self.sampling_frequency,
+            frequency_domain_source_model=self.bilby_frequency_domain_source_model,
+            parameter_conversion=self.parameter_conversion,
+            waveform_arguments=waveform_arguments)
         interferometers.inject_signal(waveform_generator=waveform_generator,
                                       parameters=injection_parameters,
                                       raise_error=self.enforce_signal_duration)
         return interferometers
 
-    def estimate_wavelet_psd(self):
-        # Estimate the wavelet PSD
-        logger.info('Estimating wavelet PSDs...')
-        psd_array = np.array([simulate_psd_from_bilby_psd(psd=ifo.power_spectral_density,
-                                                            seglen=ifo.duration,
-                                                            srate=ifo.sampling_frequency,
-                                                            wavelet_frequency_resolution=self.wavelet_frequency_resolution,
-                                                            nsample=self.simulate_psd_nsample,
-                                                            nx=self.wavelet_nx) for ifo in self.interferometers])
-        # Save the wavelet PSD to disk.
-        self.meta_data['wavelet_psd_array'] = psd_array
-
     def run_time_frequency_clustering(self):
         logger.info(f"Running time-frequency clustering with method: {self.time_frequency_clustering_method}")
         # Build the strain data for time-frequency clustering
-        if self.time_frequency_clustering_method in ["data",
-                                                     "injection",
-                                                     "injection_parameters_file",
-                                                     "maxL",
-                                                     "maP",
-                                                     "random"]:
+        if self.time_frequency_clustering_method in [
+                "data",
+                "injection",
+                "injection_parameters_file",
+                "maxL",
+                "maP",
+                "random"]:
             if self.time_frequency_clustering_method == "data":
                 frequency_domain_strain_array = np.array([ifo.frequency_domain_strain for ifo in self.interferometers])
             elif self.time_frequency_clustering_method in ["injection",
@@ -357,19 +296,18 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
                 raise ValueError(
                     f"Unknown time-frequency clustering method {self.time_frequency_clustering_method}"
                 )
-            time_frequency_filter, sky_maximized_spectrogram = _run_time_frequency_clustering(interferometers=self.interferometers,
-                                                                                             frequency_domain_strain_array=frequency_domain_strain_array,
-                                                                                             wavelet_frequency_resolution=self.wavelet_frequency_resolution,
-                                                                                             wavelet_nx=self.wavelet_nx,
-                                                                                             minimum_frequency=self.minimum_frequency,
-                                                                                             maximum_frequency=self.maximum_frequency,
-                                                                                             threshold=self.time_frequency_clustering_threshold,
-                                                                                             time_padding=self.time_frequency_clustering_time_padding,
-                                                                                             frequency_padding=self.time_frequency_clustering_frequency_padding,
-                                                                                             skypoints=self.time_frequency_clustering_skypoints,
-                                                                                             return_sky_maximized_spectrogram=True,
-                                                                                             psd_array=self.meta_data['wavelet_psd_array'],
-                                                                                             threshold_type=self.time_frequency_clustering_threshold_type)
+            time_frequency_filter, sky_maximized_spectrogram = \
+                _run_time_frequency_clustering(
+                    interferometers=self.interferometers,
+                    frequency_domain_strain_array=frequency_domain_strain_array,
+                    wavelet_frequency_resolution=self.wavelet_frequency_resolution,
+                    wavelet_nx=self.wavelet_nx,
+                    threshold=self.time_frequency_clustering_threshold,
+                    time_padding=self.time_frequency_clustering_time_padding,
+                    frequency_padding=self.time_frequency_clustering_frequency_padding,
+                    skypoints=self.time_frequency_clustering_skypoints,
+                    return_sky_maximized_spectrogram=True,
+                    threshold_type=self.time_frequency_clustering_threshold_type)
         elif is_file(self.time_frequency_clustering_method):
             time_frequency_filter = np.load(self.time_frequency_clustering_method)
             sky_maximized_spectrogram = None
@@ -377,14 +315,12 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
         else:
             raise NullpolError(f"Unrecognized time-frequency-clustering-method = {self.time_frequency_clustering_method}.")
         # Generate the sky-maximized spectrogram from data
-        sky_maximized_spectrogram_data = compute_sky_maximized_spectrogram(interferometers=self.interferometers,
-                                                                           frequency_domain_strain_array=np.array([ifo.frequency_domain_strain for ifo in self.interferometers]),
-                                                                           wavelet_frequency_resolution=self.wavelet_frequency_resolution,
-                                                                           wavelet_nx=self.wavelet_nx,
-                                                                           minimum_frequency=self.minimum_frequency,
-                                                                           maximum_frequency=self.maximum_frequency,
-                                                                           skypoints=self.time_frequency_clustering_skypoints,
-                                                                           psd_array=self.meta_data['wavelet_psd_array'])
+        sky_maximized_spectrogram_data = compute_sky_maximized_spectrogram(
+            interferometers=self.interferometers,
+            frequency_domain_strain_array=np.array([ifo.frequency_domain_strain for ifo in self.interferometers]),
+            wavelet_frequency_resolution=self.wavelet_frequency_resolution,
+            wavelet_nx=self.wavelet_nx,
+            skypoints=self.time_frequency_clustering_skypoints)
         self.meta_data['time_frequency_filter'] = time_frequency_filter
         self.meta_data['sky_maximized_spectrogram'] = sky_maximized_spectrogram
         self.meta_data['sky_maximized_spectrogram_data'] = sky_maximized_spectrogram_data
@@ -404,14 +340,14 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
         if sky_maximized_spectrogram is not None:
             spectrogram_fig_fname = f"{self.data_directory}/{self.label}_sky_maximized_spectrogram.png"
             plot_spectrogram(spectrogram=sky_maximized_spectrogram,
-                            duration=self.interferometers[0].duration,
-                            sampling_frequency=self.interferometers[0].sampling_frequency,
-                            wavelet_frequency_resolution=self.wavelet_frequency_resolution,
-                            frequency_range=(self.minimum_frequency, self.maximum_frequency),
-                            t0=self.start_time,
-                            title="Sky-maximized Spectrogram",
-                            savefig=spectrogram_fig_fname,
-                            dpi=100)
+                             duration=self.interferometers[0].duration,
+                             sampling_frequency=self.interferometers[0].sampling_frequency,
+                             wavelet_frequency_resolution=self.wavelet_frequency_resolution,
+                             frequency_range=(self.minimum_frequency, self.maximum_frequency),
+                             t0=self.start_time,
+                             title="Sky-maximized Spectrogram",
+                             savefig=spectrogram_fig_fname,
+                             dpi=100)
             logger.info(f"Saved plot of sky-maximized spectrogram to {spectrogram_fig_fname}.")
         # Plot
         spectrogram_data_fig_fname = f"{self.data_directory}/{self.label}_sky_maximized_spectrogram_data.png"
@@ -446,9 +382,11 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
         )
         data_dump.to_pickle()
 
+
 def create_generation_parser():
     """Data generation parser creation"""
     return create_nullpol_parser(top_level=False)
+
 
 def main():
     """Data generation main logic"""
