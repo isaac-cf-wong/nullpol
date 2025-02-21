@@ -39,6 +39,7 @@ pipelines:
       request cpus: 16
       request disk: 8
       request memory: 12
+      scitoken issuer: igwn
 quality:
   minimum frequency:
     H1: 20

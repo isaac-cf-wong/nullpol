@@ -387,7 +387,6 @@ def main():
     args, unknown_args = parse_args(sys.argv[1:], create_generation_parser())
     log_version_information()
     data = DataGenerationInput(args, unknown_args)
-    data.estimate_wavelet_psd()
     data.run_time_frequency_clustering()
     data.save_data_dump()
     logger.info("Completed data generation")
