@@ -40,7 +40,6 @@ test = [
     "coverage[toml] >=5.0",
     "pytest >=3.9.1",
     "pytest-cov >=2.4.0",
-    "pycbc",
 ]
 
 [tool.setuptools.packages]
@@ -52,8 +51,8 @@ version_scheme = "post-release"  # Use 'post-release' or 'guess-next-dev'
 local_scheme = "node-and-date"   # This includes the full commit hash in the version
 
 [project.scripts]
-nullpol-create-injection = "nullpol.tools.create_injection:main"
-nullpol-create-time-frequency-filter-from-sample = "nullpol.tools.create_time_frequency_filter_from_sample:main"
+nullpol_create_injection = "nullpol.tools.create_injection:main"
+nullpol_create_time_frequency_filter_from_sample = "nullpol.tools.create_time_frequency_filter_from_sample:main"
 nullpol_pipe = "nullpol.tools.main:main"
 nullpol_pipe_analysis = "nullpol.tools.data_analysis:main"
 nullpol_pipe_generation = "nullpol.tools.data_generation:main"
