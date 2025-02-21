@@ -8,7 +8,7 @@ class GenerationNode(Node):
                                              idx=idx,
                                              dag=dag,
                                              parent=parent)
-    
+
     @property
     def executable(self):
         return self._get_executable_path("nullpol_pipe_generation")

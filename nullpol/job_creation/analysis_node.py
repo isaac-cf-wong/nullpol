@@ -4,7 +4,15 @@ from bilby_pipe.job_creation.nodes.analysis_node import touch_checkpoint_files
 
 
 class AnalysisNode(Node):
-    def __init__(self, inputs, generation_node, detectors, sampler, parallel_idx, dag, polarization_modes, polarization_basis):
+    def __init__(self,
+                 inputs,
+                 generation_node,
+                 detectors,
+                 sampler,
+                 parallel_idx,
+                 dag,
+                 polarization_modes,
+                 polarization_basis):
         super().__init__(inputs=inputs, retry=3)
         self.polarization_modes = polarization_modes
         self.polarization_basis = polarization_basis

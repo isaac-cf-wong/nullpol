@@ -1,7 +1,8 @@
 import copy
 from bilby_pipe.job_creation.dag import Dag
-from bilby_pipe.job_creation.bilby_pipe_dag_creator import (get_trigger_time_list,
-                                                            get_parallel_list)
+from bilby_pipe.job_creation.bilby_pipe_dag_creator import (
+    get_trigger_time_list,
+    get_parallel_list)
 from bilby_pipe.job_creation.nodes import (MergeNode,
                                            FinalResultNode,
                                            PlotNode,
@@ -15,14 +16,14 @@ from .generation_node import GenerationNode
 from .analysis_node import AnalysisNode
 from ..utility import (logger,
                        NullpolError)
-
-
 bilby_pipe.utils.logger = logger
+
 
 def get_detectors_list(inputs):
     detectors_list = []
     detectors_list.append(inputs.detectors)
     return detectors_list
+
 
 def generate_dag(inputs):
     """Core logic setting up parent-child structure between nodes"""
@@ -50,7 +51,7 @@ def generate_dag(inputs):
                 del inputs._start_time
         generation_node = GenerationNode(inputs, **kwargs)
         generation_node_list.append(generation_node)
-    
+
     detectors_list = get_detectors_list(inputs)
     parallel_list = get_parallel_list(inputs)
     merged_node_list = []
