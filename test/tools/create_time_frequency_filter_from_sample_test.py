@@ -6,12 +6,13 @@ import pkg_resources
 import json
 from nullpol.tools.create_time_frequency_filter_from_sample import main
 
+
 class TestCreateTimeFrequencyFilterFromSample(unittest.TestCase):
     def test_generate_config(self):
         # Create a temporary config file path
         with tempfile.NamedTemporaryFile(suffix='.ini', delete=False) as temp_config_file:
             config_file_path = temp_config_file.name
-        with mock.patch('sys.argv', ['nullpol-create-time-frequency-filter-from-sample', '--generate-config', config_file_path]):
+        with mock.patch('sys.argv', ['nullpol_create_time_frequency_filter_from_sample', '--generate-config', config_file_path]):
             try:
                 main()
             except SystemExit as e:
@@ -44,7 +45,7 @@ class TestCreateTimeFrequencyFilterFromSample(unittest.TestCase):
                 example_signal_parameters_create_injection_path = pkg_resources.resource_filename('nullpol.tools', 'example_signal_parameters_create_injection.json')
                 current_dir = os.path.dirname(__file__)
                 mock_psd_path = os.path.join(current_dir, 'mock_psd.txt')
-                with mock.patch('sys.argv', ['nullpol-create-time-frequency-filter-from-sample',
+                with mock.patch('sys.argv', ['nullpol_create_time_frequency_filter_from_sample',
                                              '--generate-config', config_file_path,
                                              '--output', time_frequency_filter_file_path,
                                              '--detectors', 'H1,L1,V1',
@@ -56,7 +57,7 @@ class TestCreateTimeFrequencyFilterFromSample(unittest.TestCase):
                     except SystemExit as e:
                         self.assertEqual(e.code, 0)  # Ensure that it exited with code 0
                     # Execute the tool
-                    with mock.patch('sys.argv', ['nullpol-create-time-frequency-filter-from-sample', '--config', config_file_path]):
+                    with mock.patch('sys.argv', ['nullpol_create_time_frequency_filter_from_sample', '--config', config_file_path]):
                         try:
                             main()
                         except SystemExit as e:
@@ -64,6 +65,7 @@ class TestCreateTimeFrequencyFilterFromSample(unittest.TestCase):
 
                 # Check that the output file is created
                 self.assertTrue(os.path.exists(time_frequency_filter_file_path))
-        
+
+
 if __name__ == '__main__':
     unittest.main()

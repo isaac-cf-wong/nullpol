@@ -12,19 +12,23 @@ from ..utility import logger
 from ..time_frequency_transform import (transform_wavelet_freq,
                                         transform_wavelet_freq_quadrature)
 
+
 def import_function(path):
     module_path, func_name = path.rsplit('.', 1)
     module = importlib.import_module(module_path)
     func = getattr(module, func_name)
     return func
 
+
 def get_file_extension(file_path):
     return Path(file_path).suffix
+
 
 def json_loads_with_none(value):
     # Replace 'None' with 'null' to make it valid JSON
     value = value.replace('None', 'null')
     return json.loads(value)
+
 
 def main():
     default_config_file_path = pkg_resources.resource_filename('nullpol.tools', 'default_config_create_time_frequency_filter_from_sample.ini')
@@ -94,20 +98,22 @@ def main():
         else:
             parameter_conversion = None
 
-        waveform_generator = WaveformGenerator(duration=args.duration,
-                                            sampling_frequency=args.sampling_frequency,
-                                            frequency_domain_source_model=frequency_domain_source_model,
-                                            parameter_conversion=parameter_conversion,
-                                            waveform_arguments=waveform_arguments)
+        waveform_generator = WaveformGenerator(
+            duration=args.duration,
+            sampling_frequency=args.sampling_frequency,
+            frequency_domain_source_model=frequency_domain_source_model,
+            parameter_conversion=parameter_conversion,
+            waveform_arguments=waveform_arguments)
     else:
         logger.info('frequency-domain-source-model is not provided. Not injecting signals from source model.')
         waveform_generator = None
 
     # Set zero noise
-    interferometers.set_strain_data_from_zero_noise(sampling_frequency=args.sampling_frequency,
-                                                    duration=args.duration,
-                                                    start_time=args.start_time)
-    
+    interferometers.set_strain_data_from_zero_noise(
+        sampling_frequency=args.sampling_frequency,
+        duration=args.duration,
+        start_time=args.start_time)
+
     # Inject signal
     if signal_parameters is not None and waveform_generator is not None:
         for i in range(len(signal_parameters)):
@@ -123,10 +129,11 @@ def main():
         frequency_domain_strain = interferometer.frequency_domain_strain
         power_spectral_density_array = interferometer.power_spectral_density_array
         scaling_factor = args.duration / 2
-        whitened_frequency_domain_strains.append(np.divide(interferometer.frequency_domain_strain,
-                                                 np.sqrt(power_spectral_density_array * scaling_factor),
-                                                 out=np.zeros_like(frequency_domain_strain),
-                                                 where=power_spectral_density_array!=0.))
+        whitened_frequency_domain_strains.append(np.divide(
+            interferometer.frequency_domain_strain,
+            np.sqrt(power_spectral_density_array * scaling_factor),
+            out=np.zeros_like(frequency_domain_strain),
+            where=power_spectral_density_array != 0.))
 
     # Construct the sky-maximized time-frequency filter
     wavelet_Nf = int(args.sampling_frequency / 2 / args.wavelet_df)
@@ -148,28 +155,30 @@ def main():
             frequencies = interferometers[i].frequency_array[frequency_mask]
             whitened_frequency_domain_strain_copy[frequency_mask] *= np.exp(1j * 2 * np.pi * time_shift * frequencies)
             # Transform to time-frequency domain
-            whitened_wavelet_domain_strain = transform_wavelet_freq(whitened_frequency_domain_strain_copy,
-                                                                    wavelet_Nf,
-                                                                    wavelet_Nt,
-                                                                    args.nx)
-            whitened_wavelet_domain_strain_quadrature = transform_wavelet_freq_quadrature(whitened_frequency_domain_strain_copy,
-                                                                                        wavelet_Nf,
-                                                                                        wavelet_Nt,
-                                                                                        args.nx)
+            whitened_wavelet_domain_strain = transform_wavelet_freq(
+                data=whitened_frequency_domain_strain_copy,
+                sampling_frequency=args.sampling_frequency,
+                frequency_resolution=args.wavelet_df,
+                nx=args.nx)
+            whitened_wavelet_domain_strain_quadrature = transform_wavelet_freq_quadrature(
+                data=whitened_frequency_domain_strain_copy,
+                sampling_frequency=args.sampling_frequency,
+                frequency_resolution=args.wavelet_df,
+                nx=args.nx)
             whitened_wavelet_domain_power = whitened_wavelet_domain_strain ** 2 + whitened_wavelet_domain_strain_quadrature ** 2
             time_frequency_map += whitened_wavelet_domain_power
         maximized_time_frequency_map = np.maximum(maximized_time_frequency_map, time_frequency_map)
         logger.info(f'Maximizing signal power over the sky sphere - {ipix+1}/{npix}.')
 
     # Perform the clustering on the sky-maximized time-frequency map.
-    ## Apply a threshold
+    # Apply a threshold
     time_frequency_filter = maximized_time_frequency_map >= args.threshold
-    ## Remove the frequency content beyond the range
-    ### Always remove the Nyquist frequency
+    # Remove the frequency content beyond the range
+    # Always remove the Nyquist frequency
     time_frequency_filter[:, -1] = 0.
-    ### Remove the components below the minimum frequency.
+    # Remove the components below the minimum frequency.
     freq_low_idx = int(np.ceil(args.minimum_frequency / args.wavelet_df))
     time_frequency_filter[:, :freq_low_idx] = 0.
-    ### Save the file to disk.
+    # Save the file to disk.
     np.save(args.output, time_frequency_filter)
     logger.info(f'Time-frequency filter is written to {args.output}.')

@@ -28,7 +28,7 @@ class TestCreateInjection(unittest.TestCase):
         if os.path.exists(cls.L1_TEST_frame_path):
             os.remove(cls.L1_TEST_frame_path)
         if os.path.exists(cls.V1_TEST_frame_path):
-            os.remove(cls.V1_TEST_frame_path)   
+            os.remove(cls.V1_TEST_frame_path)
         if os.path.exists(cls.H1_TEST_WITH_SIGNAL_FRAME_frame_path):
             os.remove(cls.H1_TEST_WITH_SIGNAL_FRAME_frame_path)
         if os.path.exists(cls.L1_TEST_WITH_SIGNAL_FRAME_frame_path):
@@ -40,13 +40,13 @@ class TestCreateInjection(unittest.TestCase):
         if os.path.exists(cls.L1_TEST_PSD_frame_path):
             os.remove(cls.L1_TEST_PSD_frame_path)
         if os.path.exists(cls.V1_TEST_PSD_frame_path):
-            os.remove(cls.V1_TEST_PSD_frame_path)            
+            os.remove(cls.V1_TEST_PSD_frame_path)
 
     def test_generate_config(self):
         # Create a temporary config file path
         with tempfile.NamedTemporaryFile(suffix='.ini', delete=False) as temp_config_file:
             config_file_path = temp_config_file.name
-        with mock.patch('sys.argv', ['nullpol-create-injection', '--generate-config', config_file_path]):
+        with mock.patch('sys.argv', ['nullpol_create_injection', '--generate-config', config_file_path]):
             try:
                 main()
             except SystemExit as e:
@@ -75,7 +75,7 @@ class TestCreateInjection(unittest.TestCase):
         with tempfile.NamedTemporaryFile(suffix='.ini', delete=False) as temp_config_file:
             config_file_path = temp_config_file.name
         example_signal_parameters_create_injection_path = pkg_resources.resource_filename('nullpol.tools', 'example_signal_parameters_create_injection.json')
-        with mock.patch('sys.argv', ['nullpol-create-injection',
+        with mock.patch('sys.argv', ['nullpol_create_injection',
                                      '--generate-config', config_file_path,
                                      '--signal-parameters', example_signal_parameters_create_injection_path,
                                      '--outdir', self.test_dir,
@@ -88,7 +88,7 @@ class TestCreateInjection(unittest.TestCase):
             except SystemExit as e:
                 self.assertEqual(e.code, 0)  # Ensure that it exited with code 0
         # Execute the tool
-        with mock.patch('sys.argv', ['nullpol-create-injection', '--config', config_file_path]):
+        with mock.patch('sys.argv', ['nullpol_create_injection', '--config', config_file_path]):
             try:
                 main()
             except SystemExit as e:
@@ -97,7 +97,7 @@ class TestCreateInjection(unittest.TestCase):
         # Clean up the temporary config file
         os.remove(config_file_path)
 
-        # Check that the output file is created        
+        # Check that the output file is created
         self.assertTrue(os.path.exists(self.H1_TEST_frame_path), "Output file was not created.")
         self.assertTrue(os.path.exists(self.L1_TEST_frame_path), "Output file was not created.")
         self.assertTrue(os.path.exists(self.V1_TEST_frame_path), "Output file was not created.")
@@ -108,7 +108,7 @@ class TestCreateInjection(unittest.TestCase):
             config_file_path = temp_config_file.name
         example_signal_parameters_create_injection_path = pkg_resources.resource_filename('nullpol.tools', 'example_signal_parameters_create_injection.json')
         print('testing', self.H1_TEST_frame_path)
-        with mock.patch('sys.argv', ['nullpol-create-injection',
+        with mock.patch('sys.argv', ['nullpol_create_injection',
                                      '--generate-config', config_file_path,
                                      '--signal-parameters', example_signal_parameters_create_injection_path,
                                      '--outdir', self.test_dir,
@@ -123,7 +123,7 @@ class TestCreateInjection(unittest.TestCase):
             except SystemExit as e:
                 self.assertEqual(e.code, 0)  # Ensure that it exited with code 0
         # Execute the tool
-        with mock.patch('sys.argv', ['nullpol-create-injection', '--config', config_file_path]):
+        with mock.patch('sys.argv', ['nullpol_create_injection', '--config', config_file_path]):
             try:
                 main()
             except SystemExit as e:
@@ -144,7 +144,7 @@ class TestCreateInjection(unittest.TestCase):
         example_signal_parameters_create_injection_path = pkg_resources.resource_filename('nullpol.tools', 'example_signal_parameters_create_injection.json')
         current_dir = os.path.dirname(__file__)
         mock_psd_path = os.path.join(current_dir, 'mock_psd.txt')
-        with mock.patch('sys.argv', ['nullpol-create-injection',
+        with mock.patch('sys.argv', ['nullpol_create_injection',
                                      '--generate-config', config_file_path,
                                      '--signal-parameters', example_signal_parameters_create_injection_path,
                                      '--outdir', self.test_dir,
@@ -158,8 +158,8 @@ class TestCreateInjection(unittest.TestCase):
             except SystemExit as e:
                 self.assertEqual(e.code, 0)  # Ensure that it exited with code 0
         # Execute the tool
-        with mock.patch('sys.argv', ['nullpol-create-injection', '--config', config_file_path]):
-            try:                
+        with mock.patch('sys.argv', ['nullpol_create_injection', '--config', config_file_path]):
+            try:
                 main()
             except SystemExit as e:
                 self.assertEqual(e.code, 0)  # Ensure that it exited with code 0
@@ -167,10 +167,12 @@ class TestCreateInjection(unittest.TestCase):
         # Clean up the temporary config file
         #os.remove(config_file_path)
 
-        # Check that the output file is created        
+        # Check that the output file is created
         self.assertTrue(os.path.exists(self.H1_TEST_PSD_frame_path), "Output file was not created.")
         self.assertTrue(os.path.exists(self.L1_TEST_PSD_frame_path), "Output file was not created.")
-        self.assertTrue(os.path.exists(self.V1_TEST_PSD_frame_path), "Output file was not created.")        
+        self.assertTrue(os.path.exists(self.V1_TEST_PSD_frame_path), "Output file was not created.")
+
 
 if __name__ == '__main__':
     unittest.main()
+
