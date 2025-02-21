@@ -24,7 +24,6 @@ class Input(BilbyInput):
         self.polarization_basis = args.polarization_basis
         self.wavelet_frequency_resolution = args.wavelet_frequency_resolution
         self.wavelet_nx = args.wavelet_nx
-        self.simulate_psd_nsample = args.simulate_psd_nsample
         self.calibration_correction_type = args.calibration_correction_type
 
         # Waveform, source model and likelihood
