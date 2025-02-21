@@ -212,18 +212,11 @@ def create_nullpol_parser(top_level=True):
                           type=int,
                           default=100,
                           help="Number of skypoints to compute the sky-maximized energy map.")
-    clustering_parser.add('--time-frequency-probability-map-confidence-threshold',
-                          type=float,
-                          default=1.0,
-                          help="Confidence threshold to reject noise hypothesis.")
-    clustering_parser.add('--time-frequency-probability-map-steepness',
-                          type=float,
-                          default=1.,
-                          help="Steepness to transit from noise hypothesis to signal hypothesis.")
     parser.add("--version",
                action="version",
                version=f"%(prog)s={__version__}")
     return parser
+
 
 def main():
     filename = sys.argv[1]

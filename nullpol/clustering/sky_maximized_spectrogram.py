@@ -16,9 +16,6 @@ def compute_sky_maximized_spectrogram(interferometers,
     psd_array = np.array([
         ifo.power_spectral_density_array for ifo in interferometers
     ])
-    frequency_domain_strain_array = np.array([
-        ifo.frequency_domain_strain for ifo in interferometers
-    ])
     whitened_frequency_domain_strain_array = \
         compute_whitened_frequency_domain_strain_array(
             frequency_mask=interferometers[0].frequency_mask,
