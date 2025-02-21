@@ -358,7 +358,6 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
 
     def save_data_dump(self):
         """Method to dump the saved data to disk for later analysis"""
-        self.build_calibration_lookups_if_needed()
         self.meta_data["reweighting_configuration"] = self.reweighting_configuration
         data_dump = DataDump(
             outdir=self.data_directory,
