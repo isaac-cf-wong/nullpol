@@ -105,6 +105,9 @@ def create_nullpol_parser(top_level=True):
 
     parser = create_parser(top_level=top_level)
     remove_argument(parser, "--coherence-test")
+    remove_argument(parser, "--calibration-marginalization")
+    remove_argument(parser, "--calibration-lookup-table")
+    remove_argument(parser, "--number-of-response-curves")
     remove_argument(parser, "--distance-marginalization")
     remove_argument(parser, "--distance-marginalization-lookup-table")
     remove_argument(parser, "--phase-marginalization")
