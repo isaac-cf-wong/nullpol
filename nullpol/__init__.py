@@ -7,7 +7,6 @@ from . import job_creation
 from . import likelihood
 from . import null_stream
 from . import prior
-from . import psd
 from . import result
 from . import source
 from . import time_frequency_transform
