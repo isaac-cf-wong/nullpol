@@ -113,12 +113,6 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
         self.spline_calibration_nodes = args.spline_calibration_nodes
         self.calibration_prior_boundary = args.calibration_prior_boundary
 
-        # Marginalization
-        self.calibration_marginalization = args.calibration_marginalization
-        self.calibration_lookup_table = args.calibration_lookup_table
-        self.calibration_psd_lookup_table = args.calibration_psd_lookup_table
-        self.number_of_response_curves = args.number_of_response_curves
-
         # Plotting
         self.plot_data = args.plot_data
         self.plot_spectrogram = args.plot_spectrogram
