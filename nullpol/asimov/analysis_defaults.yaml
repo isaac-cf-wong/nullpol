@@ -36,7 +36,7 @@ pipelines:
       parallel jobs: 4
     scheduler:
       accounting group: ligo.prod.o4.cbc.testgr.tiger
-      request cpus: 16
+      request cpus: 4
       request disk: 8
       request memory: 12
       scitoken issuer: igwn
