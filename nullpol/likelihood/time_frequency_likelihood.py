@@ -54,7 +54,7 @@ class TimeFrequencyLikelihood(Likelihood):
         self._filtered_frequency_mask = None
         self._filtered_masked_frequency_array = None
         self._frequency_resolution = self._frequency_array[1] - self._frequency_array[0]
-        self._power_spectral_density_array = np.array([ifo.power_spectral_density_array for ifo in self.interferometers])        
+        self._power_spectral_density_array = np.array([ifo.power_spectral_density_array for ifo in self.interferometers])
         self._wavelet_frequency_resolution = wavelet_frequency_resolution
         self._wavelet_nx = wavelet_nx
         self._tf_Nt, self._tf_Nf = get_shape_of_wavelet_transform(
@@ -81,8 +81,8 @@ class TimeFrequencyLikelihood(Likelihood):
         if isinstance(self._time_frequency_filter, np.ndarray):
             self._validate_time_frequency_filter()
 
-        # Compute the normalization constant        
-        self._noise_log_likelihood_value = None               
+        # Compute the normalization constant
+        self._noise_log_likelihood_value = None
 
         # Marginalization
         self._marginalized_parameters = []
@@ -325,10 +325,10 @@ class TimeFrequencyLikelihood(Likelihood):
     def _validate_time_frequency_filter(self):
         """Validate the time frequency filter.
         """
-        # Get the shape of the time_frequency_filter        
+        # Get the shape of the time_frequency_filter
         ntime, nfreq = self.time_frequency_filter.shape
-        assert nfreq==self.tf_Nf, "The length of frequency axis in the wavelet domain does not match the time frequency filter."
-        assert ntime==self.tf_Nt, "The length of time axis in the wavelet domain does not match the time frequency filter."
+        assert nfreq==self.tf_Nf, f"The length of frequency axis = {nfreq} in the wavelet domain does not match the time frequency filter = {self.tf_Nf}."
+        assert ntime==self.tf_Nt, f"The length of time axis = {ntime} in the wavelet domain does not match the time frequency filter = {self.tf_Nt}."
 
     @property
     def tf_Nt(self):
@@ -481,7 +481,7 @@ class TimeFrequencyLikelihood(Likelihood):
         Raises:
             NotImplementedError: This should be implemented in a subclass.
         """
-        raise NotImplementedError("The log_likelihood method must be implemented in a subclass.")    
+        raise NotImplementedError("The log_likelihood method must be implemented in a subclass.")
 
     def _calculate_noise_log_likelihood(self):
         """Calculate noise log likelihood.
