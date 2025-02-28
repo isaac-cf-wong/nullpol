@@ -45,6 +45,7 @@ class Nullpol(Bilby):
         """
         self.logger.info("Checking if the nullpol job has completed")
         results_dir = glob.glob(f"{self.production.rundir}/result")
+        config = self.read_ini(self.config_file_path)
         expected_number_of_result_files = len(self.production.meta['likelihood']['polarization modes'])
         if len(results_dir) > 0:  # dynesty_merge_result.json
             results_files = glob.glob(
@@ -88,35 +89,14 @@ class Nullpol(Bilby):
         self.production.status = "processing"
         self.production.event.update_data()
 
-    def build_dag(self, psds=None, user=None, clobber_psd=False, dryrun=False):
+    @property
+    def config_file_path(self):
+        """Path of the configuration file.
+
+        Returns:
+            str: Path of the configuration file.
         """
-        Construct a DAG file in order to submit a production to the
-        condor scheduler using nullpol_pipe.
-
-        Parameters
-        ----------
-        production : str
-           The production name.
-        psds : dict, optional
-           The PSDs which should be used for this DAG. If no PSDs are
-           provided the PSD files specified in the ini file will be used
-           instead.
-        user : str
-           The user accounting tag which should be used to run the job.
-        dryrun: bool
-           If set to true the commands will not be run, but will be printed to
-           standard output. Defaults to False.
-
-        Raises
-        ------
-        PipelineException
-           Raised if the construction of the DAG fails.
-        """
-
         cwd = os.getcwd()
-
-        self.logger.info(f"Working in {cwd}")
-
         if self.production.event.repository:
             ini = self.production.event.repository.find_prods(
                 self.production.name, self.category
@@ -124,6 +104,29 @@ class Nullpol(Bilby):
             ini = os.path.join(cwd, ini)
         else:
             ini = f"{self.production.name}.ini"
+        return ini
+
+    def build_dag(self, psds=None, user=None, clobber_psd=False, dryrun=False):
+        """
+        Construct a DAG file in order to submit a production to the
+        condor scheduler using nullpol_pipe.
+
+        Args:
+            production (str): The production name.
+        psds (dict, optional): The PSDs which should be used for this DAG. If no PSDs are
+           provided the PSD files specified in the ini file will be used
+           instead.
+        user (str): The user accounting tag which should be used to run the job.
+        dryrun (bool): If set to true the commands will not be run, but will be printed to
+           standard output. Defaults to False.
+
+        Raises:
+            PipelineException: Raised if the construction of the DAG fails.
+        """
+
+        cwd = os.getcwd()
+
+        self.logger.info(f"Working in {cwd}")
 
         if self.production.rundir:
             rundir = self.production.rundir
@@ -144,7 +147,7 @@ class Nullpol(Bilby):
             os.path.join(config.get("pipelines", "environment"),
                          "bin",
                          "nullpol_pipe"),
-            ini,
+            self.config_file_path,
             "--label",
             job_label,
             "--outdir",
