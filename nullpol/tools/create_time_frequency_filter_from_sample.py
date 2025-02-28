@@ -8,7 +8,7 @@ import healpy as hp
 from bilby.gw.waveform_generator import WaveformGenerator
 from bilby.gw.detector import InterferometerList
 from bilby.gw.detector import PowerSpectralDensity
-from ..utility import logger
+from ..utils import logger
 from ..time_frequency_transform import (transform_wavelet_freq,
                                         transform_wavelet_freq_quadrature)
 

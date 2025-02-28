@@ -1,9 +1,8 @@
 import os
 from bilby.core.prior.dict import PriorDict
-from ..utility import logger
-
-
+from ..utils import logger
 DEFAULT_PRIOR_DIR = os.path.join(os.path.dirname(__file__), 'prior_files')
+
 
 class PolarizationPriorDict(PriorDict):
     def __init__(self, dictionary=None, filename=None):

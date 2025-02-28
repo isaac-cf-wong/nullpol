@@ -11,7 +11,7 @@ import numpy as np
 from .parser import create_nullpol_parser
 from .input import Input
 from .. import log_version_information
-from ..utility import (logger,
+from ..utils import (logger,
                        NullpolError)
 from ..result import PolarizationResult
 from ..null_stream import (encode_polarization,

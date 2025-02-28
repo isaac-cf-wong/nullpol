@@ -7,7 +7,7 @@ import json
 import os
 import pickle
 import numpy as np
-from ..utility import logger
+from ..utils import logger
 
 
 class PolarizationResult(Result):

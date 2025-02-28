@@ -3,7 +3,7 @@ import shutil
 import pkg_resources
 import argparse
 from pathlib import Path
-from ..utility import (logger,
+from ..utils import (logger,
                        NullpolError)
 
 

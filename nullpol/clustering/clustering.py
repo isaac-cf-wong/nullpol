@@ -3,7 +3,7 @@ import scipy.stats
 from .sky_maximized_spectrogram import compute_sky_maximized_spectrogram
 from .single import clustering
 from ..time_frequency_transform import get_shape_of_wavelet_transform
-from ..utility import logger, NullpolError
+from ..utils import logger, NullpolError
 
 
 def run_time_frequency_clustering(interferometers,

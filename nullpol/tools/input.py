@@ -5,7 +5,7 @@ from bilby_pipe.input import Input as BilbyInput
 import bilby_pipe.utils
 from bilby_pipe.utils import strip_quotes
 import numpy as np
-from ..utility import (logger, NullpolError)
+from ..utils import (logger, NullpolError)
 from ..likelihood import (Chi2TimeFrequencyLikelihood,
                           GaussianTimeFrequencyLikelihood,
                           FractionalProjectionTimeFrequencyLikelihood)

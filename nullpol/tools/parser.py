@@ -5,7 +5,7 @@ from bilby_pipe.utils import nonestr
 from bilby_pipe.bilbyargparser import (BilbyArgParser,
                                        HyphenStr)
 import bilby_pipe.utils
-from ..utility import logger
+from ..utils import logger
 from .._version import __version__
 
 

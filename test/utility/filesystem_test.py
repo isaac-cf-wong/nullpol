@@ -1,6 +1,6 @@
 import unittest
 import tempfile
-from nullpol.utility import (get_file_extension,
+from nullpol.utils import (get_file_extension,
                              is_file)
 
 

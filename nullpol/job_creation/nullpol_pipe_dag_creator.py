@@ -14,7 +14,7 @@ from bilby_pipe.utils import get_colored_string
 import bilby_pipe.utils
 from .generation_node import GenerationNode
 from .analysis_node import AnalysisNode
-from ..utility import (logger,
+from ..utils import (logger,
                        NullpolError)
 bilby_pipe.utils.logger = logger
 

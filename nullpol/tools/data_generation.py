@@ -7,7 +7,7 @@ import bilby_pipe.utils
 import numpy as np
 from .input import Input
 from .parser import create_nullpol_parser
-from ..utility import (logger,
+from ..utils import (logger,
                        NullpolError,
                        is_file)
 from ..clustering import (run_time_frequency_clustering as _run_time_frequency_clustering,

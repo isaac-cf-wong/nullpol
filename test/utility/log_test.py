@@ -1,5 +1,5 @@
 import unittest
-from nullpol.utility import setup_logger
+from nullpol.utils import setup_logger
 
 
 class TestLog(unittest.TestCase):

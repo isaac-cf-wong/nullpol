@@ -9,7 +9,8 @@ from pycbc.frame import write_frame
 from bilby.gw.waveform_generator import WaveformGenerator
 from bilby.gw.detector import InterferometerList
 from bilby.gw.detector import PowerSpectralDensity
-from ..utility import logger
+from ..utils import logger
+
 
 def import_function(path):
     module_path, func_name = path.rsplit('.', 1)
@@ -17,13 +18,16 @@ def import_function(path):
     func = getattr(module, func_name)
     return func
 
+
 def get_file_extension(file_path):
     return Path(file_path).suffix
+
 
 def json_loads_with_none(value):
     # Replace 'None' with 'null' to make it valid JSON
     value = value.replace('None', 'null')
     return json.loads(value)
+
 
 def main():
     default_config_file_path = pkg_resources.resource_filename('nullpol.tools', 'default_config_create_injection.ini')

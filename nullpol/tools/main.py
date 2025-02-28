@@ -9,7 +9,7 @@ import importlib
 from .parser import create_nullpol_parser
 from .input import Input
 from .. import log_version_information
-from ..utility import logger
+from ..utils import logger
 from ..job_creation import generate_dag
 
 bilby_pipe.utils.logger = logger

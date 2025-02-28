@@ -9,7 +9,7 @@ import shutil
 from .utility import (fill_in_pol_specific_metadata,
                       bilby_config_to_asimov,
                       deep_update)
-from ..utility import logger
+from ..utils import logger
 
 
 class Collector:

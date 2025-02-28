@@ -12,4 +12,4 @@ import nullpol.result
 import nullpol.source
 import nullpol.time_frequency_transform
 import nullpol.tools
-import nullpol.utility
+import nullpol.utils
