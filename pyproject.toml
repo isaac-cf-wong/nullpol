@@ -31,7 +31,9 @@ dependencies = [
     "pycbc",
     "healpy",
     "cbcflow",
-    "asimov==0.5.8"
+    "asimov==0.5.8",
+    "h5py",
+    "pandas",
 ]
 
 [project.optional-dependencies]
