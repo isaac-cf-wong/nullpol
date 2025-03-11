@@ -5,6 +5,8 @@ from bilby_pipe.main import parse_args
 import sys
 import bilby_pipe.utils
 import numpy as np
+import h5py
+import pandas as pd
 from .input import Input
 from .parser import create_nullpol_parser
 from ..utils import (logger,
@@ -246,7 +248,12 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
                                                                "random"]:
                     if self.time_frequency_clustering_pe_samples_filename is None:
                         raise NullpolError(f"time-frequency-clustering-method = {self.time_frequency_clustering_method}, but time-frequency-clustering-pe-samples-filename is not provided.")
-                    posterior = bilby.core.result.read_in_result(self.time_frequency_clustering_pe_samples_filename).posterior
+                    try:
+                        posterior = bilby.core.result.read_in_result(self.time_frequency_clustering_pe_samples_filename).posterior
+                    except:
+                        logger.warning(f"Trying to read the posterior as a .h5 file.")
+                        with h5py.File(self.time_frequency_clustering_pe_samples_filename, "r") as f:
+                            posterior = pd.DataFrame(f[list(f.keys())[0]]['posterior_samples'][()]) # Use the first waveform result
                     if self.time_frequency_clustering_method == "maxL":
                         parameters = posterior.loc[posterior["log_likelihood"].idxmax()].to_dict()
                     elif self.time_frequency_clustering_method == "maP":
