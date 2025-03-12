@@ -7,9 +7,8 @@ from bilby_pipe.bilbyargparser import (BilbyArgParser,
 import bilby_pipe.utils
 from ..utils import logger
 from .._version import __version__
-
-
 bilby_pipe.utils.logger = logger
+
 
 def write_to_file(
     self,
@@ -57,7 +56,9 @@ def write_to_file(
                 self.write_line(hyphen_dest, value, ff)
             print("", file=ff)
 
+
 BilbyArgParser.write_to_file = write_to_file
+
 
 def create_nullpol_parser(top_level=True):
     """Create the nullpol_pipe parser
@@ -194,8 +195,8 @@ def create_nullpol_parser(top_level=True):
                                 "provide the path to the bilby result file."))
     clustering_parser.add('--time-frequency-clustering-threshold',
                           type=float,
-                          default=0.95,
-                          help="Quantile threshold to filter the excess power.")
+                          default=1.0,
+                          help="Threshold to filter the excess power.")
     clustering_parser.add('--time-frequency-clustering-threshold-type',
                           type=str,
                           default="variance",
