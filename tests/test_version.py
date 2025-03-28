@@ -1,5 +1,6 @@
-from nullpol import (get_version_information,
-                     log_version_information)
+from __future__ import annotations
+
+from nullpol import get_version_information, log_version_information
 
 
 def test_get_version_information():

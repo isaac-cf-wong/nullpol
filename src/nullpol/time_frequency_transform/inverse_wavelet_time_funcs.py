@@ -1,6 +1,8 @@
 """functions for computing the inverse wavelet transforms"""
-from numba import njit
+from __future__ import annotations
+
 import numpy as np
+from numba import njit
 
 
 def inverse_wavelet_time_helper_fast(wave_in,phi,Nf,Nt,mult):
@@ -109,7 +111,7 @@ def unpack_time_wave_helper_compact(n,Nf,Nt,K,phis,fft_fin,res):
         fft_fin.
     res: 1D numpy array
         Result.
-    """    
+    """
     ND = Nf*Nt
     fft_fin_real = np.zeros(4*Nf)
     fft_fin_imag = np.zeros(4*Nf)
@@ -170,7 +172,7 @@ def pack_wave_time_helper(n,Nf,Nt,wave_in,afins):
         Input data in wavelet domain.
     afins: 1D complex numpy array
         afins.
-    """    
+    """
     if n%2==0:
         #assign highest and lowest bin correctly
         afins[0] = np.sqrt(2)*wave_in[n,0]
@@ -213,7 +215,7 @@ def pack_wave_time_helper_compact(n,Nf,Nt,wave_in,afins):
         Input data in wavelet domain.
     afins: 1D complex numpy array
         afins.
-    """    
+    """
     afins[0] = np.sqrt(2)*wave_in[n,0]
     if n+1<Nt:
         afins[Nf] = np.sqrt(2)*wave_in[n+1,0]

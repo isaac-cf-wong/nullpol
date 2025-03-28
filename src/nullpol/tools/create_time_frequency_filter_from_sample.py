@@ -1,16 +1,19 @@
-from configargparse import ArgParser
-import pkg_resources
+from __future__ import annotations
+
 import importlib
 import json
 from pathlib import Path
-import numpy as np
+
 import healpy as hp
+import numpy as np
+import pkg_resources
+from bilby.gw.detector import InterferometerList, PowerSpectralDensity
 from bilby.gw.waveform_generator import WaveformGenerator
-from bilby.gw.detector import InterferometerList
-from bilby.gw.detector import PowerSpectralDensity
-from ..utils import logger
+from configargparse import ArgParser
+
 from ..time_frequency_transform import (transform_wavelet_freq,
                                         transform_wavelet_freq_quadrature)
+from ..utils import logger
 
 
 def import_function(path):
@@ -76,10 +79,10 @@ def main():
         # Check the extension of a file.
         if get_file_extension(args.signal_parameters) != ".json":
             raise ValueError('--signal-parameters needs to be a .json file.')
-        with open(args.signal_parameters, 'r') as f:
+        with open(args.signal_parameters) as f:
             signal_parameters = json.load(f)
     else:
-        signal_parameters = None     
+        signal_parameters = None
 
     # Construct waveform generator
     if args.frequency_domain_source_model is not None:

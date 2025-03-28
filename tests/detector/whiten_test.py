@@ -1,9 +1,14 @@
+from __future__ import annotations
+
 import unittest
+
 import bilby
-from bilby.gw.detector import InterferometerList
 import numpy as np
+from bilby.gw.detector import InterferometerList
 from scipy.stats import kstest
-from nullpol.detector.whiten import compute_whitened_frequency_domain_strain_array
+
+from nullpol.detector.whiten import \
+    compute_whitened_frequency_domain_strain_array
 
 
 class TestWhiten(unittest.TestCase):
@@ -45,4 +50,3 @@ class TestWhiten(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-

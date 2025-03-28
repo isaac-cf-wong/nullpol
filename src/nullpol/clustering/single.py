@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 
 
@@ -71,5 +73,5 @@ def clustering(filter, dt, df, padding_time=0.1, padding_freq=10, **kwargs):
             for y in range(-padding_freq, padding_freq + 1):
                 if 0 <= i + x < mask.shape[0] and 0 <= j + y < mask.shape[1]:
                     mask[i + x, j + y] = 1
-    
+
     return mask

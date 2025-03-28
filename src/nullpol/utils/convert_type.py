@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 from typing import Union
 
 
-def convert_string_to_float(string: Union[str, None]) -> Union[float, None]:
+def convert_string_to_float(string: str | None) -> float | None:
     """Convert string to float.
 
     Args:
@@ -15,7 +17,7 @@ def convert_string_to_float(string: Union[str, None]) -> Union[float, None]:
     return float(string)
 
 
-def convert_string_to_int(string: Union[str, None]) -> Union[int, None]:
+def convert_string_to_int(string: str | None) -> int | None:
     """Convert string to int.
 
     Args:
@@ -29,7 +31,7 @@ def convert_string_to_int(string: Union[str, None]) -> Union[int, None]:
     return int(string)
 
 
-def convert_string_to_bool(string: Union[str, None]) -> Union[bool, None]:
+def convert_string_to_bool(string: str | None) -> bool | None:
     """Convert string to bool.
 
     Args:

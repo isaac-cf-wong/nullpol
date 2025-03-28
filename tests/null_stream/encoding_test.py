@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 import unittest
+
 import numpy as np
-from nullpol.null_stream import (encode_polarization,
-                                 get_long_names)
+
+from nullpol.null_stream import encode_polarization, get_long_names
 
 
 class TestEncoding(unittest.TestCase):

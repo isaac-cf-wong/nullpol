@@ -1,6 +1,8 @@
 """functions for computing the inverse wavelet transforms"""
-from numba import njit
+from __future__ import annotations
+
 import numpy as np
+from numba import njit
 
 
 def inverse_wavelet_freq_helper_fast(wave_in,phif,Nf,Nt):

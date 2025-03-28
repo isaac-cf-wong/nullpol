@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from bilby.gw.source import _base_lal_cbc_fd_waveform
 
 

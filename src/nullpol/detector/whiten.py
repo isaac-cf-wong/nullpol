@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 from numba import njit
 
@@ -29,7 +31,7 @@ def compute_whitened_frequency_domain_strain_array(
 def compute_whitened_antenna_pattern_matrix_masked(antenna_pattern_matrix,
                                                    psd_array,
                                                    frequency_mask):
-    """Compute the whitened antenna patten matrix with a frequency mask.
+    """Compute the whitened antenna pattern matrix with a frequency mask.
 
     Args:
         antenna_pattern_matrix (numpy array): Antenna pattern matrix (detector, mode).

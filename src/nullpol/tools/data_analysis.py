@@ -1,21 +1,22 @@
-import bilby
-from bilby_pipe.data_analysis import DataAnalysisInput as BInput
-from bilby_pipe.main import parse_args
-from bilby_pipe.utils import (
-    CHECKPOINT_EXIT_CODE,
-)
-import bilby_pipe.utils
+from __future__ import annotations
+
 import signal
 import sys
+
+import bilby
+import bilby_pipe.utils
 import numpy as np
-from .parser import create_nullpol_parser
-from .input import Input
+from bilby_pipe.data_analysis import DataAnalysisInput as BInput
+from bilby_pipe.main import parse_args
+from bilby_pipe.utils import CHECKPOINT_EXIT_CODE
+
 from .. import log_version_information
-from ..utils import (logger,
-                       NullpolError)
-from ..result import PolarizationResult
 from ..null_stream import (encode_polarization,
                            relative_amplification_factor_map)
+from ..result import PolarizationResult
+from ..utils import NullpolError, logger
+from .input import Input
+from .parser import create_nullpol_parser
 
 # fmt: off
 import matplotlib  # isort:skip
@@ -116,11 +117,11 @@ class DataAnalysisInput(BInput, Input):
             if len(modes) == 1:
                 self._polarization_modes = modes[0]
             else:
-                raise NullpolError(('Unsupported polarization-modes input: '
-                                    f'{modes}'))
+                raise NullpolError('Unsupported polarization-modes input: '
+                                    f'{modes}')
         else:
-            raise NullpolError(('Unsupported polarization-modes input: '
-                                f'{modes}'))
+            raise NullpolError('Unsupported polarization-modes input: '
+                                f'{modes}')
 
     @property
     def polarization_basis(self):
@@ -134,20 +135,20 @@ class DataAnalysisInput(BInput, Input):
             if len(modes) == 1:
                 self._polarization_basis = modes[0]
             else:
-                raise NullpolError(('Unsupported polarization-basis input: '
-                                    f'{modes}'))
+                raise NullpolError('Unsupported polarization-basis input: '
+                                    f'{modes}')
         else:
-            raise NullpolError(('Unsupported polarization-basis input: '
-                                f'{modes}'))
+            raise NullpolError('Unsupported polarization-basis input: '
+                                f'{modes}')
 
     def _validate_polarization_model_setting(self):
         supported_modes = ['b', 'c', 'b', 'l', 'x', 'y']
         # Check whether the modes are supported.
         for mode in self.polarization_modes:
             if mode not in supported_modes:
-                raise NullpolError((f'Unsupported mode `{mode}` in '
+                raise NullpolError(f'Unsupported mode `{mode}` in '
                                     'polarizaiton-modes = '
-                                    f'{self.polarization_modes}'))
+                                    f'{self.polarization_modes}')
         for mode in self.polarization_basis:
             if mode not in supported_modes:
                 raise NullpolError(f'Unsupported mode `{mode}` in polarizaiton-basis = {self.polarization_basis}')
@@ -221,7 +222,7 @@ class DataAnalysisInput(BInput, Input):
                     name=phase_name,
                     minimum=0.0,
                     maximum=2. * np.pi,
-                    latex_label=f"$\phi_{{{label}}}$",
+                    latex_label=fr"$\phi_{{{label}}}$",
                     boundary="periodic")
                 logger.info(f'Added missing relative polarization prior: {missing_priors[phase_name]}')
         self.priors.update(missing_priors)
@@ -233,7 +234,7 @@ class DataAnalysisInput(BInput, Input):
                     name="projection_fraction",
                     minimum=0.0,
                     maximum=1.0,
-                    latex_label="$\zeta$")
+                    latex_label=r"$\zeta$")
                 logger.info("Missing prior for projection_fraction.")
                 logger.info(f"Added prior for projection_fraction: {self.priors['projection_fraction']}")
 

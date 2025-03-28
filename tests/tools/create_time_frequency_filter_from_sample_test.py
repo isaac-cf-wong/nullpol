@@ -1,9 +1,13 @@
+from __future__ import annotations
+
+import json
+import os
+import tempfile
 import unittest
 from unittest import mock
-import tempfile
-import os
+
 import pkg_resources
-import json
+
 from nullpol.tools.create_time_frequency_filter_from_sample import main
 
 
@@ -22,12 +26,12 @@ class TestCreateTimeFrequencyFilterFromSample(unittest.TestCase):
         self.assertTrue(os.path.exists(config_file_path))
 
         # Verify the contents of the generated config file
-        with open(config_file_path, 'r') as f:
+        with open(config_file_path) as f:
             generated_content = f.read()
 
         # Load the default config file
         default_config_file_path = pkg_resources.resource_filename('nullpol.tools', 'default_config_create_time_frequency_filter_from_sample.ini')
-        with open(default_config_file_path, 'r') as f:
+        with open(default_config_file_path) as f:
             default_generated_content = f.read()
 
         # Clean up the temporary config file
@@ -61,7 +65,7 @@ class TestCreateTimeFrequencyFilterFromSample(unittest.TestCase):
                         try:
                             main()
                         except SystemExit as e:
-                            self.assertEqual(e.code, 0)  # Ensure that it exited with code 0    
+                            self.assertEqual(e.code, 0)  # Ensure that it exited with code 0
 
                 # Check that the output file is created
                 self.assertTrue(os.path.exists(time_frequency_filter_file_path))

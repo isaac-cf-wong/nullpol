@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import numpy as np
+
 from .encoding import POLARIZATION_DECODING
 
 
@@ -92,7 +95,7 @@ def relative_amplification_factor_map(polarization_basis,
 def relative_amplification_factor_helper(parameters_map,
                                          parameters):
     """A helper function to construct a matrix of relative amplification factors.
-    
+
     Args:
         parameters_map (array-like): A map of keywords.
         parameters (dict): A dictionary of parameters.
@@ -122,6 +125,6 @@ def get_collapsed_antenna_pattern_matrix(
     """
     # Dimensions:
     # antenna_pattern_matrix: (detector, polarization)
-    # Select the columns corresponds to the basis    
+    # Select the columns corresponds to the basis
     return antenna_pattern_matrix[:, polarization_basis] + \
         antenna_pattern_matrix[:, polarization_derived] @ relative_amplification_factor

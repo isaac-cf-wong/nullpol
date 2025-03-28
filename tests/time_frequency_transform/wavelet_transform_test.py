@@ -1,16 +1,16 @@
+from __future__ import annotations
+
+import unittest
+
 import bilby
 import numpy as np
 import scipy.stats
-from nullpol.time_frequency_transform import (
-    transform_wavelet_freq,
-    transform_wavelet_freq_time,
-    transform_wavelet_freq_time_quadrature,
-    transform_wavelet_time,
-    inverse_wavelet_time,
-    inverse_wavelet_freq_time,
-    )
+
 from nullpol.detector import compute_whitened_frequency_domain_strain_array
-import unittest
+from nullpol.time_frequency_transform import (
+    inverse_wavelet_freq_time, inverse_wavelet_time, transform_wavelet_freq,
+    transform_wavelet_freq_time, transform_wavelet_freq_time_quadrature,
+    transform_wavelet_time)
 
 
 class TestWaveletTransform(unittest.TestCase):

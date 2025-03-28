@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import os
+
 from bilby_pipe.job_creation.node import Node
 from bilby_pipe.job_creation.nodes.analysis_node import touch_checkpoint_files
 
@@ -24,7 +27,7 @@ class AnalysisNode(Node):
 
         data_label = generation_node.job_name
         base_name = data_label.replace("generation", "analysis")
-        self.base_job_name = f"{base_name}_{''.join(detectors)}_{self.polarization_modes}_{self.polarization_basis}"        
+        self.base_job_name = f"{base_name}_{''.join(detectors)}_{self.polarization_modes}_{self.polarization_basis}"
         if parallel_idx != "":
             self.job_name = f"{self.base_job_name}_{parallel_idx}"
         else:
@@ -100,7 +103,7 @@ class AnalysisNode(Node):
     @property
     def polarization_basis(self):
         return self._polarization_basis
-    
+
     @polarization_basis.setter
     def polarization_basis(self, polarization_basis):
         self._polarization_basis = polarization_basis.replace('"', '').replace("'", '')

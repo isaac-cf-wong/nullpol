@@ -1,18 +1,21 @@
-from bilby.core.result import Result
-from bilby.core.utils import (
-    infft, check_directory_exists_and_if_not_mkdir,
-    latex_plot_format, safe_file_dump, safe_save_figure,
-)
+from __future__ import annotations
+
 import json
 import os
 import pickle
+
 import numpy as np
+from bilby.core.result import Result
+from bilby.core.utils import (check_directory_exists_and_if_not_mkdir, infft,
+                              latex_plot_format, safe_file_dump,
+                              safe_save_figure)
+
 from ..utils import logger
 
 
 class PolarizationResult(Result):
     def __init__(self, **kwargs):
-        super(PolarizationResult, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def __get_from_nested_meta_data(self, *keys):
         dictionary = self.meta_data
@@ -72,7 +75,7 @@ class PolarizationResult(Result):
             return self.__get_from_nested_meta_data(
                 'likelihood', 'interferometers', detector)
         except AttributeError:
-            logger.info("No injection for detector {}".format(detector))
+            logger.info(f"No injection for detector {detector}")
             return None
 
     def plot_skymap(
@@ -122,11 +125,12 @@ class PolarizationResult(Result):
         from matplotlib import rcParams
 
         try:
-            from astropy.time import Time
-            from ligo.skymap import io, version, plot, postprocess, bayestar, kde
             import healpy as hp
+            from astropy.time import Time
+            from ligo.skymap import (bayestar, io, kde, plot, postprocess,
+                                     version)
         except ImportError as e:
-            logger.info("Unable to generate skymap: error {}".format(e))
+            logger.info(f"Unable to generate skymap: error {e}")
             return
 
         check_directory_exists_and_if_not_mkdir(self.outdir)
@@ -138,7 +142,7 @@ class PolarizationResult(Result):
             logger.info('Taking random subsample of chain')
             data = data.sample(maxpts)
 
-        default_obj_filename = os.path.join(self.outdir, '{}_skypost.obj'.format(self.label))
+        default_obj_filename = os.path.join(self.outdir, f'{self.label}_skypost.obj')
 
         if load_pickle is False:
             pts = data[['ra', 'dec']].values
@@ -146,7 +150,7 @@ class PolarizationResult(Result):
 
             logger.info('Initialising skymap class')
             skypost = confidence_levels(pts, trials=trials, jobs=jobs)
-            logger.info('Pickling skymap to {}'.format(default_obj_filename))
+            logger.info(f'Pickling skymap to {default_obj_filename}')
             safe_file_dump(skypost, default_obj_filename, "pickle")
 
         else:
@@ -154,7 +158,7 @@ class PolarizationResult(Result):
                 obj_filename = load_pickle
             else:
                 obj_filename = default_obj_filename
-            logger.info('Reading from pickle {}'.format(obj_filename))
+            logger.info(f'Reading from pickle {obj_filename}')
             with open(obj_filename, 'rb') as file:
                 skypost = pickle.load(file)
             skypost.jobs = jobs
@@ -180,8 +184,8 @@ class PolarizationResult(Result):
         except KeyError:
             logger.warning('Cannot determine the event time from geocent_time')
 
-        fits_filename = os.path.join(self.outdir, "{}_skymap.fits".format(self.label))
-        logger.info('Saving skymap fits-file to {}'.format(fits_filename))
+        fits_filename = os.path.join(self.outdir, f"{self.label}_skymap.fits")
+        logger.info(f'Saving skymap fits-file to {fits_filename}')
         io.write_sky_map(fits_filename, hpmap, nest=True)
 
         skymap, metadata = io.fits.read_sky_map(fits_filename, nest=None)
@@ -221,7 +225,7 @@ class PolarizationResult(Result):
         if geo:
             geojson_filename = os.path.join(
                 os.path.dirname(plot.__file__), 'ne_simplified_coastline.json')
-            with open(geojson_filename, 'r') as geojson_file:
+            with open(geojson_filename) as geojson_file:
                 geoms = json.load(geojson_file)['geometries']
             verts = [coord for geom in geoms
                      for coord in zip(*geom['coordinates'])]
@@ -238,17 +242,16 @@ class PolarizationResult(Result):
             except KeyError:
                 pass
             else:
-                text.append('event ID: {}'.format(objid))
+                text.append(f'event ID: {objid}')
             if contour:
                 pp = np.round(contour).astype(int)
                 ii = np.round(np.searchsorted(np.sort(confidence_levels), contour) *
                               deg2perpix).astype(int)
                 for i, p in zip(ii, pp):
                     text.append(
-                        u'{:d}% area: {:d} deg$^2$'.format(p, i))
+                        f'{p:d}% area: {i:d} deg$^2$')
             ax.text(1, 1, '\n'.join(text), transform=ax.transAxes, ha='right')
 
-        filename = os.path.join(self.outdir, "{}_skymap.png".format(self.label))
-        logger.info("Generating 2D projected skymap to {}".format(filename))
+        filename = os.path.join(self.outdir, f"{self.label}_skymap.png")
+        logger.info(f"Generating 2D projected skymap to {filename}")
         safe_save_figure(fig=plt.gcf(), filename=filename, dpi=dpi)
-

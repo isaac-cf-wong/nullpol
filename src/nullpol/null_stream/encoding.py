@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 
 POLARIZATION_ENCODING = dict(p=0,c=1,b=2,l=3,x=4,y=5)

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from .clustering import *
 from .plot import *
 from .single import *

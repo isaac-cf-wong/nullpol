@@ -1,10 +1,13 @@
+from __future__ import annotations
+
 import numpy as np
 from tqdm import tqdm
-from ..time_frequency_transform import (transform_wavelet_freq,
-                                        transform_wavelet_freq_quadrature,
-                                        get_shape_of_wavelet_transform)
-from ..null_stream import compute_time_shifted_frequency_domain_strain_array
+
 from ..detector import compute_whitened_frequency_domain_strain_array
+from ..null_stream import compute_time_shifted_frequency_domain_strain_array
+from ..time_frequency_transform import (get_shape_of_wavelet_transform,
+                                        transform_wavelet_freq,
+                                        transform_wavelet_freq_quadrature)
 
 
 def compute_sky_maximized_spectrogram(interferometers,

@@ -1,22 +1,25 @@
-import bilby
-from bilby_pipe.data_generation import DataGenerationInput as BilbyDataGenerationInput
-from bilby_pipe.utils import convert_string_to_dict, DataDump
-from bilby_pipe.main import parse_args
+from __future__ import annotations
+
 import sys
+
+import bilby
 import bilby_pipe.utils
-import numpy as np
 import h5py
+import numpy as np
 import pandas as pd
+from bilby_pipe.data_generation import \
+    DataGenerationInput as BilbyDataGenerationInput
+from bilby_pipe.main import parse_args
+from bilby_pipe.utils import DataDump, convert_string_to_dict
+
+from .. import __version__, log_version_information
+from ..clustering import compute_sky_maximized_spectrogram, plot_spectrogram
+from ..clustering import \
+    run_time_frequency_clustering as _run_time_frequency_clustering
+from ..utils import NullpolError, is_file, logger
 from .input import Input
 from .parser import create_nullpol_parser
-from ..utils import (logger,
-                       NullpolError,
-                       is_file)
-from ..clustering import (run_time_frequency_clustering as _run_time_frequency_clustering,
-                          compute_sky_maximized_spectrogram,
-                          plot_spectrogram)
-from .. import (__version__,
-                log_version_information)
+
 bilby_pipe.utils.logger = logger
 
 

@@ -63,9 +63,9 @@ test = [
 ]
 
 [project.urls]
-Documentation = "https://github.com/microsoft/python-package-template/tree/main#readme"
-Source = "https://github.com/microsoft/python-package-template"
-Tracker = "https://github.com/microsoft/python-package-template/issues"
+Documentation = "https://git.ligo.org/bayesian-null-stream/nullpol/docs"
+Source = "https://git.ligo.org/bayesian-null-stream/nullpol"
+Tracker = "https://git.ligo.org/bayesian-null-stream/nullpol/-/issues"
 
 [tool.flit.module]
 name = "nullpol"

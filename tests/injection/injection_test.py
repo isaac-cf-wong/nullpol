@@ -1,6 +1,10 @@
+from __future__ import annotations
+
 import unittest
+
 from bilby.gw.detector import InterferometerList
 from bilby.gw.source import lal_binary_black_hole
+
 from nullpol.injection import create_injection
 
 
@@ -76,7 +80,7 @@ class TestInjection(unittest.TestCase):
                          waveform_arguments=waveform_arguments)
 
     def test_create_injection_noise(self):
-        interferometers = InterferometerList(['H1', 'L1', 'V1'])        
+        interferometers = InterferometerList(['H1', 'L1', 'V1'])
         duration = 8
         sampling_frequency = 4096
         start_time = 0

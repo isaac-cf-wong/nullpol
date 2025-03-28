@@ -1,13 +1,17 @@
 """Nullpol Pipeline specification."""
 
+from __future__ import annotations
+
+import glob
 import os
 import subprocess
-import glob
 import time
+
 import pkg_resources
 from asimov import config
-from asimov.pipelines.bilby import Bilby
 from asimov.pipeline import Pipeline, PipelineException, PipelineLogger
+from asimov.pipelines.bilby import Bilby
+
 from .pesummary import PESummaryPipeline
 
 

@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import numpy as np
+
 
 def compute_filter_by_quantile(time_freq_transformed, quantile=0.9, **kwargs):
     """

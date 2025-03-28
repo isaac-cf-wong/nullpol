@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from .antenna_pattern import *
 from .encoding import *
 from .projector import *

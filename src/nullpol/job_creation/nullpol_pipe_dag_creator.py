@@ -1,21 +1,22 @@
+from __future__ import annotations
+
 import copy
-from bilby_pipe.job_creation.dag import Dag
+
+import bilby_pipe.utils
 from bilby_pipe.job_creation.bilby_pipe_dag_creator import (
-    get_trigger_time_list,
-    get_parallel_list)
-from bilby_pipe.job_creation.nodes import (MergeNode,
-                                           FinalResultNode,
-                                           PlotNode,
-                                           PostProcessSingleResultsNode,
-                                           PESummaryNode,
-                                           PostProcessAllResultsNode)
+    get_parallel_list, get_trigger_time_list)
+from bilby_pipe.job_creation.dag import Dag
+from bilby_pipe.job_creation.nodes import (FinalResultNode, MergeNode,
+                                           PESummaryNode, PlotNode,
+                                           PostProcessAllResultsNode,
+                                           PostProcessSingleResultsNode)
 from bilby_pipe.job_creation.overview import create_overview
 from bilby_pipe.utils import get_colored_string
-import bilby_pipe.utils
-from .generation_node import GenerationNode
+
+from ..utils import NullpolError, logger
 from .analysis_node import AnalysisNode
-from ..utils import (logger,
-                       NullpolError)
+from .generation_node import GenerationNode
+
 bilby_pipe.utils.logger = logger
 
 

@@ -1,10 +1,15 @@
+from __future__ import annotations
+
+import json
+import os
+import tempfile
 import unittest
 from unittest import mock
-import tempfile
-import os
+
 import pkg_resources
-import json
+
 from nullpol.tools.create_injection import main
+
 
 class TestCreateInjection(unittest.TestCase):
     @classmethod
@@ -56,12 +61,12 @@ class TestCreateInjection(unittest.TestCase):
         self.assertTrue(os.path.exists(config_file_path))
 
         # Verify the contents of the generated config file
-        with open(config_file_path, 'r') as f:
+        with open(config_file_path) as f:
             generated_content = f.read()
 
         # Load the default config file
         default_config_file_path = pkg_resources.resource_filename('nullpol.tools', 'default_config_create_injection.ini')
-        with open(default_config_file_path, 'r') as f:
+        with open(default_config_file_path) as f:
             default_generated_content = f.read()
 
         # Clean up the temporary config file
@@ -175,4 +180,3 @@ class TestCreateInjection(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-

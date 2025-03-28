@@ -1,7 +1,8 @@
-from bilby.gw.waveform_generator import WaveformGenerator
-from bilby.gw.source import lal_binary_black_hole
-from bilby.gw.conversion import convert_to_lal_binary_black_hole_parameters
+from __future__ import annotations
 
+from bilby.gw.conversion import convert_to_lal_binary_black_hole_parameters
+from bilby.gw.source import lal_binary_black_hole
+from bilby.gw.waveform_generator import WaveformGenerator
 
 DEFAULT_BBH_WAVEFORM_ARGUMENTS = {"waveform_approximant": "IMRPhenomPv2",
                                   "reference_frequency": 50}
@@ -28,7 +29,7 @@ def create_injection(interferometers,
     start_time: float
         Start time of the data segemtn in second.
     parameters: dict
-        A dictionary of injection parameters.        
+        A dictionary of injection parameters.
     noise_type: str
         Type of noise. Supported options: ['zero_noise', 'gaussian', 'noise']
     frequency_domain_source_model: callable

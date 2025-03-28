@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import unittest
+
 from nullpol.utils import setup_logger
 
 

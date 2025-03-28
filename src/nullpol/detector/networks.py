@@ -1,7 +1,11 @@
-import numpy as np
-import bilby.gw.detector
-from bilby.core.utils import logger
+from __future__ import annotations
+
 import math
+
+import bilby.gw.detector
+import numpy as np
+from bilby.core.utils import logger
+
 
 @property
 def time_domain_strain_array(self):
@@ -11,7 +15,7 @@ def time_domain_strain_array(self):
         self._time_domain_strain_array = np.zeros((nifo, nfreq), dtype=self[0].time_domain_strain[0].dtype)
 
         for i in range(nifo):
-            self._time_domain_strain_array[i,:] = self[i].time_domain_strain            
+            self._time_domain_strain_array[i,:] = self[i].time_domain_strain
 
     return self._time_domain_strain_array
 
@@ -23,7 +27,7 @@ def frequency_domain_strain_array(self):
         self._frequency_domain_strain_array = np.zeros((nifo, nfreq), dtype=self[0].frequency_domain_strain[0].dtype)
 
         for i in range(nifo):
-            self._frequency_domain_strain_array[i,:] = self[i].frequency_domain_strain            
+            self._frequency_domain_strain_array[i,:] = self[i].frequency_domain_strain
 
     return self._frequency_domain_strain_array
 

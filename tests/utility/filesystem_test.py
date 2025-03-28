@@ -1,7 +1,9 @@
-import unittest
+from __future__ import annotations
+
 import tempfile
-from nullpol.utils import (get_file_extension,
-                             is_file)
+import unittest
+
+from nullpol.utils import get_file_extension, is_file
 
 
 class TestFilesystem(unittest.TestCase):

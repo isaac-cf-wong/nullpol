@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import nullpol
 import nullpol.asimov
 import nullpol.calibration

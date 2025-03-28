@@ -1,10 +1,13 @@
+from __future__ import annotations
+
+import argparse
 import os
 import shutil
-import pkg_resources
-import argparse
 from pathlib import Path
-from ..utils import (logger,
-                       NullpolError)
+
+import pkg_resources
+
+from ..utils import NullpolError, logger
 
 
 def main():

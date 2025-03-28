@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import numpy as np
-from .time_frequency_likelihood import TimeFrequencyLikelihood
+
 from ..time_frequency_transform import transform_wavelet_freq
+from .time_frequency_likelihood import TimeFrequencyLikelihood
 
 
 class FractionalProjectionTimeFrequencyLikelihood(TimeFrequencyLikelihood):
@@ -21,17 +24,17 @@ class FractionalProjectionTimeFrequencyLikelihood(TimeFrequencyLikelihood):
                  wavelet_frequency_resolution,
                  wavelet_nx,
                  polarization_modes,
-                 polarization_basis=None,                 
-                 time_frequency_filter=None,                 
+                 polarization_basis=None,
+                 time_frequency_filter=None,
                  priors=None,
                  *args, **kwargs):
-        super(FractionalProjectionTimeFrequencyLikelihood, self).__init__(
+        super().__init__(
             interferometers=interferometers,
             wavelet_frequency_resolution=wavelet_frequency_resolution,
             wavelet_nx=wavelet_nx,
             polarization_modes=polarization_modes,
-            polarization_basis=polarization_basis,                                                                          
-            time_frequency_filter=time_frequency_filter,                                                                          
+            polarization_basis=polarization_basis,
+            time_frequency_filter=time_frequency_filter,
             priors=priors,
             *args, **kwargs)
         self._log_normalization_constant = -np.log(2. * np.pi) * 0.5 * len(self.interferometers) * np.sum(time_frequency_filter)
@@ -41,7 +44,7 @@ class FractionalProjectionTimeFrequencyLikelihood(TimeFrequencyLikelihood):
         s_est = self.estimate_wavelet_domain_signal_at_geocenter()
         d_wavelet = self.compute_cached_wavelet_domain_strain_array_at_geocenter()
 
-        # Substract the estimated signal from the strain data to obtain the null stream
+        # Subtract the estimated signal from the strain data to obtain the null stream
         d_null = d_wavelet - self.parameters['projection_fraction'] * s_est
         return d_null
 

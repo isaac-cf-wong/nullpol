@@ -1,6 +1,9 @@
-import bilby_pipe
+from __future__ import annotations
+
 import configparser
 from ast import literal_eval
+
+import bilby_pipe
 
 
 def read_bilby_ini_file(file: str) -> dict:
@@ -17,7 +20,7 @@ def read_bilby_ini_file(file: str) -> dict:
     dict
         The contents of the ini file as a dictionary
     """
-    with open(file, 'r') as f:
+    with open(file) as f:
         file_content = f.read()
 
     # add dummy section header
@@ -108,7 +111,7 @@ def bilby_config_to_asimov(config_name):
                 data[name_asimov] = value
     if isinstance(data['segment length'], str):
         data['segment length'] = literal_eval(data['segment length'])
-    
+
     output_dict['data'] = data
 
     # copy likelihood fields
@@ -189,7 +192,7 @@ def bilby_config_to_asimov(config_name):
             key.replace('-', '_'): value for key, value in prior_dict.items()}
     elif config['prior-file'] is not None:
         try:
-            with open(config['prior-file'], 'r') as f:
+            with open(config['prior-file']) as f:
                 temp_dict = f.read()
             lines = temp_dict.split('\n')
             prior_dict = {}
@@ -204,7 +207,7 @@ def bilby_config_to_asimov(config_name):
                     key = elements[0].replace(" ", "")
                     val = "=".join(elements[1:]).strip()
                 prior_dict[key] = val
-        except IOError:  # file might have been deleted
+        except OSError:  # file might have been deleted
             prior_dict = None
     else:
         prior_dict = None

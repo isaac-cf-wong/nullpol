@@ -1,7 +1,10 @@
 """helper functions for transform_freq"""
+from __future__ import annotations
+
 import numpy as np
-from numba import njit
 import scipy.special
+from numba import njit
+
 
 def phitilde_vec(om,Nf,nx=4.):
     """Compute phitilde, om i array, nx is filter steepness, defaults to 4.
@@ -19,7 +22,7 @@ def phitilde_vec(om,Nf,nx=4.):
     -------
     1D numpy array
         z.
-    """    
+    """
     OM = np.pi  #Nyquist angular frequency
     DOM = OM/Nf #2 pi times DF
     insDOM = 1./np.sqrt(DOM)
@@ -52,7 +55,7 @@ def phitilde_vec_norm(Nf,Nt,nx):
     -------
     1D numpy array
         phif.
-    """    
+    """
     ND = Nf*Nt
     oms = 2*np.pi/ND*np.arange(0,Nt//2+1)
     phif = phitilde_vec(oms,Nf,nx)
@@ -79,7 +82,7 @@ def tukey(data,alpha,N):
     -------
     1D numpy array
         Data with Tukey window function applied.
-    """    
+    """
     imin = np.int64(alpha*(N-1)/2)
     imax = np.int64((N-1)*(1-alpha/2))
     Nwin = N-imax
@@ -110,9 +113,9 @@ def transform_wavelet_freq_helper(data,Nf,Nt,phif):
     -------
     2D numpy array
         Data in wavelet domain.
-    """    
+    """
     wave = np.zeros((Nt,Nf)) # wavelet wavepacket transform of the signal
-    
+
     for m in range(0,Nf+1):
         DX = np.zeros(Nt,dtype=np.complex128)
         DX_assign_loop(m,Nt,Nf,DX,data,phif)
@@ -138,7 +141,7 @@ def transform_wavelet_freq_quadrature_helper(data,Nf,Nt,phif):
     -------
     2D numpy array
         Data in wavelet domain.
-    """    
+    """
     wave = np.zeros((Nt,Nf)) # wavelet wavepacket transform of the signal
 
     DX = np.zeros(Nt,dtype=np.complex128)
@@ -166,7 +169,7 @@ def DX_assign_loop(m,Nt,Nf,DX,data,phif):
         Input data.
     phif: 1D numpy array
         Wavelet.
-    """    
+    """
     i_base = Nt//2
     jj_base = m*Nt//2
 
@@ -243,7 +246,7 @@ def DX_unpack_loop_quadrature(m,Nt,Nf,DX_trans,wave):
         DX_trans.
     wave: 2D numpy array
         Data in wavelet domain.
-    """    
+    """
     if m==0:
         #half of lowest and highest frequency bin pixels are redundant, so store them in even and odd components of m=0 respectively
         for n in range(0,Nt,2):

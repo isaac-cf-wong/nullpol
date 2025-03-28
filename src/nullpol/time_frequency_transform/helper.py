@@ -1,8 +1,11 @@
+from __future__ import annotations
+
+
 def get_shape_of_wavelet_transform(duration,
                                    sampling_frequency,
                                    wavelet_frequency_resolution):
     """A helper function to get the shape of the wavelet transform.
-    
+
     Parameters
     ----------
     duration: float
@@ -11,7 +14,7 @@ def get_shape_of_wavelet_transform(duration,
         The sampling frequency of the data segment.
     wavelet_frequency_resolution: float
         The frequency resolution of the wavelet transform.
-    
+
     Returns
     -------
     Nt, Nf: int, int

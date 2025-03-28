@@ -1,12 +1,16 @@
-import sys
+from __future__ import annotations
+
 import os
+import sys
+
+import bilby_pipe.utils
+from bilby_pipe.bilbyargparser import BilbyArgParser, HyphenStr
 from bilby_pipe.parser import create_parser
 from bilby_pipe.utils import nonestr
-from bilby_pipe.bilbyargparser import (BilbyArgParser,
-                                       HyphenStr)
-import bilby_pipe.utils
-from ..utils import logger
+
 from .._version import __version__
+from ..utils import logger
+
 bilby_pipe.utils.logger = logger
 
 

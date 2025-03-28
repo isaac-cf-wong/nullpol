@@ -1,11 +1,15 @@
+from __future__ import annotations
+
 import unittest
-from bilby.gw.detector import InterferometerList
+
 import numpy as np
+from bilby.gw.detector import InterferometerList
+
 from nullpol.null_stream import (get_antenna_pattern,
                                  get_antenna_pattern_matrix,
-                                 relative_amplification_factor_map,
+                                 get_collapsed_antenna_pattern_matrix,
                                  relative_amplification_factor_helper,
-                                 get_collapsed_antenna_pattern_matrix)
+                                 relative_amplification_factor_map)
 
 
 class TestAntennaPattern(unittest.TestCase):
@@ -102,7 +106,7 @@ class TestAntennaPattern(unittest.TestCase):
                           amplitude_xc=np.random.randn(), phase_xc=np.random.randn(),
                           amplitude_yp=np.random.randn(), phase_yp=np.random.randn(),
                           amplitude_yc=np.random.randn(), phase_yc=np.random.randn())
-        output = relative_amplification_factor_helper(parameters_map, parameters)        
+        output = relative_amplification_factor_helper(parameters_map, parameters)
         expected_output = np.array([[parameters['amplitude_bp']*np.exp(1.j*parameters['phase_bp']), parameters['amplitude_bc']*np.exp(1.j*parameters['phase_bc'])],
                                     [parameters['amplitude_lp']*np.exp(1.j*parameters['phase_lp']), parameters['amplitude_lc']*np.exp(1.j*parameters['phase_lc'])],
                                     [parameters['amplitude_xp']*np.exp(1.j*parameters['phase_xp']), parameters['amplitude_xc']*np.exp(1.j*parameters['phase_xc'])],
@@ -118,7 +122,7 @@ class TestAntennaPattern(unittest.TestCase):
                                                             polarization_angle=self.polarization_angle,
                                                             gps_time=self.gps_time,
                                                             polarization=np.array([True, True, True, True, True, True]))
-        parameters_map = relative_amplification_factor_map(polarization_basis, polarization_derived)        
+        parameters_map = relative_amplification_factor_map(polarization_basis, polarization_derived)
         parameters = dict(amplitude_bp=np.random.randn(), phase_bp=np.random.randn(),
                           amplitude_bc=np.random.randn(), phase_bc=np.random.randn(),
                           amplitude_lp=np.random.randn(), phase_lp=np.random.randn(),

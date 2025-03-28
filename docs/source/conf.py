@@ -1,6 +1,10 @@
+from __future__ import annotations
+
 import os
 import sys
+
 import nullpol
+
 sys.path.insert(0, os.path.abspath('../../nullpol'))
 # Configuration file for the Sphinx documentation builder.
 #

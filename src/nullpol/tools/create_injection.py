@@ -1,14 +1,17 @@
-from configargparse import ArgParser
-import pkg_resources
+from __future__ import annotations
+
 import importlib
 import json
 from pathlib import Path
+
 import numpy as np
-from scipy.interpolate import interp1d
-from pycbc.frame import write_frame
+import pkg_resources
+from bilby.gw.detector import InterferometerList, PowerSpectralDensity
 from bilby.gw.waveform_generator import WaveformGenerator
-from bilby.gw.detector import InterferometerList
-from bilby.gw.detector import PowerSpectralDensity
+from configargparse import ArgParser
+from pycbc.frame import write_frame
+from scipy.interpolate import interp1d
+
 from ..utils import logger
 
 
@@ -75,7 +78,7 @@ def main():
         # Check the extension of a file.
         if get_file_extension(args.signal_parameters) != ".json":
             raise ValueError('--signal-parameters needs to be a .json file.')
-        with open(args.signal_parameters, 'r') as f:
+        with open(args.signal_parameters) as f:
             signal_parameters = json.load(f)
     else:
         signal_parameters = None

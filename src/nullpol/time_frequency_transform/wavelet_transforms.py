@@ -1,13 +1,15 @@
 """helper functions for transform_time.py"""
+from __future__ import annotations
+
 import numpy as np
+
+from .helper import get_shape_of_wavelet_transform
+from .inverse_wavelet_freq_funcs import inverse_wavelet_freq_helper_fast
+from .inverse_wavelet_time_funcs import inverse_wavelet_time_helper_fast
 from .transform_freq_funcs import (phitilde_vec_norm,
                                    transform_wavelet_freq_helper,
                                    transform_wavelet_freq_quadrature_helper)
-from .transform_time_funcs import (phi_vec,
-                                   transform_wavelet_time_helper)
-from .inverse_wavelet_freq_funcs import inverse_wavelet_freq_helper_fast
-from .inverse_wavelet_time_funcs import inverse_wavelet_time_helper_fast
-from .helper import get_shape_of_wavelet_transform
+from .transform_time_funcs import phi_vec, transform_wavelet_time_helper
 
 
 def inverse_wavelet_time(wave_in, nx=4., mult=32):

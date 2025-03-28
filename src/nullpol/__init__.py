@@ -1,18 +1,9 @@
-from . import asimov
-from . import calibration
-from . import clustering
-from . import detector
-from . import injection
-from . import job_creation
-from . import likelihood
-from . import null_stream
-from . import prior
-from . import result
-from . import source
-from . import time_frequency_transform
-from . import utils
-from .utils import logger
+from __future__ import annotations
 
+from . import (asimov, calibration, clustering, detector, injection,
+               job_creation, likelihood, null_stream, prior, result, source,
+               time_frequency_transform, utils)
+from .utils import logger
 
 __version__ = '1.0.0'
 

@@ -1,5 +1,7 @@
-from numba import njit
+from __future__ import annotations
+
 import numpy as np
+from numba import njit
 
 
 @njit
@@ -17,7 +19,7 @@ def compute_gw_projector_masked(whitened_antenna_pattern_matrix,
 
 @njit
 def compute_null_projector_from_gw_projector(gw_projector):
-    nfreq, ndet, _ = gw_projector.shape    
+    nfreq, ndet, _ = gw_projector.shape
     output = -gw_projector.copy()
     for i in range(nfreq):
         for j in range(ndet):

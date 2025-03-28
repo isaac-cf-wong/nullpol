@@ -1,6 +1,9 @@
 """helper functions for transform_time.py"""
+from __future__ import annotations
+
 import numpy as np
 from numba import njit
+
 from .transform_freq_funcs import phitilde_vec
 
 
@@ -148,7 +151,7 @@ def phi_vec(Nf, nx=4., mult=16):
     DX[0] = insDOM
 
     DX = DX.copy()
-    # postive frequencies
+    # positive frequencies
     DX[1:half_K+1] = phitilde_vec(dom*np.arange(1, half_K+1), Nf, nx)
     # negative frequencies
     DX[half_K+1:] = phitilde_vec(-dom*np.arange(half_K-1, 0, -1), Nf, nx)

@@ -9,7 +9,7 @@
 01/07/25 02:46:08 ** Log last touched time unavailable (No such file or directory)
 01/07/25 02:46:08 ******************************************************
 01/07/25 02:46:08 Using config source: /etc/condor/condor_config
-01/07/25 02:46:08 Using local config sources: 
+01/07/25 02:46:08 Using local config sources:
 01/07/25 02:46:08    /etc/condor/config.d/00-htcondor-9.0.config
 01/07/25 02:46:08    /etc/condor/config.d/00-ldas
 01/07/25 02:46:08    /etc/condor/config.d/00-security
@@ -66,8 +66,8 @@
 01/07/25 02:46:08 DAGMAN_USE_DIRECT_SUBMIT setting: True
 01/07/25 02:46:08 DAGMAN_PRODUCE_JOB_CREDENTIALS setting: True
 01/07/25 02:46:08 DAGMAN_DEFAULT_APPEND_VARS setting: True
-01/07/25 02:46:08 DAGMAN_INHERIT_ATTRS_PREFIX setting: 
-01/07/25 02:46:08 DAGMAN_INHERIT_ATTRS setting: 
+01/07/25 02:46:08 DAGMAN_INHERIT_ATTRS_PREFIX setting:
+01/07/25 02:46:08 DAGMAN_INHERIT_ATTRS setting:
 01/07/25 02:46:08 DAGMAN_ABORT_DUPLICATES setting: True
 01/07/25 02:46:08 DAGMAN_ABORT_ON_SCARY_SUBMIT setting: True
 01/07/25 02:46:08 DAGMAN_PENDING_REPORT_INTERVAL setting: 600

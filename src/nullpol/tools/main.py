@@ -1,16 +1,18 @@
-from bilby_pipe.utils import (parse_args,
-                              get_command_line_arguments,
-                              get_outdir_name,
-                              tcolors)
-from bilby_pipe.main import write_complete_config_file
-from bilby_pipe.main import MainInput as BilbyMainInput
-import bilby_pipe.utils
+from __future__ import annotations
+
 import importlib
-from .parser import create_nullpol_parser
-from .input import Input
+
+import bilby_pipe.utils
+from bilby_pipe.main import MainInput as BilbyMainInput
+from bilby_pipe.main import write_complete_config_file
+from bilby_pipe.utils import (get_command_line_arguments, get_outdir_name,
+                              parse_args, tcolors)
+
 from .. import log_version_information
-from ..utils import logger
 from ..job_creation import generate_dag
+from ..utils import logger
+from .input import Input
+from .parser import create_nullpol_parser
 
 bilby_pipe.utils.logger = logger
 

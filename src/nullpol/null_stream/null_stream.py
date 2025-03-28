@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 from numba import njit
-from .time_shift import compute_time_shifted_frequency_domain_strain_array
+
 from .signal_estimator import estimate_frequency_domain_signal_at_geocenter
+from .time_shift import compute_time_shifted_frequency_domain_strain_array
 
 
 @njit
@@ -79,8 +82,8 @@ def compute_whitened_frequency_domain_null_stream(
     Returns
     -------
     2D numpy array:
-        Null strem.
-    """    
+        Null stream.
+    """
     return compute_whitened_frequency_domain_fractional_null_stream(
         frequency_array=frequency_array,
         frequency_mask=frequency_mask,

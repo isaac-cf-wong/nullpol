@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 import numpy as np
 import scipy.stats
-from .sky_maximized_spectrogram import compute_sky_maximized_spectrogram
-from .single import clustering
+
 from ..time_frequency_transform import get_shape_of_wavelet_transform
-from ..utils import logger, NullpolError
+from ..utils import NullpolError, logger
+from .single import clustering
+from .sky_maximized_spectrogram import compute_sky_maximized_spectrogram
 
 
 def run_time_frequency_clustering(interferometers,
@@ -44,7 +47,7 @@ def run_time_frequency_clustering(interferometers,
     dt = interferometers[0].duration / wavelet_Nt
     output = clustering(energy_filter, dt, wavelet_frequency_resolution, padding_time=time_padding, padding_freq=frequency_padding)
     # Clean the filter to ensure no leakage.
-    output = output.astype(np.float64)    
+    output = output.astype(np.float64)
     freq_low_idx = int(np.ceil(interferometers[0].minimum_frequency / wavelet_frequency_resolution))
     output[:, :freq_low_idx] = 0.
 

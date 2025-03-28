@@ -1,23 +1,27 @@
+from __future__ import annotations
+
+import inspect
 from importlib import import_module
+
 import bilby
+import bilby_pipe.utils
+import numpy as np
 from bilby.core.likelihood import ZeroLikelihood
 from bilby_pipe.input import Input as BilbyInput
-import bilby_pipe.utils
 from bilby_pipe.utils import strip_quotes
-import numpy as np
-from ..utils import (logger, NullpolError)
-from ..likelihood import (Chi2TimeFrequencyLikelihood,
-                          GaussianTimeFrequencyLikelihood,
-                          FractionalProjectionTimeFrequencyLikelihood)
+
 from .. import prior as nullpol_prior
-import inspect
+from ..likelihood import (Chi2TimeFrequencyLikelihood,
+                          FractionalProjectionTimeFrequencyLikelihood,
+                          GaussianTimeFrequencyLikelihood)
+from ..utils import NullpolError, logger
 
 bilby_pipe.utils.logger = logger
 
 
 class Input(BilbyInput):
     def __init__(self, args, unknown_args, print_msg=True):
-        super(Input, self).__init__(args=args,
+        super().__init__(args=args,
                                     unknown_args=unknown_args,
                                     print_msg=print_msg)
         self.polarization_modes = args.polarization_modes
@@ -82,7 +86,7 @@ class Input(BilbyInput):
             polarization_modes=self.polarization_modes,
             polarization_basis=self.polarization_basis,
             time_frequency_filter=self.meta_data['time_frequency_filter'],
-            priors=self.search_priors,            
+            priors=self.search_priors,
         )
         if self.likelihood_type == "Chi2TimeFrequencyLikelihood":
             Likelihood = Chi2TimeFrequencyLikelihood
@@ -111,7 +115,7 @@ class Input(BilbyInput):
         logger.debug(
             f"Initialise likelihood {Likelihood} with kwargs: \n{likelihood_kwargs}"
         )
-        likelihood = Likelihood(**likelihood_kwargs)        
+        likelihood = Likelihood(**likelihood_kwargs)
 
         # If requested, use a zero likelihood: for testing purposes
         if self.likelihood_type == "zero":
@@ -119,7 +123,7 @@ class Input(BilbyInput):
             likelihood = ZeroLikelihood(likelihood)
 
         return likelihood
-    
+
     @property
     def combined_default_prior_dicts(self):
         d = nullpol_prior.__dict__.copy()
@@ -136,7 +140,7 @@ class Input(BilbyInput):
     @property
     def polarization_modes(self):
         return getattr(self, '_polarization_modes', None)
-    
+
     @polarization_modes.setter
     def polarization_modes(self, modes):
         if modes is None:
@@ -182,7 +186,7 @@ class Input(BilbyInput):
             logger.debug(f"wavelet_nx set to {wavelet_nx}")
         else:
             self._wavelet_nx = 4.
-            logger.debug(f"wavelet_nx set to default value of 4.")               
+            logger.debug(f"wavelet_nx set to default value of 4.")
 
     @property
     def wavelet_frequency_resolution(self):

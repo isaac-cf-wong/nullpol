@@ -1,5 +1,9 @@
+from __future__ import annotations
+
 import unittest
+
 import numpy as np
+
 from nullpol.null_stream import compute_gw_projector_masked
 
 

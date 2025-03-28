@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from bilby_pipe.bilbyargparser import BilbyConfigFileParser
 
 
@@ -15,6 +17,6 @@ def read_config(filename: str) -> tuple[dict, dict, dict, dict]:
             - dict: Inline comments.
     """
     parser = BilbyConfigFileParser
-    with open(filename, 'r') as f:
+    with open(filename) as f:
         items, numbers, comments, inline_comments = parser.parse(f)
     return items, numbers, comments, inline_comments

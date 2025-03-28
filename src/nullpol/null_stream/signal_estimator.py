@@ -1,5 +1,8 @@
-from numba import njit
+from __future__ import annotations
+
 import numpy as np
+from numba import njit
+
 from .projector import compute_gw_projector_masked
 
 

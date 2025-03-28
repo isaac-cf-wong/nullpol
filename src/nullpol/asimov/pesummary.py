@@ -1,8 +1,10 @@
-from asimov.pipeline import PostPipeline
+from __future__ import annotations
+
 import os
-from asimov import utils
-from asimov import config
+
 import htcondor
+from asimov import config, utils
+from asimov.pipeline import PostPipeline
 
 
 class PESummaryPipeline(PostPipeline):
@@ -177,7 +179,7 @@ class PESummaryPipeline(PostPipeline):
                     htcondor.DaemonTypes.Schedd, config.get("condor", "scheduler")
                 )
                 schedd = htcondor.Schedd(schedulers)
-            except:  # NoQA
+            except:
                 # If you can't find a specified scheduler, use the first one you find
                 schedd = htcondor.Schedd()
             with schedd.transaction() as txn:

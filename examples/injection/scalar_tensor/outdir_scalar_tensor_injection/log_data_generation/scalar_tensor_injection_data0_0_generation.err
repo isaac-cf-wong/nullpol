@@ -5,7 +5,7 @@
 02:46 bilby_pipe INFO    : Unknown command line arguments: []
 02:46 nullpol INFO    : Generation seed set to 146878
 02:46 bilby_pipe INFO    : PSD duration set to 128.0s, 32x the duration 4.0s
-02:46 nullpol INFO    : Injecting waveform with 
+02:46 nullpol INFO    : Injecting waveform with
 02:46 nullpol INFO    : minimum_frequency = 20.0
 02:46 nullpol INFO    : maximum_frequency = 2048.0
 02:46 nullpol INFO    : trigger_time = 0.0
@@ -180,7 +180,13 @@ Unused waveform_kwargs: {'numerical_relativity_file': None}
 02:46 bilby INFO    :   amp_x = 0.0
 02:46 bilby INFO    :   amp_y = 0.0
 02:46 bilby INFO    :   geocent_time = -0.087972268439697
-Generating energy map:   0%|          | 0/100 [00:00<?, ?it/s]Generating energy map:   1%|          | 1/100 [00:00<01:02,  1.59it/s]Generating energy map:  30%|███       | 30/100 [00:00<00:01, 54.63it/s]Generating energy map:  59%|█████▉    | 59/100 [00:00<00:00, 103.19it/s]Generating energy map:  88%|████████▊ | 88/100 [00:00<00:00, 145.22it/s]Generating energy map: 100%|██████████| 100/100 [00:00<00:00, 102.16it/s]
+
+Generating energy map:   0%|          | 0/100 [00:00<?, ?it/s]
+Generating energy map:   1%|          | 1/100 [00:00<01:02,  1.59it/s]
+Generating energy map:  30%|███       | 30/100 [00:00<00:01, 54.63it/s]
+Generating energy map:  59%|█████▉    | 59/100 [00:00<00:00, 103.19it/s]
+Generating energy map:  88%|████████▊ | 88/100 [00:00<00:00, 145.22it/s]
+Generating energy map: 100%|██████████| 100/100 [00:00<00:00, 102.16it/s]
 02:46 nullpol INFO    : Saved plot of time-frequency filter spectrogram to outdir_scalar_tensor_injection/data/scalar_tensor_injection_data0_0_generation_time_frequency_filter_spectrogram.png.
 02:47 nullpol INFO    : Saved plot of sky-maximized spectrogram to outdir_scalar_tensor_injection/data/scalar_tensor_injection_data0_0_generation_sky_maximized_spectrogram.png.
 02:47 nullpol INFO    : No prior given, using default polarization priors in /home/chun-fung.wong/.conda/envs/nullpol-3.10/lib/python3.10/site-packages/nullpol/prior/prior_files/polarization.prior.

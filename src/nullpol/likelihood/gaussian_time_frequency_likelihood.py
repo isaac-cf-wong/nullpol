@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import numpy as np
-from .time_frequency_likelihood import TimeFrequencyLikelihood
+
 from ..time_frequency_transform import transform_wavelet_freq
+from .time_frequency_likelihood import TimeFrequencyLikelihood
 
 
 class GaussianTimeFrequencyLikelihood(TimeFrequencyLikelihood):
@@ -24,7 +27,7 @@ class GaussianTimeFrequencyLikelihood(TimeFrequencyLikelihood):
                  time_frequency_filter=None,
                  priors=None,
                  *args, **kwargs):
-        super(GaussianTimeFrequencyLikelihood, self).__init__(
+        super().__init__(
             interferometers=interferometers,
             wavelet_frequency_resolution=wavelet_frequency_resolution,
             wavelet_nx=wavelet_nx,
@@ -39,7 +42,7 @@ class GaussianTimeFrequencyLikelihood(TimeFrequencyLikelihood):
         s_est = self.estimate_wavelet_domain_signal_at_geocenter()
         d_wavelet = self.compute_cached_wavelet_domain_strain_array_at_geocenter()
 
-        # Substract the estimated signal from the strain data to obtain the null stream
+        # Subtract the estimated signal from the strain data to obtain the null stream
         d_null = d_wavelet - s_est
         return d_null
 

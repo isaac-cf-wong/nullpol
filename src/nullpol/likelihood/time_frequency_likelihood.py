@@ -1,16 +1,19 @@
-import numpy as np
+from __future__ import annotations
+
 import bilby
+import numpy as np
 from bilby.core.likelihood import Likelihood
-from ..detector import (compute_whitened_frequency_domain_strain_array,
-                        compute_whitened_antenna_pattern_matrix_masked)
-from ..null_stream import (encode_polarization,
+
+from ..calibration import compute_calibrated_whitened_antenna_pattern_matrix
+from ..detector import (compute_whitened_antenna_pattern_matrix_masked,
+                        compute_whitened_frequency_domain_strain_array)
+from ..null_stream import (compute_time_shifted_frequency_domain_strain_array,
+                           encode_polarization,
+                           estimate_frequency_domain_signal_at_geocenter,
                            get_antenna_pattern_matrix,
                            get_collapsed_antenna_pattern_matrix,
-                           relative_amplification_factor_map,
                            relative_amplification_factor_helper,
-                           compute_time_shifted_frequency_domain_strain_array,
-                           estimate_frequency_domain_signal_at_geocenter)
-from ..calibration import compute_calibrated_whitened_antenna_pattern_matrix
+                           relative_amplification_factor_map)
 from ..time_frequency_transform import (get_shape_of_wavelet_transform,
                                         transform_wavelet_freq)
 
@@ -36,7 +39,7 @@ class TimeFrequencyLikelihood(Likelihood):
                  time_frequency_filter=None,
                  priors=None,
                  *args, **kwargs):
-        super(TimeFrequencyLikelihood, self).__init__(dict())
+        super().__init__(dict())
 
         # Load the interferometers.
         self._interferometers = bilby.gw.detector.networks.InterferometerList(interferometers)

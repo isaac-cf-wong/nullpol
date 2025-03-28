@@ -1,15 +1,18 @@
 # from bilby_tgr.asimov.tgrflow import Applicator as BilbyTGRApplicator
 # from bilby_tgr.asimov.tgrflow import Collector as BilbyTGRCollector
-import cbcflow
-from asimov.event import Event
-from asimov import config
-import os
+from __future__ import annotations
+
 import glob
+import os
 import shutil
-from .utility import (fill_in_pol_specific_metadata,
-                      bilby_config_to_asimov,
-                      deep_update)
+
+import cbcflow
+from asimov import config
+from asimov.event import Event
+
 from ..utils import logger
+from .utility import (bilby_config_to_asimov, deep_update,
+                      fill_in_pol_specific_metadata)
 
 
 class Collector:

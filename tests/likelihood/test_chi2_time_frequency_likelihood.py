@@ -1,15 +1,19 @@
+from __future__ import annotations
+
 import bilby
+from bilby.core.utils import logger
 from bilby.gw.detector import InterferometerList
 from bilby.gw.source import lal_binary_black_hole
-from bilby.core.utils import logger
+
 logger.setLevel('CRITICAL')
 import numpy as np
-from tqdm import tqdm
 import scipy.stats
-from nullpol.injection import create_injection
-from nullpol.clustering import run_time_frequency_clustering
-from nullpol.likelihood.chi2_time_frequency_likelihood import Chi2TimeFrequencyLikelihood
+from tqdm import tqdm
 
+from nullpol.clustering import run_time_frequency_clustering
+from nullpol.injection import create_injection
+from nullpol.likelihood.chi2_time_frequency_likelihood import \
+    Chi2TimeFrequencyLikelihood
 
 seed = 12
 # Set the seed

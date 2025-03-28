@@ -1,5 +1,8 @@
-from gwpy.spectrogram import Spectrogram
+from __future__ import annotations
+
 import matplotlib.pyplot as plt
+from gwpy.spectrogram import Spectrogram
+
 from ..time_frequency_transform import get_shape_of_wavelet_transform
 
 
