@@ -11,11 +11,13 @@ from . import result
 from . import source
 from . import time_frequency_transform
 from . import utils
-from ._version import __version__
 from .utils import logger
 
 
-def get_version_information():
+__version__ = '1.0.0'
+
+
+def get_version_information() -> str:
     """Get version information.
 
     Returns:
@@ -28,3 +30,23 @@ def log_version_information():
     """Log version information.
     """
     logger.info(f"Running nullpol: {__version__}")
+
+
+__all__ = [
+    'asimov',
+    'calibration',
+    'clustering',
+    'detector',
+    'injection',
+    'job_creation',
+    'likelihood',
+    'null_stream',
+    'prior',
+    'result',
+    'source',
+    'time_frequency_transform',
+    'utils',
+    '__version__',
+    'get_version_information',
+    'log_version_information',
+]

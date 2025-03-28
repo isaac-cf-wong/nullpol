@@ -1,0 +1,994 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+
+<style>
+
+body {
+    padding-bottom: 50px;
+}
+
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+
+tr:nth-child(even) {
+    background-color: #dddddd;
+}
+
+.accordion {
+    background-color: #eee;
+    color: #444;
+    cursor: pointer;
+    padding: 2px;
+    width: 100%;
+    text-align: left;
+    border: none;
+    outline: none;
+    transition: 0.4s;
+}
+
+.active, .accordion:hover {
+    background-color: #ccc;
+}
+
+.panel {
+    padding: 0 8px;
+    background-color: white;
+    display: none;
+}
+
+.alignleft {
+        float: left;
+}
+.alignright {
+        float: right;
+}
+</style>
+
+<div class="container">
+<h1> Overview page for label: scalar_tensor_injection </h1>
+</div>
+
+<div class="container">
+<h2> Setup </h2>
+
+<button class="accordion"> <b>Configuration file:</b> /home/chun-fung.wong/projects/bantam/src/nullpol/examples/injection/scalar_tensor/scalar_tensor_injection.ini </button>
+<div class="panel">
+<table style="width:100%">
+
+<tr>
+    <th scope="row"> ini </th>
+   <td> /home/chun-fung.wong/projects/bantam/src/nullpol/examples/injection/scalar_tensor/scalar_tensor_injection.ini </td>
+</tr>
+
+<tr>
+    <th scope="row"> verbose </th>
+   <td> False </td>
+</tr>
+
+<tr>
+    <th scope="row"> calibration_model </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> spline_calibration_envelope_dict </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> spline_calibration_nodes </th>
+   <td> 10 </td>
+</tr>
+
+<tr>
+    <th scope="row"> spline_calibration_amplitude_uncertainty_dict </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> spline_calibration_phase_uncertainty_dict </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> calibration_prior_boundary </th>
+   <td> reflective </td>
+</tr>
+
+<tr>
+    <th scope="row"> ignore_gwpy_data_quality_check </th>
+   <td> True </td>
+</tr>
+
+<tr>
+    <th scope="row"> gps_tuple </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> gps_file </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> timeslide_file </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> timeslide_dict </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> trigger_time </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> n_simulation </th>
+   <td> 1 </td>
+</tr>
+
+<tr>
+    <th scope="row"> data_dict </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> data_format </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> allow_tape </th>
+   <td> True </td>
+</tr>
+
+<tr>
+    <th scope="row"> channel_dict </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> frame_type_dict </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> data_find_url </th>
+   <td> https://datafind.igwn.org </td>
+</tr>
+
+<tr>
+    <th scope="row"> data_find_urltype </th>
+   <td> osdf </td>
+</tr>
+
+<tr>
+    <th scope="row"> gaussian_noise </th>
+   <td> True </td>
+</tr>
+
+<tr>
+    <th scope="row"> zero_noise </th>
+   <td> False </td>
+</tr>
+
+<tr>
+    <th scope="row"> detectors </th>
+   <td> [H1, L1, V1] </td>
+</tr>
+
+<tr>
+    <th scope="row"> duration </th>
+   <td> 4.0 </td>
+</tr>
+
+<tr>
+    <th scope="row"> generation_seed </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> psd_dict </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> psd_fractional_overlap </th>
+   <td> 0.5 </td>
+</tr>
+
+<tr>
+    <th scope="row"> post_trigger_duration </th>
+   <td> 2.0 </td>
+</tr>
+
+<tr>
+    <th scope="row"> sampling_frequency </th>
+   <td> 4096 </td>
+</tr>
+
+<tr>
+    <th scope="row"> psd_length </th>
+   <td> 32 </td>
+</tr>
+
+<tr>
+    <th scope="row"> psd_maximum_duration </th>
+   <td> 1024 </td>
+</tr>
+
+<tr>
+    <th scope="row"> psd_method </th>
+   <td> median </td>
+</tr>
+
+<tr>
+    <th scope="row"> psd_start_time </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> maximum_frequency </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> minimum_frequency </th>
+   <td> 20 </td>
+</tr>
+
+<tr>
+    <th scope="row"> tukey_roll_off </th>
+   <td> 0.4 </td>
+</tr>
+
+<tr>
+    <th scope="row"> resampling_method </th>
+   <td> lal </td>
+</tr>
+
+<tr>
+    <th scope="row"> injection </th>
+   <td> True </td>
+</tr>
+
+<tr>
+    <th scope="row"> injection_dict </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> injection_file </th>
+   <td> /home/chun-fung.wong/projects/bantam/src/nullpol/examples/injection/scalar_tensor/injections.json </td>
+</tr>
+
+<tr>
+    <th scope="row"> injection_numbers </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> injection_waveform_approximant </th>
+   <td> IMRPhenomPv2 </td>
+</tr>
+
+<tr>
+    <th scope="row"> injection_frequency_domain_source_model </th>
+   <td> nullpol.source.lal_binary_black_hole_non_gr_simple_map </td>
+</tr>
+
+<tr>
+    <th scope="row"> injection_waveform_arguments </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> accounting </th>
+   <td> ligo.sim.o4.cbc.testgr.tiger </td>
+</tr>
+
+<tr>
+    <th scope="row"> accounting_user </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> label </th>
+   <td> scalar_tensor_injection </td>
+</tr>
+
+<tr>
+    <th scope="row"> local </th>
+   <td> False </td>
+</tr>
+
+<tr>
+    <th scope="row"> local_generation </th>
+   <td> False </td>
+</tr>
+
+<tr>
+    <th scope="row"> generation_pool </th>
+   <td> local-pool </td>
+</tr>
+
+<tr>
+    <th scope="row"> local_plot </th>
+   <td> False </td>
+</tr>
+
+<tr>
+    <th scope="row"> outdir </th>
+   <td> /home/chun-fung.wong/projects/bantam/src/nullpol/examples/injection/scalar_tensor/outdir_scalar_tensor_injection </td>
+</tr>
+
+<tr>
+    <th scope="row"> overwrite_outdir </th>
+   <td> False </td>
+</tr>
+
+<tr>
+    <th scope="row"> periodic_restart_time </th>
+   <td> 28800 </td>
+</tr>
+
+<tr>
+    <th scope="row"> request_disk </th>
+   <td> 5 </td>
+</tr>
+
+<tr>
+    <th scope="row"> request_memory </th>
+   <td> 8.0 </td>
+</tr>
+
+<tr>
+    <th scope="row"> request_memory_generation </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> request_cpus </th>
+   <td> 4 </td>
+</tr>
+
+<tr>
+    <th scope="row"> conda_env </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> scheduler </th>
+   <td> condor </td>
+</tr>
+
+<tr>
+    <th scope="row"> scheduler_args </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> scheduler_module </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> scheduler_env </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> scheduler_analysis_time </th>
+   <td> 7-00:00:00 </td>
+</tr>
+
+<tr>
+    <th scope="row"> submit </th>
+   <td> False </td>
+</tr>
+
+<tr>
+    <th scope="row"> condor_job_priority </th>
+   <td> 0 </td>
+</tr>
+
+<tr>
+    <th scope="row"> transfer_files </th>
+   <td> True </td>
+</tr>
+
+<tr>
+    <th scope="row"> additional_transfer_paths </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> environment_variables </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> getenv </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> disable_hdf5_locking </th>
+   <td> False </td>
+</tr>
+
+<tr>
+    <th scope="row"> log_directory </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> osg </th>
+   <td> False </td>
+</tr>
+
+<tr>
+    <th scope="row"> desired_sites </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> analysis_executable </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> analysis_executable_parser </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> scitoken_issuer </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> calibration_marginalization </th>
+   <td> False </td>
+</tr>
+
+<tr>
+    <th scope="row"> reference_frame </th>
+   <td> sky </td>
+</tr>
+
+<tr>
+    <th scope="row"> time_reference </th>
+   <td> geocent </td>
+</tr>
+
+<tr>
+    <th scope="row"> calibration_lookup_table </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> number_of_response_curves </th>
+   <td> 1000 </td>
+</tr>
+
+<tr>
+    <th scope="row"> extra_likelihood_kwargs </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> plot_trace </th>
+   <td> False </td>
+</tr>
+
+<tr>
+    <th scope="row"> plot_data </th>
+   <td> False </td>
+</tr>
+
+<tr>
+    <th scope="row"> plot_injection </th>
+   <td> False </td>
+</tr>
+
+<tr>
+    <th scope="row"> plot_spectrogram </th>
+   <td> False </td>
+</tr>
+
+<tr>
+    <th scope="row"> plot_calibration </th>
+   <td> False </td>
+</tr>
+
+<tr>
+    <th scope="row"> plot_corner </th>
+   <td> False </td>
+</tr>
+
+<tr>
+    <th scope="row"> plot_marginal </th>
+   <td> False </td>
+</tr>
+
+<tr>
+    <th scope="row"> plot_skymap </th>
+   <td> False </td>
+</tr>
+
+<tr>
+    <th scope="row"> plot_waveform </th>
+   <td> False </td>
+</tr>
+
+<tr>
+    <th scope="row"> plot_format </th>
+   <td> png </td>
+</tr>
+
+<tr>
+    <th scope="row"> create_summary </th>
+   <td> False </td>
+</tr>
+
+<tr>
+    <th scope="row"> email </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> notification </th>
+   <td> Never </td>
+</tr>
+
+<tr>
+    <th scope="row"> queue </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> existing_dir </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> webdir </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> summarypages_arguments </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> result_format </th>
+   <td> hdf5 </td>
+</tr>
+
+<tr>
+    <th scope="row"> final_result </th>
+   <td> True </td>
+</tr>
+
+<tr>
+    <th scope="row"> final_result_nsamples </th>
+   <td> 20000 </td>
+</tr>
+
+<tr>
+    <th scope="row"> deltaT </th>
+   <td> 0.2 </td>
+</tr>
+
+<tr>
+    <th scope="row"> prior_file </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> prior_dict </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> enforce_signal_duration </th>
+   <td> True </td>
+</tr>
+
+<tr>
+    <th scope="row"> postprocessing_executable </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> postprocessing_arguments </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> single_postprocessing_executable </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> single_postprocessing_arguments </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> sampler </th>
+   <td> dynesty </td>
+</tr>
+
+<tr>
+    <th scope="row"> sampling_seed </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> n_parallel </th>
+   <td> 1 </td>
+</tr>
+
+<tr>
+    <th scope="row"> sampler_kwargs </th>
+   <td> {'nlive': 1000, 'naccept': 60, 'check_point_plot': True, 'check_point_delta_t': 1800, 'print_method': 'interval-60', 'sample': 'acceptance-walk', 'npool': 4} </td>
+</tr>
+
+<tr>
+    <th scope="row"> reweighting_configuration </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> reweight_nested_samples </th>
+   <td> True </td>
+</tr>
+
+<tr>
+    <th scope="row"> waveform_generator </th>
+   <td> bilby.gw.waveform_generator.LALCBCWaveformGenerator </td>
+</tr>
+
+<tr>
+    <th scope="row"> reference_frequency </th>
+   <td> 50.0 </td>
+</tr>
+
+<tr>
+    <th scope="row"> waveform_approximant </th>
+   <td> IMRPhenomPv2 </td>
+</tr>
+
+<tr>
+    <th scope="row"> catch_waveform_errors </th>
+   <td> True </td>
+</tr>
+
+<tr>
+    <th scope="row"> pn_spin_order </th>
+   <td> -1 </td>
+</tr>
+
+<tr>
+    <th scope="row"> pn_tidal_order </th>
+   <td> -1 </td>
+</tr>
+
+<tr>
+    <th scope="row"> pn_phase_order </th>
+   <td> -1 </td>
+</tr>
+
+<tr>
+    <th scope="row"> pn_amplitude_order </th>
+   <td> 0 </td>
+</tr>
+
+<tr>
+    <th scope="row"> numerical_relativity_file </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> waveform_arguments_dict </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> mode_array </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> frequency_domain_source_model </th>
+   <td> lal_binary_black_hole </td>
+</tr>
+
+<tr>
+    <th scope="row"> conversion_function </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> generation_function </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> likelihood_type </th>
+   <td> Chi2TimeFrequencyLikelihood </td>
+</tr>
+
+<tr>
+    <th scope="row"> calibration_psd_lookup_table </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> polarization_modes </th>
+   <td> pc </td>
+</tr>
+
+<tr>
+    <th scope="row"> polarization_basis </th>
+   <td> pc </td>
+</tr>
+
+<tr>
+    <th scope="row"> wavelet_frequency_resolution </th>
+   <td> 32.0 </td>
+</tr>
+
+<tr>
+    <th scope="row"> wavelet_nx </th>
+   <td> 4.0 </td>
+</tr>
+
+<tr>
+    <th scope="row"> simulate_psd_nsample </th>
+   <td> 10 </td>
+</tr>
+
+<tr>
+    <th scope="row"> default_prior </th>
+   <td> PolarizationPriorDict </td>
+</tr>
+
+<tr>
+    <th scope="row"> calibration_correction_type </th>
+   <td> data </td>
+</tr>
+
+<tr>
+    <th scope="row"> time_frequency_clustering_method </th>
+   <td> injection </td>
+</tr>
+
+<tr>
+    <th scope="row"> time_frequency_clustering_injection_parameters_filename </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> time_frequency_clustering_pe_samples_filename </th>
+   <td> None </td>
+</tr>
+
+<tr>
+    <th scope="row"> time_frequency_clustering_threshold </th>
+   <td> 0.95 </td>
+</tr>
+
+<tr>
+    <th scope="row"> time_frequency_clustering_time_padding </th>
+   <td> 0.1 </td>
+</tr>
+
+<tr>
+    <th scope="row"> time_frequency_clustering_frequency_padding </th>
+   <td> 1.0 </td>
+</tr>
+
+<tr>
+    <th scope="row"> time_frequency_clustering_skypoints </th>
+   <td> 100 </td>
+</tr>
+
+</table>
+</div>
+
+<button class="accordion"> <b>Prior file:</b> Specified in INI </button>
+<div class="panel">
+<table style="width:100%">
+
+<tr>
+    <th scope="row"> dec </th>
+   <td> Cosine(minimum=-1.5707963267948966, maximum=1.5707963267948966, name='dec', latex_label='$\\mathrm{DEC}$', unit=None, boundary=None) </td>
+</tr>
+
+<tr>
+    <th scope="row"> ra </th>
+   <td> Uniform(minimum=0, maximum=6.283185307179586, name='ra', latex_label='$\\mathrm{RA}$', unit=None, boundary='periodic') </td>
+</tr>
+
+<tr>
+    <th scope="row"> psi </th>
+   <td> Uniform(minimum=0, maximum=3.141592653589793, name='psi', latex_label='$\\psi$', unit=None, boundary='periodic') </td>
+</tr>
+
+<tr>
+    <th scope="row"> geocent_time </th>
+   <td> Uniform(minimum=-0.1, maximum=0.1, name='geocent_time', latex_label='$t_c$', unit='$s$', boundary=None) </td>
+</tr>
+
+</table>
+</div>
+
+
+<button class="accordion"> <b>Injection-waveform:</b> IMRPhenomPv2,
+<b>File:</b> /home/chun-fung.wong/projects/bantam/src/nullpol/examples/injection/scalar_tensor/injections.json </button>
+<div class="panel">
+<table style="width:100%">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>mass_1</th>
+      <th>mass_2</th>
+      <th>a_1</th>
+      <th>a_2</th>
+      <th>tilt_1</th>
+      <th>tilt_2</th>
+      <th>phi_12</th>
+      <th>phi_jl</th>
+      <th>luminosity_distance</th>
+      <th>dec</th>
+      <th>ra</th>
+      <th>theta_jn</th>
+      <th>psi</th>
+      <th>phase</th>
+      <th>amp_p</th>
+      <th>amp_c</th>
+      <th>amp_b</th>
+      <th>amp_l</th>
+      <th>amp_x</th>
+      <th>amp_y</th>
+      <th>geocent_time</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>78.368984</td>
+      <td>36.613701</td>
+      <td>0.914014</td>
+      <td>0.259075</td>
+      <td>1.200592</td>
+      <td>0.701589</td>
+      <td>1.519062</td>
+      <td>2.001408</td>
+      <td>1975.760617</td>
+      <td>-0.492353</td>
+      <td>2.770923</td>
+      <td>1.792346</td>
+      <td>2.713146</td>
+      <td>5.42715</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.735758</td>
+      <td>0.222754</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>-0.087972</td>
+    </tr>
+  </tbody>
+</table>
+</table>
+
+
+</div>
+</div>
+
+
+<div class="container">
+<h2> Data: scalar_tensor_injection_data0_0_generation </h2>
+
+<button class="accordion"> <b>Log file</b>:
+../log_data_generation/scalar_tensor_injection_data0_0_generation.err </button>
+<div class="panel">
+<object data="../log_data_generation/scalar_tensor_injection_data0_0_generation.err" width=100% height="200">
+N/A
+</object>
+</div>
+
+
+</div>
+
+
+
+<div class="container">
+<h2> Parallel Analysis: scalar_tensor_injection_data0_0_analysis_H1L1V1 </h2>
+
+
+
+<button class="accordion"> <b>Log file</b>:
+../log_data_analysis/scalar_tensor_injection_data0_0_analysis_H1L1V1.err </button>
+<div class="panel">
+<object data="../log_data_analysis/scalar_tensor_injection_data0_0_analysis_H1L1V1.err" width=100% height="200">
+N/A
+</object>
+</div>
+
+<button class="accordion"> <b>Output file</b>:
+../log_data_analysis/scalar_tensor_injection_data0_0_analysis_H1L1V1.out </button>
+<div class="panel">
+<object data="../log_data_analysis/scalar_tensor_injection_data0_0_analysis_H1L1V1.out" width=100% height="200">
+N/A
+</object>
+</div>
+
+</div>
+
+
+<div class="container">
+<h2> Other log files: </h2>
+
+
+<button class="accordion"> <b>Log file</b>:
+../log_data_analysis/scalar_tensor_injection_data0_0_analysis_H1L1V1.err </button>
+<div class="panel">
+<object data="../log_data_analysis/scalar_tensor_injection_data0_0_analysis_H1L1V1.err" width=100% height="200">
+N/A
+</object>
+</div>
+
+
+
+
+</div>
+
+<div class="container">
+<h2> Bilby results:
+<a href="../result"> /home/chun-fung.wong/projects/bantam/src/nullpol/examples/injection/scalar_tensor/outdir_scalar_tensor_injection/result </a>
+ </h2>
+ </div>
+
+
+
+<script>
+var acc = document.getElementsByClassName("accordion");
+var i;
+
+for (i = 0; i < acc.length; i++) {
+    acc[i].addEventListener("click", function() {
+        this.classList.toggle("active");
+        var panel = this.nextElementSibling;
+        if (panel.style.display === "block") {
+            panel.style.display = "none";
+        } else {
+            panel.style.display = "block";
+        }
+    });
+}
+</script>
