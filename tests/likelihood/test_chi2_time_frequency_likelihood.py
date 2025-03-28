@@ -26,7 +26,7 @@ start_time = geocent_time - 4
 wavelet_frequency_resolution = 16
 wavelet_nx = 4.
 minimum_frequency = 20
-maximum_frequency = self.sampling_frequency / 2
+maximum_frequency = sampling_frequency / 2
 threshold = 1.
 time_padding = 0.1
 frequency_padding = 1
@@ -57,10 +57,10 @@ def create_time_frequency_filter():
     waveform_arguments = dict(waveform_approximant='IMRPhenomPv2',
                                 reference_frequency=50)
     create_injection(interferometers=interferometers,
-                        parameters=self.parameters,
-                        duration=self.duration,
-                        sampling_frequency=self.sampling_frequency,
-                        start_time=self.start_time,
+                        parameters=parameters,
+                        duration=duration,
+                        sampling_frequency=sampling_frequency,
+                        start_time=start_time,
                         noise_type=noise_type,
                         frequency_domain_source_model=freuency_domain_source_model,
                         waveform_arguments=waveform_arguments)
@@ -83,7 +83,7 @@ def create_time_frequency_filter():
     plt.savefig('spectrogram.png')
     return time_frequency_filter
 
-time_frequency_filter = create_time_frequency_filter
+time_frequency_filter = create_time_frequency_filter()
 
 
 def test_noise_residual_energy():
