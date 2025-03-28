@@ -8,7 +8,7 @@ from bilby_pipe.bilbyargparser import BilbyArgParser, HyphenStr
 from bilby_pipe.parser import create_parser
 from bilby_pipe.utils import nonestr
 
-from .._version import __version__
+from .. import __version__
 from ..utils import logger
 
 bilby_pipe.utils.logger = logger
