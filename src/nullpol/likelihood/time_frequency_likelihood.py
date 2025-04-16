@@ -16,6 +16,7 @@ from ..null_stream import (compute_time_shifted_frequency_domain_strain_array,
                            relative_amplification_factor_map)
 from ..time_frequency_transform import (get_shape_of_wavelet_transform,
                                         transform_wavelet_freq)
+from ..utils import NullpolError, logger
 
 
 class TimeFrequencyLikelihood(Likelihood):
@@ -53,6 +54,9 @@ class TimeFrequencyLikelihood(Likelihood):
         self._frequency_domain_strain_array = np.array([ifo.frequency_domain_strain for ifo in self.interferometers])
         self._frequency_array = self.interferometers[0].frequency_array.copy()
         self._frequency_mask = np.logical_and.reduce([ifo.frequency_mask for ifo in self.interferometers])
+        if self._frequency_mask[-1]:
+            self._frequency_mask[-1] = False
+            logger.warning("The frequency mask at the Nyquist frequency is not False. It is set to be False.")
         self._masked_frequency_array = self._frequency_array[self._frequency_mask]
         self._filtered_frequency_mask = None
         self._filtered_masked_frequency_array = None
@@ -68,6 +72,10 @@ class TimeFrequencyLikelihood(Likelihood):
         # Encode the polarization labels
         self._polarization_modes, self._polarization_basis, self._polarization_derived = \
             encode_polarization(polarization_modes, polarization_basis)
+
+        # Check whether the number of detectors is greater than the number of polarization bases.
+        if len(self._interferometers) <= np.sum(self._polarization_basis):
+            raise NullpolError(f'Number of detectors = {len(self._interferometers)} has to be greater than the number of polarization bases = {np.sum(self._polarization_basis)}.')
 
         # Collapse the polarization encoding
         self._polarization_basis_collapsed = np.array([self.polarization_basis[i] for i in range(len(self.polarization_modes)) if self.polarization_modes[i]]).astype(bool)
