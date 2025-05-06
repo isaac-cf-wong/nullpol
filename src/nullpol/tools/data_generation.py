@@ -278,10 +278,16 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
                         "eos_v1"
                     ]
                     if any(key in parameters for key in remove_keys) or "lambda_1" in parameters or "lambda_2" in parameters:
+                        logger.info(f'Found tidal parameters: {",".join([key for key in ["lambda_1", "lambda_2"] if key in parameters]+[key for key in remove_keys if key in parameters])}')
+                        if 'lambda_1' not in parameters:
+                            raise NullpolError('lambda_1 and lambda_2 must be both provided. lambda_1 is missing.')
+                        if 'lambda_2' not in parameters:
+                            raise NullpolError('lambda_1 and lambda_2 must be both provided. lambda_2 is missing.')
                         logger.info(f"Removing tidal parameters except lambda_1 and lambda_2.")
                         for key in remove_keys:
                             if key in parameters:
                                 parameters.pop(key, None)
+                                logger.warning(f"Removing {key} except lambda_1 and lambda_2.")
                 # Generate the mock strain data from the parameters.
                 ## Generate a new interferometer list with the same detectors
                 logger.info("Generating zero-noise injection data")
