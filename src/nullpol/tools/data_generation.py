@@ -283,7 +283,6 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
                             raise NullpolError('lambda_1 and lambda_2 must be both provided. lambda_1 is missing.')
                         if 'lambda_2' not in parameters:
                             raise NullpolError('lambda_1 and lambda_2 must be both provided. lambda_2 is missing.')
-                        logger.info(f"Removing tidal parameters except lambda_1 and lambda_2.")
                         for key in remove_keys:
                             if key in parameters:
                                 parameters.pop(key, None)
