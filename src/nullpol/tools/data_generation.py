@@ -268,6 +268,20 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
                     # Remove log_likelihood and log_prior from parameters
                     parameters.pop("log_likelihood", None)
                     parameters.pop("log_prior", None)
+                    # Remove tidal parameters except lambda_1 and lambda_2
+                    remove_keys = [
+                        "lambda_tilde",
+                        "delta_lambda_tilde",
+                        "lambda_symmetric",
+                        "eos_polytrope_gamma_0",
+                        "eos_spectral_pca_gamma_0",
+                        "eos_v1"
+                    ]
+                    if any(key in parameters for key in remove_keys) or "lambda_1" in parameters or "lambda_2" in parameters:
+                        logger.info(f"Removing tidal parameters except lambda_1 and lambda_2.")
+                        for key in remove_keys:
+                            if key in parameters:
+                                parameters.pop(key, None)
                 # Generate the mock strain data from the parameters.
                 ## Generate a new interferometer list with the same detectors
                 logger.info("Generating zero-noise injection data")
