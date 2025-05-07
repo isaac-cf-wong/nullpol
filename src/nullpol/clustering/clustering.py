@@ -37,22 +37,22 @@ def run_time_frequency_clustering(interferometers,
     energy_filter = sky_maximized_spectrogram > energy_threshold
     if np.all(~energy_filter):
         logger.warning(f"No time-frequency pixel passes the energy threshold = {energy_threshold}.")
-        logger.warning("Switched to quantile threshold.")
-        energy_threshold = np.quantile(sky_maximized_spectrogram[sky_maximized_spectrogram>0.], threshold)
-        energy_filter = sky_maximized_spectrogram > energy_threshold
-    wavelet_Nt, wavelet_Nf = get_shape_of_wavelet_transform(
-        duration=interferometers[0].duration,
-        sampling_frequency=interferometers[0].sampling_frequency,
-        wavelet_frequency_resolution=wavelet_frequency_resolution)
-    dt = interferometers[0].duration / wavelet_Nt
-    output = clustering(energy_filter, dt, wavelet_frequency_resolution, padding_time=time_padding, padding_freq=frequency_padding)
-    # Clean the filter to ensure no leakage.
-    output = output.astype(np.float64)
-    freq_low_idx = int(np.ceil(interferometers[0].minimum_frequency / wavelet_frequency_resolution))
-    output[:, :freq_low_idx] = 0.
+        logger.warning("Returning an empty cluster filter.")
+        output = energy_filter.astype(np.float64)
+    else:
+        wavelet_Nt, wavelet_Nf = get_shape_of_wavelet_transform(
+            duration=interferometers[0].duration,
+            sampling_frequency=interferometers[0].sampling_frequency,
+            wavelet_frequency_resolution=wavelet_frequency_resolution)
+        dt = interferometers[0].duration / wavelet_Nt
+        output = clustering(energy_filter, dt, wavelet_frequency_resolution, padding_time=time_padding, padding_freq=frequency_padding)
+        # Clean the filter to ensure no leakage.
+        output = output.astype(np.float64)
+        freq_low_idx = int(np.ceil(interferometers[0].minimum_frequency / wavelet_frequency_resolution))
+        output[:, :freq_low_idx] = 0.
 
-    freq_high_idx = int(np.floor(interferometers[0].maximum_frequency / wavelet_frequency_resolution))
-    output[:, freq_high_idx:] = 0.
+        freq_high_idx = int(np.floor(interferometers[0].maximum_frequency / wavelet_frequency_resolution))
+        output[:, freq_high_idx:] = 0.
 
     if return_sky_maximized_spectrogram:
         return output, sky_maximized_spectrogram

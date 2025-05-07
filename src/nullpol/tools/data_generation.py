@@ -13,7 +13,9 @@ from bilby_pipe.main import parse_args
 from bilby_pipe.utils import DataDump, convert_string_to_dict
 
 from .. import __version__, log_version_information
-from ..clustering import compute_sky_maximized_spectrogram, plot_spectrogram
+from ..clustering import (compute_sky_maximized_spectrogram,
+                          plot_reverse_cumulative_distribution,
+                          plot_spectrogram)
 from ..clustering import \
     run_time_frequency_clustering as _run_time_frequency_clustering
 from ..utils import NullpolError, is_file, logger
@@ -331,6 +333,14 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
                     skypoints=self.time_frequency_clustering_skypoints,
                     return_sky_maximized_spectrogram=True,
                     threshold_type=self.time_frequency_clustering_threshold_type)
+            # Generate the cumulative distribution of the spectrogram.
+            reversed_cumulative_distribution_fig_fname = f"{self.data_directory}/{self.label}_reversed_cumulative_distribution_of_whitened_energy_pixels.png"
+            plot_reverse_cumulative_distribution(spectrogram=sky_maximized_spectrogram,
+                                                 bins=25,
+                                                 title='Reversed cumulative distribution of whitened energy pixels',
+                                                 savefig=reversed_cumulative_distribution_fig_fname)
+            if np.sum(time_frequency_filter) == 0:
+                raise NullpolError("The time_frequency_filter is empty. Terminating...")
         elif is_file(self.time_frequency_clustering_method):
             time_frequency_filter = np.load(self.time_frequency_clustering_method)
             sky_maximized_spectrogram = None
