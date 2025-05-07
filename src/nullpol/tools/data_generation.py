@@ -340,6 +340,18 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
                                                  title='Reversed cumulative distribution of whitened energy pixels',
                                                  savefig=reversed_cumulative_distribution_fig_fname)
             if np.sum(time_frequency_filter) == 0:
+                # Generate the plot for diagnostics.
+                spectrogram_fig_fname = f"{self.data_directory}/{self.label}_sky_maximized_spectrogram.png"
+                plot_spectrogram(spectrogram=sky_maximized_spectrogram,
+                                 duration=self.interferometers[0].duration,
+                                 sampling_frequency=self.interferometers[0].sampling_frequency,
+                                 wavelet_frequency_resolution=self.wavelet_frequency_resolution,
+                                 frequency_range=(self.minimum_frequency, self.maximum_frequency),
+                                 t0=self.start_time,
+                                 title="Sky-maximized Spectrogram",
+                                 savefig=spectrogram_fig_fname,
+                                 dpi=100)
+                logger.info(f"Saved plot of sky-maximized spectrogram to {spectrogram_fig_fname}.")
                 raise NullpolError("The time_frequency_filter is empty. Terminating...")
         elif is_file(self.time_frequency_clustering_method):
             time_frequency_filter = np.load(self.time_frequency_clustering_method)
