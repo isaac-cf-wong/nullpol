@@ -169,10 +169,8 @@ class DataAnalysisInput(BInput, Input):
         priors. Note, care must be taken to use the "search_priors" which differ
         from the true prior when using marginalization
 
-        Returns
-        -------
-        likelihood, priors
-            The bilby likelihood and priors
+        Returns:
+            tuple: The bilby likelihood and priors
         """
 
         priors = self.data_dump.priors_class(self.data_dump.priors_dict)

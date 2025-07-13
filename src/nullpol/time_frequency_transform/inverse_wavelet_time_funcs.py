@@ -6,20 +6,14 @@ from numba import njit
 
 
 def inverse_wavelet_time_helper_fast(wave_in,phi,Nf,Nt,mult):
-    """Helper loop fort fast inverse wavelet transform.
+    """Helper loop for fast inverse wavelet transform.
 
-    Parameters
-    ----------
-    wave_in: 2D numpy array
-        Input data in wavelet domain.
-    phi: 1D numpy array
-        Wavelet.
-    Nf: int
-        Number of frequency bins.
-    Nt: int
-        Number of time bins.
-    mult: int
-        mult.
+    Args:
+        wave_in (numpy.ndarray): 2D numpy array of input data in wavelet domain.
+        phi (numpy.ndarray): 1D numpy array representing the wavelet.
+        Nf (int): Number of frequency bins.
+        Nt (int): Number of time bins.
+        mult (int): Multiplier value.
     """
     ND = Nf*Nt
     K = mult*2*Nf
@@ -57,22 +51,14 @@ def inverse_wavelet_time_helper_fast(wave_in,phi,Nf,Nt,mult):
 def unpack_time_wave_helper(n,Nf,Nt,K,phis,fft_fin_real,res):
     """Helper for time domain wavelet transform to unpack wavelet domain coefficients.
 
-    Parameters
-    ----------
-    n: int
-        Time index.
-    Nf: int
-        Number of frequency bins.
-    Nt: int
-        Number of time bins.
-    K: int
-        Frequency cutoff.
-    phis: 1D numpy array
-        Wavelet.
-    fft_fin_real: 1D numpy array
-        fft_fin_real.
-    res: 1D numpy array
-        Result.
+    Args:
+        n (int): Time index.
+        Nf (int): Number of frequency bins.
+        Nt (int): Number of time bins.
+        K (int): Frequency cutoff.
+        phis (numpy.ndarray): 1D numpy array representing the wavelet.
+        fft_fin_real (numpy.ndarray): 1D numpy array of real FFT results.
+        res (numpy.ndarray): 1D numpy array for the result.
     """
     ND = Nf*Nt
 
@@ -92,25 +78,18 @@ def unpack_time_wave_helper(n,Nf,Nt,K,phis,fft_fin_real,res):
 
 @njit
 def unpack_time_wave_helper_compact(n,Nf,Nt,K,phis,fft_fin,res):
-    """Helper for time domain wavelet transform to unpack wavelet domain coefficients
-    in compact representation where cosine and sine parts are real and imaginary parts.
+    """Helper for time domain wavelet transform to unpack wavelet domain coefficients in compact representation.
 
-    Parameters
-    ----------
-    n: int
-        Time index.
-    Nf: int
-        Number of frequency bins.
-    Nt: int
-        Number of time bins.
-    K: int
-        Frequency cutoff.
-    phis: 1D numpy array
-        Wavelet.
-    fft_fin: 1D numpy array
-        fft_fin.
-    res: 1D numpy array
-        Result.
+    In this representation, cosine and sine parts are stored as real and imaginary parts.
+
+    Args:
+        n (int): Time index.
+        Nf (int): Number of frequency bins.
+        Nt (int): Number of time bins.
+        K (int): Frequency cutoff.
+        phis (numpy.ndarray): 1D numpy array representing the wavelet.
+        fft_fin (numpy.ndarray): 1D numpy array of FFT results.
+        res (numpy.ndarray): 1D numpy array for the result.
     """
     ND = Nf*Nt
     fft_fin_real = np.zeros(4*Nf)
@@ -160,18 +139,12 @@ def unpack_time_wave_helper_compact(n,Nf,Nt,K,phis,fft_fin,res):
 def pack_wave_time_helper(n,Nf,Nt,wave_in,afins):
     """Helper for time domain transform to pack wavelet domain coefficients.
 
-    Parameters
-    ----------
-    n: int
-        Time index.
-    Nf: int
-        Number of frequency bins.
-    Nt: int
-        Number of time bins.
-    wave_in: 2D numpy array
-        Input data in wavelet domain.
-    afins: 1D complex numpy array
-        afins.
+    Args:
+        n (int): Time index.
+        Nf (int): Number of frequency bins.
+        Nt (int): Number of time bins.
+        wave_in (numpy.ndarray): 2D numpy array of input data in wavelet domain.
+        afins (numpy.ndarray): 1D complex numpy array for results.
     """
     if n%2==0:
         #assign highest and lowest bin correctly
@@ -203,18 +176,12 @@ def pack_wave_time_helper_compact(n,Nf,Nt,wave_in,afins):
     """Helper for time domain transform to pack wavelet domain coefficiets
     in packed representation with odd and even coefficients in real and imaginary parts.
 
-    Parameters
-    ----------
-    n: int
-        Time index.
-    Nf: int
-        Number of frequency bins.
-    Nt: int
-        Number of time bins.
-    wave_in: 2D numpy array
-        Input data in wavelet domain.
-    afins: 1D complex numpy array
-        afins.
+    Args:
+        n (int): Time index.
+        Nf (int): Number of frequency bins.
+        Nt (int): Number of time bins.
+        wave_in (numpy.ndarray): 2D numpy array of input data in wavelet domain.
+        afins (numpy.ndarray): 1D complex numpy array for results.
     """
     afins[0] = np.sqrt(2)*wave_in[n,0]
     if n+1<Nt:

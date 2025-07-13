@@ -18,24 +18,18 @@ def create_injection(interferometers,
                      waveform_arguments=DEFAULT_BBH_WAVEFORM_ARGUMENTS):
     """A helper function to inject a mock signal into interferometers.
 
-    Parameters
-    ----------
-    interferometers: InterferometerList
-        A list of interferometers.
-    duration: float
-        Duration of data in second.
-    sampling_frequency: float
-        Sampling frequency in Hz.
-    start_time: float
-        Start time of the data segemtn in second.
-    parameters: dict
-        A dictionary of injection parameters.
-    noise_type: str
-        Type of noise. Supported options: ['zero_noise', 'gaussian', 'noise']
-    frequency_domain_source_model: callable
-        A function that returns the frequency domain polarizations.
-    waveform_arguments: dict
-        A dictionary of additional waveform arguments.
+    Args:
+        interferometers (InterferometerList): A list of interferometers.
+        duration (float): Duration of data in second.
+        sampling_frequency (float): Sampling frequency in Hz.
+        start_time (float): Start time of the data segment in second.
+        parameters (dict, optional): A dictionary of injection parameters.
+        noise_type (str, optional): Type of noise. Supported options: ['zero_noise', 'gaussian', 'noise'].
+            Defaults to 'zero_noise'.
+        frequency_domain_source_model (callable, optional): A function that returns the frequency domain
+            polarizations. Defaults to lal_binary_black_hole.
+        waveform_arguments (dict, optional): A dictionary of additional waveform arguments.
+            Defaults to {"waveform_approximant": "IMRPhenomPv2", "reference_frequency": 50}.
     """
     if noise_type == 'gaussian':
         interferometers.set_strain_data_from_power_spectral_densities(

@@ -65,20 +65,14 @@ BilbyArgParser.write_to_file = write_to_file
 
 
 def create_nullpol_parser(top_level=True):
-    """Create the nullpol_pipe parser
+    """Create the nullpol_pipe parser.
 
-    Parameters
-    ----------
-    top_level: bool, optional
-        If true, the top-level parser is created. If false, a subparser is
-        created. Default is True.
-    usage: str, optional
-        The usage string to display. Default is None.
+    Args:
+        top_level (bool, optional): If true, the top-level parser is created. If false, a subparser is
+            created. Defaults to True.
 
-    Returns
-    -------
-    parser: BilbyArgParser instance
-        Argument parser
+    Returns:
+        BilbyArgParser: Argument parser instance.
     """
     def remove_argument(parser, arg):
         action_to_remove = None

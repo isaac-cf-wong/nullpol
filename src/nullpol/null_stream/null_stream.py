@@ -17,25 +17,16 @@ def compute_whitened_frequency_domain_fractional_null_stream(
 ):
     """Compute the whitened frequency domain fractional null stream.
 
-    Parameters
-    ----------
-    frequency_array: 1D numpy array
-        Frequency array.
-    frequency_mask: 1D numpy array
-        Boolean frequency mask.
-    whitened_frequency_domain_strain_array: 2D numpy array
-        Whitened frequency domain strain array.
-    time_delay_array: 1D numpy array
-        Time delay array.
-    whitened_antenna_pattern_matrix: 3D numpy array
-        Whitened antenna pattern matrix.
-    fraction: float
-        Fraction of projection to the signal subspace.
+    Args:
+        frequency_array (numpy.ndarray): 1D numpy array of frequencies.
+        frequency_mask (numpy.ndarray): 1D boolean numpy array for frequency mask.
+        whitened_frequency_domain_strain_array (numpy.ndarray): 2D numpy array of whitened frequency domain strain.
+        time_delay_array (numpy.ndarray): 1D numpy array of time delays.
+        whitened_antenna_pattern_matrix (numpy.ndarray): 3D numpy array of whitened antenna pattern matrix.
+        fraction (float): Fraction of projection to the signal subspace.
 
-    Returns
-    -------
-    2D numpy array:
-        Fractional null stream.
+    Returns:
+        numpy.ndarray: 2D numpy array representing the fractional null stream.
     """
     # Compute the time delayed frequency domain strain array.
     d_ts = compute_time_shifted_frequency_domain_strain_array(
@@ -64,25 +55,17 @@ def compute_whitened_frequency_domain_null_stream(
     time_delay_array,
     whitened_antenna_pattern_matrix,
 ):
-    """Compute the whitened frequency domain fractional null stream.
+    """Compute the whitened frequency domain null stream.
 
-    Parameters
-    ----------
-    frequency_array: 1D numpy array
-        Frequency array.
-    frequency_mask: 1D numpy array
-        Boolean frequency mask.
-    whitened_frequency_domain_strain_array: 2D numpy array
-        Whitened frequency domain strain array.
-    time_delay_array: 1D numpy array
-        Time delay array.
-    whitened_antenna_pattern_matrix: 3D numpy array
-        Whitened antenna pattern matrix.
+    Args:
+        frequency_array (numpy.ndarray): 1D numpy array of frequencies.
+        frequency_mask (numpy.ndarray): 1D boolean numpy array for frequency mask.
+        whitened_frequency_domain_strain_array (numpy.ndarray): 2D numpy array of whitened frequency domain strain.
+        time_delay_array (numpy.ndarray): 1D numpy array of time delays.
+        whitened_antenna_pattern_matrix (numpy.ndarray): 3D numpy array of whitened antenna pattern matrix.
 
-    Returns
-    -------
-    2D numpy array:
-        Null stream.
+    Returns:
+        numpy.ndarray: 2D numpy array representing the null stream.
     """
     return compute_whitened_frequency_domain_fractional_null_stream(
         frequency_array=frequency_array,

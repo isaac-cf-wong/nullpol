@@ -9,19 +9,13 @@ from numba import njit
 def phitilde_vec(om,Nf,nx=4.):
     """Compute phitilde, om i array, nx is filter steepness, defaults to 4.
 
-    Parameters
-    ----------
-    om: 1D numpy array
-        om.
-    Nf: int
-        Number of frequency bins.
-    nx: float, optional
-        Filter steepness. Defaults to 4.
+    Args:
+        om (numpy.ndarray): 1D numpy array of angular frequencies.
+        Nf (int): Number of frequency bins.
+        nx (float, optional): Filter steepness. Defaults to 4.
 
-    Returns
-    -------
-    1D numpy array
-        z.
+    Returns:
+        numpy.ndarray: 1D numpy array z.
     """
     OM = np.pi  #Nyquist angular frequency
     DOM = OM/Nf #2 pi times DF
@@ -42,19 +36,13 @@ def phitilde_vec(om,Nf,nx=4.):
 def phitilde_vec_norm(Nf,Nt,nx):
     """Normalize phitilde as needed for inverse frequency domain transform.
 
-    Parameters
-    ----------
-    Nf: int
-        Number of frequency bins.
-    Nt: int
-        Number of time bins.
-    nx: float
-        Filter steepness.
+    Args:
+        Nf (int): Number of frequency bins.
+        Nt (int): Number of time bins.
+        nx (float): Filter steepness.
 
-    Returns
-    -------
-    1D numpy array
-        phif.
+    Returns:
+        numpy.ndarray: 1D numpy array phif.
     """
     ND = Nf*Nt
     oms = 2*np.pi/ND*np.arange(0,Nt//2+1)
@@ -69,19 +57,13 @@ def phitilde_vec_norm(Nf,Nt,nx):
 def tukey(data,alpha,N):
     """Apply Tukey window function to data.
 
-    Parameters
-    ----------
-    data: 1D numpy array
-        Data.
-    alpha: float
-        Rolling parameter.
-    N: int
-        Length of data.
+    Args:
+        data (numpy.ndarray): 1D numpy array data.
+        alpha (float): Rolling parameter.
+        N (int): Length of data.
 
-    Returns
-    -------
-    1D numpy array
-        Data with Tukey window function applied.
+    Returns:
+        numpy.ndarray: 1D numpy array data with Tukey window function applied.
     """
     imin = np.int64(alpha*(N-1)/2)
     imax = np.int64((N-1)*(1-alpha/2))
@@ -98,18 +80,13 @@ def tukey(data,alpha,N):
 def transform_wavelet_freq_helper(data,Nf,Nt,phif):
     """Helper to do the wavelet transform using the fast wavelet domain transform.
 
-    Parameters
-    ----------
-    data: 1D numpy array
-        Data.
-    Nf: int
-        Number of frequency bins.
-    Nt: int
-        Number of time bins.
-    phif: 1D numpy array
-        Wavelet.
+    Args:
+        data (numpy.ndarray): 1D numpy array data.
+        Nf (int): Number of frequency bins.
+        Nt (int): Number of time bins.
+        phif (numpy.ndarray): 1D numpy array wavelet.
 
-    Returns
+    Returns:
     -------
     2D numpy array
         Data in wavelet domain.
@@ -126,21 +103,14 @@ def transform_wavelet_freq_helper(data,Nf,Nt,phif):
 def transform_wavelet_freq_quadrature_helper(data,Nf,Nt,phif):
     """Helper to do the wavelet transform using the fast wavelet domain quadrature transform.
 
-    Parameters
-    ----------
-    data: 1D numpy array
-        Data.
-    Nf: int
-        Number of frequency bins.
-    Nt: int
-        Number of time bins.
-    phif: 1D numpy array
-        Wavelet.
+    Args:
+        data (numpy.ndarray): 1D numpy array data.
+        Nf (int): Number of frequency bins.
+        Nt (int): Number of time bins.
+        phif (numpy.ndarray): 1D numpy array wavelet.
 
-    Returns
-    -------
-    2D numpy array
-        Data in wavelet domain.
+    Returns:
+        numpy.ndarray: 2D numpy array data in wavelet domain.
     """
     wave = np.zeros((Nt,Nf)) # wavelet wavepacket transform of the signal
 
@@ -155,20 +125,13 @@ def transform_wavelet_freq_quadrature_helper(data,Nf,Nt,phif):
 def DX_assign_loop(m,Nt,Nf,DX,data,phif):
     """Helper for assigning DX in the main loop.
 
-    Parameters
-    ----------
-    m: int
-        Frequency index.
-    Nt: int
-        Number of time bins.
-    Nf: int
-        Number of frequency bins.
-    DX: 1D complex numpy array
-        DX.
-    data: 1D complex numpy array
-        Input data.
-    phif: 1D numpy array
-        Wavelet.
+    Args:
+        m (int): Frequency index.
+        Nt (int): Number of time bins.
+        Nf (int): Number of frequency bins.
+        DX (numpy.ndarray): 1D complex numpy array DX.
+        data (numpy.ndarray): 1D complex numpy array input data.
+        phif (numpy.ndarray): 1D numpy array wavelet.
     """
     i_base = Nt//2
     jj_base = m*Nt//2
@@ -197,18 +160,12 @@ def DX_assign_loop(m,Nt,Nf,DX,data,phif):
 def DX_unpack_loop(m,Nt,Nf,DX_trans,wave):
     """Helper for unpacking fftd DX in main loop.
 
-    Parameters
-    ----------
-    m: int
-        Frequency index.
-    Nt: int
-        Number of time bins.
-    Nf: int
-        Number of frequency bins.
-    DX_trans: 1D complex numpy array
-        DX_trans.
-    wave: 2D numpy array
-        Data in wavelet domain.
+    Args:
+        m (int): Frequency index.
+        Nt (int): Number of time bins.
+        Nf (int): Number of frequency bins.
+        DX_trans (numpy.ndarray): 1D complex numpy array of transformed DX.
+        wave (numpy.ndarray): 2D numpy array for data in wavelet domain.
     """
     if m==0:
         #half of lowest and highest frequency bin pixels are redundant, so store them in even and odd components of m=0 respectively
@@ -234,18 +191,12 @@ def DX_unpack_loop(m,Nt,Nf,DX_trans,wave):
 def DX_unpack_loop_quadrature(m,Nt,Nf,DX_trans,wave):
     """Helper for unpacking fftd DX in main loop.
 
-    Parameters
-    ----------
-    m: int
-        Frequency index.
-    Nt: int
-        Number of time bins.
-    Nf: int
-        Number of frequency bins.
-    DX_trans: 1D complex numpy array
-        DX_trans.
-    wave: 2D numpy array
-        Data in wavelet domain.
+    Args:
+        m (int): Frequency index.
+        Nt (int): Number of time bins.
+        Nf (int): Number of frequency bins.
+        DX_trans (numpy.ndarray): 1D complex numpy array of transformed DX.
+        wave (numpy.ndarray): 2D numpy array for data in wavelet domain.
     """
     if m==0:
         #half of lowest and highest frequency bin pixels are redundant, so store them in even and odd components of m=0 respectively

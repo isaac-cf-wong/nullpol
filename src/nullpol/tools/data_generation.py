@@ -26,17 +26,12 @@ bilby_pipe.utils.logger = logger
 
 
 class DataGenerationInput(BilbyDataGenerationInput, Input):
-    """Handles user-input for the data generation script
+    """Handles user-input for the data generation script.
 
-    Parameters
-    ----------
-    parser: configargparse.ArgParser, optional
-        The parser containing the command line / ini file inputs
-    args_list: list, optional
-        A list of the arguments to parse. Defaults to `sys.argv[1:]`
-    create_data: bool
-        If false, no data is generated (used for testing)
-
+    Args:
+        args: Parsed command line arguments containing configuration.
+        unknown_args: List of unrecognized command line arguments.
+        create_data (bool, optional): If False, no data is generated (used for testing). Defaults to True.
     """
     def __init__(self, args, unknown_args, create_data=True):
         Input.__init__(self, args, unknown_args)
