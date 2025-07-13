@@ -76,11 +76,16 @@ def create_time_frequency_filter():
         skypoints=skypoints,
         return_sky_maximized_spectrogram=True,
         threshold_type='variance')
+    import os
+
     import matplotlib.pyplot as plt
+
+    # Save figures in the same directory as this test file
+    test_dir = os.path.dirname(__file__)
     plt.imshow(time_frequency_filter, aspect='auto')
-    plt.savefig('TF_filter.png')
+    plt.savefig(os.path.join(test_dir, 'TF_filter.png'))
     plt.imshow(spectrogram, aspect='auto')
-    plt.savefig('spectrogram.png')
+    plt.savefig(os.path.join(test_dir, 'spectrogram.png'))
     return time_frequency_filter
 
 time_frequency_filter = create_time_frequency_filter()

@@ -1,0 +1,5 @@
+# Ignore test-generated image files
+*.png
+*.pdf
+*.jpg
+*.jpeg
