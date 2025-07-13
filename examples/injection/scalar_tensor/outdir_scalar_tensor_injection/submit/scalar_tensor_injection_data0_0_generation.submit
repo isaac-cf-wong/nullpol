@@ -1,0 +1,23 @@
+universe = vanilla
+executable = /home/chun-fung.wong/.conda/envs/nullpol-3.10/bin/nullpol_pipe_generation
+request_memory = 8GB
+request_disk = 5GB
+request_cpus = 1
+initialdir = /home/chun-fung.wong/projects/bantam/src/nullpol/examples/injection/scalar_tensor
+notification = Never
+requirements =
+should_transfer_files = YES
+transfer_input_files = outdir_scalar_tensor_injection/scalar_tensor_injection_config_complete.ini,injections.json
+transfer_output_files = outdir_scalar_tensor_injection
+when_to_transfer_output = ON_EXIT_OR_EVICT
+preserve_relative_paths = True
+stream_error = True
+stream_output = True
+log = outdir_scalar_tensor_injection/log_data_generation/scalar_tensor_injection_data0_0_generation.log
+output = outdir_scalar_tensor_injection/log_data_generation/scalar_tensor_injection_data0_0_generation.out
+error = outdir_scalar_tensor_injection/log_data_generation/scalar_tensor_injection_data0_0_generation.err
+accounting_group = ligo.sim.o4.cbc.testgr.tiger
+priority = 0
+environment = "HDF5_USE_FILE_LOCKING=FAlSE OMP_NUM_THREADS=1 OMP_PROC_BIND=false GWDATAFIND_SERVER=https://datafind.igwn.org"
+arguments = $(ARGS)
+queue

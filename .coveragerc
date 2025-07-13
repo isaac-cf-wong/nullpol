@@ -1,0 +1,15 @@
+[run]
+branch = True
+parallel = True
+source = src
+
+[report]
+omit =
+    */tests/*
+    */site-packages/*
+fail_under = 50
+
+[paths]
+source =
+    src
+    */src

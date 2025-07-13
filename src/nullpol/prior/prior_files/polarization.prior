@@ -1,0 +1,3 @@
+dec =  Cosine(name='dec')
+ra =  Uniform(name='ra', minimum=0, maximum=2 * np.pi, boundary='periodic')
+psi =  Uniform(name='psi', minimum=0, maximum=np.pi, boundary='periodic')

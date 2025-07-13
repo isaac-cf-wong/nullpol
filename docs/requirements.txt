@@ -1,0 +1,12 @@
+autodoc
+graphviz
+html5lib==1.0b8  # Hack to ensure documentation generated
+nbsphinx
+numpydoc
+sphinx
+sphinx-argparse
+sphinx-autoapi
+sphinx-copybutton
+sphinx-multiversion
+sphinx-tabs
+sphinx_rtd_theme

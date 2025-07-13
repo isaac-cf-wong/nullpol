@@ -1,0 +1,4 @@
+kind: analysis
+name: Prod0
+pipeline: nullpol
+comment: nullpol analysis with the default settings

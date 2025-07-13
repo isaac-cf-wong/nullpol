@@ -1,0 +1,45 @@
+from __future__ import annotations
+
+from typing import Union
+
+
+def convert_string_to_float(string: str | None) -> float | None:
+    """Convert string to float.
+
+    Args:
+        string (str): string.
+
+    Returns:
+        float: float. None if string is None.
+    """
+    if string is None:
+        return None
+    return float(string)
+
+
+def convert_string_to_int(string: str | None) -> int | None:
+    """Convert string to int.
+
+    Args:
+        string (str): string.
+
+    Returns:
+        int: int. None if string is None.
+    """
+    if string is None:
+        return None
+    return int(string)
+
+
+def convert_string_to_bool(string: str | None) -> bool | None:
+    """Convert string to bool.
+
+    Args:
+        string (str): string.
+
+    Returns:
+        bool: bool. None if string is None.
+    """
+    if string is None:
+        return None
+    return bool(string)

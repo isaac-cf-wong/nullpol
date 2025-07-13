@@ -1,0 +1,193 @@
+02:46 nullpol WARNING : You do not have nds2 (python-nds2-client) installed. You may  experience problems accessing interferometer data.
+02:46 nullpol WARNING : You do not have LDAStools.frameCPP (python-ldas-tools-framecpp) installed. You may experience problems accessing interferometer data.
+02:46 nullpol INFO    : Running nullpol: 0.0.post265+ge053d8e.d20250107
+02:46 bilby_pipe INFO    : Command line arguments: Namespace(ini='outdir_scalar_tensor_injection/scalar_tensor_injection_config_complete.ini', verbose=False, calibration_model=None, spline_calibration_envelope_dict=None, spline_calibration_nodes=10, spline_calibration_amplitude_uncertainty_dict=None, spline_calibration_phase_uncertainty_dict=None, calibration_prior_boundary='reflective', idx=0, data_dump_file=None, ignore_gwpy_data_quality_check=True, gps_tuple=None, gps_file=None, timeslide_file=None, timeslide_dict=None, trigger_time='0', n_simulation=1, data_dict=None, data_format=None, allow_tape=True, channel_dict=None, frame_type_dict=None, data_find_url='https://datafind.igwn.org', data_find_urltype='osdf', gaussian_noise=True, zero_noise=False, detectors=['H1', 'L1', 'V1'], duration=4.0, generation_seed=None, psd_dict=None, psd_fractional_overlap=0.5, post_trigger_duration=2.0, sampling_frequency=4096.0, psd_length=32, psd_maximum_duration=1024, psd_method='median', psd_start_time=None, maximum_frequency=None, minimum_frequency='20', tukey_roll_off=0.4, resampling_method='lal', injection=True, injection_dict=None, injection_file='injections.json', injection_numbers=[None], injection_waveform_approximant='IMRPhenomPv2', injection_frequency_domain_source_model='nullpol.source.lal_binary_black_hole_non_gr_simple_map', injection_waveform_arguments=None, accounting='ligo.sim.o4.cbc.testgr.tiger', accounting_user=None, label='scalar_tensor_injection_data0_0_generation', local=False, local_generation=False, generation_pool='local-pool', local_plot=False, outdir='outdir_scalar_tensor_injection', overwrite_outdir=False, periodic_restart_time=28800, request_disk=5.0, request_memory=8.0, request_memory_generation=None, request_cpus=4, conda_env=None, scheduler='condor', scheduler_args=None, scheduler_module=[None], scheduler_env=None, scheduler_analysis_time='7-00:00:00', submit=True, condor_job_priority=0, transfer_files=True, additional_transfer_paths=[None], environment_variables=None, getenv=[None], disable_hdf5_locking=False, log_directory=None, osg=False, desired_sites=None, analysis_executable=None, analysis_executable_parser=None, scitoken_issuer=None, calibration_marginalization=False, reference_frame='sky', time_reference='geocent', calibration_lookup_table=None, number_of_response_curves=1000, extra_likelihood_kwargs=None, plot_trace=False, plot_data=False, plot_injection=False, plot_spectrogram=False, plot_calibration=False, plot_corner=False, plot_marginal=False, plot_skymap=False, plot_waveform=False, plot_format='png', create_summary=False, email=None, notification='Never', queue=None, existing_dir=None, webdir=None, summarypages_arguments=None, result_format='hdf5', final_result=True, final_result_nsamples=20000, deltaT=0.2, prior_file=None, prior_dict=None, enforce_signal_duration=True, postprocessing_executable=None, postprocessing_arguments=None, single_postprocessing_executable=None, single_postprocessing_arguments=None, sampler='dynesty', sampling_seed=None, n_parallel=1, sampler_kwargs="{'nlive': 1000, 'naccept': 60, 'check_point_plot': True, 'check_point_delta_t': 1800, 'print_method': 'interval-60', 'sample': 'acceptance-walk', 'npool': 4}", reweighting_configuration=None, reweight_nested_samples=True, waveform_generator='bilby.gw.waveform_generator.LALCBCWaveformGenerator', reference_frequency=50.0, waveform_approximant='IMRPhenomPv2', catch_waveform_errors=True, pn_spin_order=-1, pn_tidal_order=-1, pn_phase_order=-1, pn_amplitude_order=0, numerical_relativity_file=None, waveform_arguments_dict=None, mode_array=[None], frequency_domain_source_model='lal_binary_black_hole', conversion_function=None, generation_function=None, likelihood_type='Chi2TimeFrequencyLikelihood', calibration_psd_lookup_table=None, polarization_modes='pc', polarization_basis='pc', wavelet_frequency_resolution=32.0, wavelet_nx=4.0, simulate_psd_nsample=10, default_prior='PolarizationPriorDict', calibration_correction_type='data', time_frequency_clustering_method='injection', time_frequency_clustering_injection_parameters_filename=None, time_frequency_clustering_pe_samples_filename=None, time_frequency_clustering_threshold=0.95, time_frequency_clustering_time_padding=0.1, time_frequency_clustering_frequency_padding=1.0, time_frequency_clustering_skypoints=100)
+02:46 bilby_pipe INFO    : Unknown command line arguments: []
+02:46 nullpol INFO    : Generation seed set to 146878
+02:46 bilby_pipe INFO    : PSD duration set to 128.0s, 32x the duration 4.0s
+02:46 nullpol INFO    : Injecting waveform with
+02:46 nullpol INFO    : minimum_frequency = 20.0
+02:46 nullpol INFO    : maximum_frequency = 2048.0
+02:46 nullpol INFO    : trigger_time = 0.0
+02:46 nullpol INFO    : start_time = -2.0
+02:46 nullpol INFO    : duration = 4.0
+02:46 nullpol INFO    : Simulating strain data from psd-colored noise
+02:46 nullpol INFO    : Using waveform arguments: {'reference_frequency': 50.0, 'waveform_approximant': 'IMRPhenomPv2', 'minimum_frequency': 20.0, 'maximum_frequency': 2048.0, 'catch_waveform_errors': True, 'pn_spin_order': -1, 'pn_tidal_order': -1, 'pn_phase_order': -1, 'pn_amplitude_order': 0, 'mode_array': None, 'numerical_relativity_file': None}
+02:46 bilby INFO    : Waveform generator initiated with
+  frequency_domain_source_model: nullpol.source.simple_map.lal_binary_black_hole_non_gr_simple_map
+  time_domain_source_model: None
+  parameter_conversion: bilby.gw.conversion.convert_to_lal_binary_black_hole_parameters
+02:46 bilby WARNING : There are unused waveform kwargs. This is deprecated behavior and will
+result in an error in future releases. Make sure all of the waveform kwargs are correctly
+spelled.
+
+Unused waveform_kwargs: {'numerical_relativity_file': None}
+
+02:46 bilby INFO    : Injected signal in H1:
+02:46 bilby INFO    :   optimal SNR = 12.25
+02:46 bilby INFO    :   matched filter SNR = 11.96+0.45j
+02:46 bilby INFO    :   mass_1 = 78.36898366886996
+02:46 bilby INFO    :   mass_2 = 36.613701451373245
+02:46 bilby INFO    :   a_1 = 0.9140137714263159
+02:46 bilby INFO    :   a_2 = 0.2590754996249087
+02:46 bilby INFO    :   tilt_1 = 1.2005920436595146
+02:46 bilby INFO    :   tilt_2 = 0.7015890405320387
+02:46 bilby INFO    :   phi_12 = 1.5190624215371704
+02:46 bilby INFO    :   phi_jl = 2.0014077011626736
+02:46 bilby INFO    :   luminosity_distance = 1975.7606172720095
+02:46 bilby INFO    :   dec = -0.4923526355216978
+02:46 bilby INFO    :   ra = 2.7709231864628703
+02:46 bilby INFO    :   theta_jn = 1.7923459346825643
+02:46 bilby INFO    :   psi = 2.7131463207878808
+02:46 bilby INFO    :   phase = 5.427149505974532
+02:46 bilby INFO    :   amp_p = 1.0
+02:46 bilby INFO    :   amp_c = 1.0
+02:46 bilby INFO    :   amp_b = 0.7357576983159544
+02:46 bilby INFO    :   amp_l = 0.22275365813138726
+02:46 bilby INFO    :   amp_x = 0.0
+02:46 bilby INFO    :   amp_y = 0.0
+02:46 bilby INFO    :   geocent_time = -0.087972268439697
+02:46 bilby INFO    : Injected signal in L1:
+02:46 bilby INFO    :   optimal SNR = 11.01
+02:46 bilby INFO    :   matched filter SNR = 9.57+0.10j
+02:46 bilby INFO    :   mass_1 = 78.36898366886996
+02:46 bilby INFO    :   mass_2 = 36.613701451373245
+02:46 bilby INFO    :   a_1 = 0.9140137714263159
+02:46 bilby INFO    :   a_2 = 0.2590754996249087
+02:46 bilby INFO    :   tilt_1 = 1.2005920436595146
+02:46 bilby INFO    :   tilt_2 = 0.7015890405320387
+02:46 bilby INFO    :   phi_12 = 1.5190624215371704
+02:46 bilby INFO    :   phi_jl = 2.0014077011626736
+02:46 bilby INFO    :   luminosity_distance = 1975.7606172720095
+02:46 bilby INFO    :   dec = -0.4923526355216978
+02:46 bilby INFO    :   ra = 2.7709231864628703
+02:46 bilby INFO    :   theta_jn = 1.7923459346825643
+02:46 bilby INFO    :   psi = 2.7131463207878808
+02:46 bilby INFO    :   phase = 5.427149505974532
+02:46 bilby INFO    :   amp_p = 1.0
+02:46 bilby INFO    :   amp_c = 1.0
+02:46 bilby INFO    :   amp_b = 0.7357576983159544
+02:46 bilby INFO    :   amp_l = 0.22275365813138726
+02:46 bilby INFO    :   amp_x = 0.0
+02:46 bilby INFO    :   amp_y = 0.0
+02:46 bilby INFO    :   geocent_time = -0.087972268439697
+02:46 bilby INFO    : Injected signal in V1:
+02:46 bilby INFO    :   optimal SNR = 3.67
+02:46 bilby INFO    :   matched filter SNR = 4.88+0.96j
+02:46 bilby INFO    :   mass_1 = 78.36898366886996
+02:46 bilby INFO    :   mass_2 = 36.613701451373245
+02:46 bilby INFO    :   a_1 = 0.9140137714263159
+02:46 bilby INFO    :   a_2 = 0.2590754996249087
+02:46 bilby INFO    :   tilt_1 = 1.2005920436595146
+02:46 bilby INFO    :   tilt_2 = 0.7015890405320387
+02:46 bilby INFO    :   phi_12 = 1.5190624215371704
+02:46 bilby INFO    :   phi_jl = 2.0014077011626736
+02:46 bilby INFO    :   luminosity_distance = 1975.7606172720095
+02:46 bilby INFO    :   dec = -0.4923526355216978
+02:46 bilby INFO    :   ra = 2.7709231864628703
+02:46 bilby INFO    :   theta_jn = 1.7923459346825643
+02:46 bilby INFO    :   psi = 2.7131463207878808
+02:46 bilby INFO    :   phase = 5.427149505974532
+02:46 bilby INFO    :   amp_p = 1.0
+02:46 bilby INFO    :   amp_c = 1.0
+02:46 bilby INFO    :   amp_b = 0.7357576983159544
+02:46 bilby INFO    :   amp_l = 0.22275365813138726
+02:46 bilby INFO    :   amp_x = 0.0
+02:46 bilby INFO    :   amp_y = 0.0
+02:46 bilby INFO    :   geocent_time = -0.087972268439697
+02:46 nullpol INFO    : Running time-frequency clustering with method: injection
+02:46 nullpol INFO    : Generating zero-noise injection data
+02:46 nullpol INFO    : Using waveform arguments: {'reference_frequency': 50.0, 'waveform_approximant': 'IMRPhenomPv2', 'minimum_frequency': 20.0, 'maximum_frequency': 2048.0, 'catch_waveform_errors': True, 'pn_spin_order': -1, 'pn_tidal_order': -1, 'pn_phase_order': -1, 'pn_amplitude_order': 0, 'mode_array': None, 'numerical_relativity_file': None}
+02:46 bilby INFO    : Waveform generator initiated with
+  frequency_domain_source_model: bilby.gw.source.lal_binary_black_hole
+  time_domain_source_model: None
+  parameter_conversion: bilby.gw.conversion.convert_to_lal_binary_black_hole_parameters
+02:46 bilby WARNING : There are unused waveform kwargs. This is deprecated behavior and will
+result in an error in future releases. Make sure all of the waveform kwargs are correctly
+spelled.
+
+Unused waveform_kwargs: {'numerical_relativity_file': None}
+
+02:46 bilby INFO    : Injected signal in H1:
+02:46 bilby INFO    :   optimal SNR = 12.15
+02:46 bilby INFO    :   matched filter SNR = 12.15-0.00j
+02:46 bilby INFO    :   mass_1 = 78.36898366886996
+02:46 bilby INFO    :   mass_2 = 36.613701451373245
+02:46 bilby INFO    :   a_1 = 0.9140137714263159
+02:46 bilby INFO    :   a_2 = 0.2590754996249087
+02:46 bilby INFO    :   tilt_1 = 1.2005920436595146
+02:46 bilby INFO    :   tilt_2 = 0.7015890405320387
+02:46 bilby INFO    :   phi_12 = 1.5190624215371704
+02:46 bilby INFO    :   phi_jl = 2.0014077011626736
+02:46 bilby INFO    :   luminosity_distance = 1975.7606172720095
+02:46 bilby INFO    :   dec = -0.4923526355216978
+02:46 bilby INFO    :   ra = 2.7709231864628703
+02:46 bilby INFO    :   theta_jn = 1.7923459346825643
+02:46 bilby INFO    :   psi = 2.7131463207878808
+02:46 bilby INFO    :   phase = 5.427149505974532
+02:46 bilby INFO    :   amp_p = 1.0
+02:46 bilby INFO    :   amp_c = 1.0
+02:46 bilby INFO    :   amp_b = 0.7357576983159544
+02:46 bilby INFO    :   amp_l = 0.22275365813138726
+02:46 bilby INFO    :   amp_x = 0.0
+02:46 bilby INFO    :   amp_y = 0.0
+02:46 bilby INFO    :   geocent_time = -0.087972268439697
+02:46 bilby INFO    : Injected signal in L1:
+02:46 bilby INFO    :   optimal SNR = 10.54
+02:46 bilby INFO    :   matched filter SNR = 10.54-0.00j
+02:46 bilby INFO    :   mass_1 = 78.36898366886996
+02:46 bilby INFO    :   mass_2 = 36.613701451373245
+02:46 bilby INFO    :   a_1 = 0.9140137714263159
+02:46 bilby INFO    :   a_2 = 0.2590754996249087
+02:46 bilby INFO    :   tilt_1 = 1.2005920436595146
+02:46 bilby INFO    :   tilt_2 = 0.7015890405320387
+02:46 bilby INFO    :   phi_12 = 1.5190624215371704
+02:46 bilby INFO    :   phi_jl = 2.0014077011626736
+02:46 bilby INFO    :   luminosity_distance = 1975.7606172720095
+02:46 bilby INFO    :   dec = -0.4923526355216978
+02:46 bilby INFO    :   ra = 2.7709231864628703
+02:46 bilby INFO    :   theta_jn = 1.7923459346825643
+02:46 bilby INFO    :   psi = 2.7131463207878808
+02:46 bilby INFO    :   phase = 5.427149505974532
+02:46 bilby INFO    :   amp_p = 1.0
+02:46 bilby INFO    :   amp_c = 1.0
+02:46 bilby INFO    :   amp_b = 0.7357576983159544
+02:46 bilby INFO    :   amp_l = 0.22275365813138726
+02:46 bilby INFO    :   amp_x = 0.0
+02:46 bilby INFO    :   amp_y = 0.0
+02:46 bilby INFO    :   geocent_time = -0.087972268439697
+02:46 bilby INFO    : Injected signal in V1:
+02:46 bilby INFO    :   optimal SNR = 2.62
+02:46 bilby INFO    :   matched filter SNR = 2.62+0.00j
+02:46 bilby INFO    :   mass_1 = 78.36898366886996
+02:46 bilby INFO    :   mass_2 = 36.613701451373245
+02:46 bilby INFO    :   a_1 = 0.9140137714263159
+02:46 bilby INFO    :   a_2 = 0.2590754996249087
+02:46 bilby INFO    :   tilt_1 = 1.2005920436595146
+02:46 bilby INFO    :   tilt_2 = 0.7015890405320387
+02:46 bilby INFO    :   phi_12 = 1.5190624215371704
+02:46 bilby INFO    :   phi_jl = 2.0014077011626736
+02:46 bilby INFO    :   luminosity_distance = 1975.7606172720095
+02:46 bilby INFO    :   dec = -0.4923526355216978
+02:46 bilby INFO    :   ra = 2.7709231864628703
+02:46 bilby INFO    :   theta_jn = 1.7923459346825643
+02:46 bilby INFO    :   psi = 2.7131463207878808
+02:46 bilby INFO    :   phase = 5.427149505974532
+02:46 bilby INFO    :   amp_p = 1.0
+02:46 bilby INFO    :   amp_c = 1.0
+02:46 bilby INFO    :   amp_b = 0.7357576983159544
+02:46 bilby INFO    :   amp_l = 0.22275365813138726
+02:46 bilby INFO    :   amp_x = 0.0
+02:46 bilby INFO    :   amp_y = 0.0
+02:46 bilby INFO    :   geocent_time = -0.087972268439697
+
+Generating energy map:   0%|          | 0/100 [00:00<?, ?it/s]
+Generating energy map:   1%|          | 1/100 [00:00<01:02,  1.59it/s]
+Generating energy map:  30%|███       | 30/100 [00:00<00:01, 54.63it/s]
+Generating energy map:  59%|█████▉    | 59/100 [00:00<00:00, 103.19it/s]
+Generating energy map:  88%|████████▊ | 88/100 [00:00<00:00, 145.22it/s]
+Generating energy map: 100%|██████████| 100/100 [00:00<00:00, 102.16it/s]
+02:46 nullpol INFO    : Saved plot of time-frequency filter spectrogram to outdir_scalar_tensor_injection/data/scalar_tensor_injection_data0_0_generation_time_frequency_filter_spectrogram.png.
+02:47 nullpol INFO    : Saved plot of sky-maximized spectrogram to outdir_scalar_tensor_injection/data/scalar_tensor_injection_data0_0_generation_sky_maximized_spectrogram.png.
+02:47 nullpol INFO    : No prior given, using default polarization priors in /home/chun-fung.wong/.conda/envs/nullpol-3.10/lib/python3.10/site-packages/nullpol/prior/prior_files/polarization.prior.
+02:47 nullpol INFO    : Completed data generation

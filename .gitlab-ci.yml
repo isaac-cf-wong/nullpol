@@ -1,7 +1,7 @@
 before_script:
   # Install system dependencies
   - apt-get update
-  - apt-get install -y libgsl-dev  # Install GSL and its development headers
+  - apt-get install -y libgsl-dev # Install GSL and its development headers
 
 stages:
   - initial
@@ -12,39 +12,113 @@ stages:
 .list-env: &list-env
   - PREFIX="$(dirname $(which python))/.."
   - if [ -d "${PREFIX}/conda-meta" ]; then
-      conda list --prefix "${PREFIX}" --show-channel-urls;
+    conda list --prefix "${PREFIX}" --show-channel-urls;
     else
-      python -m pip list installed;
+    python -m pip list installed;
     fi
 
 .test-python: &test-python
   stage: initial
   image: python
   script:
-    - python -m pip install .
-    - mkdir temp_test_dir
-    - cd temp_test_dir
+    - python -m pip install --upgrade pip setuptools wheel
+    - python -m pip install -e .
     - *list-env
-    - python -c "import nullpol"
-    - python -c "import nullpol.likelihood"
     - for script in $(pip show -f nullpol | grep "bin\/" | xargs -I {} basename {}); do
-          ${script} --help;
+      ${script} --help;
       done
 
 basic-3.10:
   <<: *test-python
   image: python:3.10
+  only:
+    - merge_requests
+    - main
+
+
+basic-3.11:
+  <<: *test-python
+  image: python:3.11
+  only:
+    - merge_requests
+    - main
+
+
+basic-3.12:
+  <<: *test-python
+  image: python:3.12
+  only:
+    - merge_requests
+    - main
 
 
 # ------------- Test Stage -------------
 .unit-tests: &unit-test
   stage: test
   script:
-    - python -m pip install .
+    - python -m pip install .[test]
     - *list-env
-    - pytest test/ --cov=nullpol --durations 10
+    - export COVERAGE_FILE=.coverage.$CI_JOB_NAME
+    - pytest --cov-config=.coveragerc --junitxml=test-results.xml --cov=nullpol --cov-report=xml --cov-report=html
+  artifacts:
+    when: always
+    paths:
+      - .coverage.*
+      - test-results.xml
+      - htmlcov/
+      - coverage.xml
+    reports:
+      junit: test-results.xml
 
 python-3.10:
   <<: *unit-test
   needs: ["basic-3.10"]
   image: python:3.10
+  only:
+    - merge_requests
+    - main
+
+
+python-3.11:
+  <<: *unit-test
+  needs: ["basic-3.11"]
+  image: python:3.11
+  only:
+    - merge_requests
+    - main
+
+
+python-3.12:
+  <<: *unit-test
+  needs: ["basic-3.12"]
+  image: python:3.12
+  only:
+    - merge_requests
+    - main
+
+
+# ------------- Coverage Report Summary -------------
+
+coverage-summary:
+  stage: test
+  image: python:3.12
+  script:
+    - echo "Merging coverage reports"
+    - python -m pip install --upgrade pip setuptools wheel
+    - python -m pip install coverage
+    # Combine multiple coverage reports if applicable
+    - coverage combine
+    - coverage report
+    - coverage html
+  artifacts:
+    when: always
+    paths:
+      - htmlcov/
+      - coverage.xml
+  needs:
+    - job: python-3.10
+    - job: python-3.11
+    - job: python-3.12
+  only:
+    - merge_requests
+    - main

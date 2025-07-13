@@ -1,0 +1,56 @@
+kind: configuration
+hooks:
+   postmonitor:
+     tgrflow:
+       library location:
+   applicator:
+     tgrflow:
+       library location:
+data:
+  channels:
+    H1: H1:GDS-CALIB_STRAIN_CLEAN
+    L1: L1:GDS-CALIB_STRAIN_CLEAN
+    V1: V1:Hrec_hoft_16384Hz
+  frame types:
+    H1: H1_HOFT_C00
+    L1: L1_HOFT_C00
+    V1: V1Online
+pipelines:
+  gwdata:
+    scheduler:
+      accounting group: ligo.prod.o4.cbc.testgr.tiger
+      request cpus: 1
+  peconfigurator:
+    scheduler:
+      accounting group: ligo.prod.o4.cbc.testgr.tiger
+      request cpus: 1
+  nullpol:
+    tgr schema section: PolAnalyses
+    quality:
+      state vector:
+        L1: L1:GDS-CALIB_STRAIN_CLEAN
+        H1: H1:GDS-CALIB_STRAIN_CLEAN
+        V1: V1:Hrec_hoft_16384Hz
+    sampler:
+      sampler: dynesty
+      parallel jobs: 4
+    scheduler:
+      accounting group: ligo.prod.o4.cbc.testgr.tiger
+      request cpus: 4
+      request disk: 8
+      request memory: 12
+      scitoken issuer: igwn
+quality:
+  minimum frequency:
+    H1: 20
+    L1: 20
+    V1: 20
+    G1: 20
+    K1: 20
+priors:
+    dec:
+        type: Cosine
+    psi:
+        type: Uniform
+    ra:
+        type: Uniform

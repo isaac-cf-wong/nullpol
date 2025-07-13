@@ -1,0 +1,2 @@
+amplitude_cp = Uniform(name='amplitude_cp', minimum=0., maximum=2.)
+phase_xp = Uniform(name='phase_xp', minimum=0., maximum=6.28)

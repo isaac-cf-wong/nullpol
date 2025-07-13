@@ -1,0 +1,5 @@
+include src/nullpol/tools/*.ini
+include src/nullpol/tools/*.json
+include src/nullpol/asimov/*.ini
+include src/nullpol/asimov/*.yaml
+include src/nullpol/prior/prior_files/*.prior
