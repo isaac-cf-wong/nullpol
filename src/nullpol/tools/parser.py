@@ -64,7 +64,7 @@ def write_to_file(
 BilbyArgParser.write_to_file = write_to_file
 
 
-def create_nullpol_parser(top_level=True):
+def create_nullpol_parser(top_level: bool=True) -> BilbyArgParser:
     """Create the nullpol_pipe parser.
 
     Args:
