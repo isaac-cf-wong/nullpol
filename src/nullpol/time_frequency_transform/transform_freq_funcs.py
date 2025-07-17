@@ -6,22 +6,16 @@ import scipy.special
 from numba import njit
 
 
-def phitilde_vec(om,Nf,nx=4.):
+def phitilde_vec(om: np.ndarray, Nf: int, nx: float=4.) -> np.ndarray:
     """Compute phitilde, om i array, nx is filter steepness, defaults to 4.
 
-    Parameters
-    ----------
-    om: 1D numpy array
-        om.
-    Nf: int
-        Number of frequency bins.
-    nx: float, optional
-        Filter steepness. Defaults to 4.
+    Args:
+        om (numpy.ndarray): 1D numpy array of angular frequencies.
+        Nf (int): Number of frequency bins.
+        nx (float, optional): Filter steepness. Defaults to 4.
 
-    Returns
-    -------
-    1D numpy array
-        z.
+    Returns:
+        numpy.ndarray: 1D numpy array z.
     """
     OM = np.pi  #Nyquist angular frequency
     DOM = OM/Nf #2 pi times DF
@@ -39,22 +33,17 @@ def phitilde_vec(om,Nf,nx=4.):
     z[np.abs(om)<A] = insDOM
     return z
 
-def phitilde_vec_norm(Nf,Nt,nx):
+
+def phitilde_vec_norm(Nf: int, Nt: int, nx: float) -> np.ndarray:
     """Normalize phitilde as needed for inverse frequency domain transform.
 
-    Parameters
-    ----------
-    Nf: int
-        Number of frequency bins.
-    Nt: int
-        Number of time bins.
-    nx: float
-        Filter steepness.
+    Args:
+        Nf (int): Number of frequency bins.
+        Nt (int): Number of time bins.
+        nx (float): Filter steepness.
 
-    Returns
-    -------
-    1D numpy array
-        phif.
+    Returns:
+        numpy.ndarray: 1D numpy array phif.
     """
     ND = Nf*Nt
     oms = 2*np.pi/ND*np.arange(0,Nt//2+1)
@@ -65,23 +54,15 @@ def phitilde_vec_norm(Nf,Nt,nx):
     phif /= nrm
     return phif
 
+
 @njit
-def tukey(data,alpha,N):
+def tukey(data: np.ndarray, alpha: float, N: int) -> None:
     """Apply Tukey window function to data.
 
-    Parameters
-    ----------
-    data: 1D numpy array
-        Data.
-    alpha: float
-        Rolling parameter.
-    N: int
-        Length of data.
-
-    Returns
-    -------
-    1D numpy array
-        Data with Tukey window function applied.
+    Args:
+        data (numpy.ndarray): 1D numpy array data.
+        alpha (float): Rolling parameter.
+        N (int): Length of data.
     """
     imin = np.int64(alpha*(N-1)/2)
     imax = np.int64((N-1)*(1-alpha/2))
@@ -95,24 +76,18 @@ def tukey(data,alpha,N):
             f_mult = 0.5*(1.+np.cos(np.pi/Nwin*(i-imax)))
         data[i] *= f_mult
 
-def transform_wavelet_freq_helper(data,Nf,Nt,phif):
+
+def transform_wavelet_freq_helper(data: np.ndarray, Nf: int, Nt: int, phif: np.ndarray) -> np.ndarray:
     """Helper to do the wavelet transform using the fast wavelet domain transform.
 
-    Parameters
-    ----------
-    data: 1D numpy array
-        Data.
-    Nf: int
-        Number of frequency bins.
-    Nt: int
-        Number of time bins.
-    phif: 1D numpy array
-        Wavelet.
+    Args:
+        data (numpy.ndarray): 1D numpy array data.
+        Nf (int): Number of frequency bins.
+        Nt (int): Number of time bins.
+        phif (numpy.ndarray): 1D numpy array wavelet.
 
-    Returns
-    -------
-    2D numpy array
-        Data in wavelet domain.
+    Returns:
+        np.ndarray: Data in wavelet domain.
     """
     wave = np.zeros((Nt,Nf)) # wavelet wavepacket transform of the signal
 
@@ -123,24 +98,18 @@ def transform_wavelet_freq_helper(data,Nf,Nt,phif):
         DX_unpack_loop(m,Nt,Nf,DX_trans,wave)
     return wave
 
-def transform_wavelet_freq_quadrature_helper(data,Nf,Nt,phif):
+
+def transform_wavelet_freq_quadrature_helper(data: np.ndarray, Nf: int, Nt: int, phif: np.ndarray) -> np.ndarray:
     """Helper to do the wavelet transform using the fast wavelet domain quadrature transform.
 
-    Parameters
-    ----------
-    data: 1D numpy array
-        Data.
-    Nf: int
-        Number of frequency bins.
-    Nt: int
-        Number of time bins.
-    phif: 1D numpy array
-        Wavelet.
+    Args:
+        data (numpy.ndarray): 1D numpy array data.
+        Nf (int): Number of frequency bins.
+        Nt (int): Number of time bins.
+        phif (numpy.ndarray): 1D numpy array wavelet.
 
-    Returns
-    -------
-    2D numpy array
-        Data in wavelet domain.
+    Returns:
+        numpy.ndarray: 2D numpy array data in wavelet domain.
     """
     wave = np.zeros((Nt,Nf)) # wavelet wavepacket transform of the signal
 
@@ -151,24 +120,18 @@ def transform_wavelet_freq_quadrature_helper(data,Nf,Nt,phif):
         DX_unpack_loop_quadrature(m,Nt,Nf,DX_trans,wave)
     return wave
 
+
 @njit
-def DX_assign_loop(m,Nt,Nf,DX,data,phif):
+def DX_assign_loop(m: int, Nt: int, Nf: int, DX: np.ndarray, data: np.ndarray, phif: np.ndarray) -> None:
     """Helper for assigning DX in the main loop.
 
-    Parameters
-    ----------
-    m: int
-        Frequency index.
-    Nt: int
-        Number of time bins.
-    Nf: int
-        Number of frequency bins.
-    DX: 1D complex numpy array
-        DX.
-    data: 1D complex numpy array
-        Input data.
-    phif: 1D numpy array
-        Wavelet.
+    Args:
+        m (int): Frequency index.
+        Nt (int): Number of time bins.
+        Nf (int): Number of frequency bins.
+        DX (numpy.ndarray): 1D complex numpy array DX.
+        data (numpy.ndarray): 1D complex numpy array input data.
+        phif (numpy.ndarray): 1D numpy array wavelet.
     """
     i_base = Nt//2
     jj_base = m*Nt//2
@@ -194,21 +157,15 @@ def DX_assign_loop(m,Nt,Nf,DX,data,phif):
             DX[i] = phif[j]*data[jj]
 
 @njit
-def DX_unpack_loop(m,Nt,Nf,DX_trans,wave):
+def DX_unpack_loop(m: int, Nt: int, Nf: int, DX_trans: np.ndarray, wave: np.ndarray) -> None:
     """Helper for unpacking fftd DX in main loop.
 
-    Parameters
-    ----------
-    m: int
-        Frequency index.
-    Nt: int
-        Number of time bins.
-    Nf: int
-        Number of frequency bins.
-    DX_trans: 1D complex numpy array
-        DX_trans.
-    wave: 2D numpy array
-        Data in wavelet domain.
+    Args:
+        m (int): Frequency index.
+        Nt (int): Number of time bins.
+        Nf (int): Number of frequency bins.
+        DX_trans (numpy.ndarray): 1D complex numpy array of transformed DX.
+        wave (numpy.ndarray): 2D numpy array for data in wavelet domain.
     """
     if m==0:
         #half of lowest and highest frequency bin pixels are redundant, so store them in even and odd components of m=0 respectively
@@ -230,22 +187,17 @@ def DX_unpack_loop(m,Nt,Nf,DX_trans,wave):
                 else:
                     wave[n,m] = np.real(DX_trans[n])
 
+
 @njit
-def DX_unpack_loop_quadrature(m,Nt,Nf,DX_trans,wave):
+def DX_unpack_loop_quadrature(m: int, Nt: int, Nf: int, DX_trans: np.ndarray, wave: np.ndarray) -> None:
     """Helper for unpacking fftd DX in main loop.
 
-    Parameters
-    ----------
-    m: int
-        Frequency index.
-    Nt: int
-        Number of time bins.
-    Nf: int
-        Number of frequency bins.
-    DX_trans: 1D complex numpy array
-        DX_trans.
-    wave: 2D numpy array
-        Data in wavelet domain.
+    Args:
+        m (int): Frequency index.
+        Nt (int): Number of time bins.
+        Nf (int): Number of frequency bins.
+        DX_trans (numpy.ndarray): 1D complex numpy array of transformed DX.
+        wave (numpy.ndarray): 2D numpy array for data in wavelet domain.
     """
     if m==0:
         #half of lowest and highest frequency bin pixels are redundant, so store them in even and odd components of m=0 respectively

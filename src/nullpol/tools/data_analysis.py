@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import signal
 import sys
+from argparse import Namespace
 
 import bilby
 import bilby_pipe.utils
@@ -33,7 +34,7 @@ def sighandler(signum, frame):
 class DataAnalysisInput(BInput, Input):
     """Handles user-input for the data analysis script.
     """
-    def __init__(self, args, unknown_args, test=False):
+    def __init__(self, args: Namespace, unknown_args: list, test: bool=False):
         """Initializer.
 
         Args:
@@ -162,17 +163,15 @@ class DataAnalysisInput(BInput, Input):
         """The nullpol result class to store results in"""
         return PolarizationResult
 
-    def get_likelihood_and_priors(self):
+    def get_likelihood_and_priors(self) -> tuple:
         """Read in the likelihood and prior from the data dump
 
         This reads in the data dump values and reconstructs the likelihood and
         priors. Note, care must be taken to use the "search_priors" which differ
         from the true prior when using marginalization
 
-        Returns
-        -------
-        likelihood, priors
-            The bilby likelihood and priors
+        Returns:
+            tuple: The bilby likelihood and priors
         """
 
         priors = self.data_dump.priors_class(self.data_dump.priors_dict)
