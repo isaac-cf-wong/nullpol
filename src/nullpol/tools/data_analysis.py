@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import signal
 import sys
+from argparse import Namespace
 
 import bilby
 import bilby_pipe.utils
@@ -33,7 +34,7 @@ def sighandler(signum, frame):
 class DataAnalysisInput(BInput, Input):
     """Handles user-input for the data analysis script.
     """
-    def __init__(self, args: tuple, unknown_args: tuple, test: bool=False):
+    def __init__(self, args: Namespace, unknown_args: list, test: bool=False):
         """Initializer.
 
         Args:
