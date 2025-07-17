@@ -6,7 +6,7 @@ import scipy.special
 from numba import njit
 
 
-def phitilde_vec(om,Nf,nx=4.):
+def phitilde_vec(om: np.ndarray, Nf: int, nx: float=4.) -> np.ndarray:
     """Compute phitilde, om i array, nx is filter steepness, defaults to 4.
 
     Args:
@@ -33,7 +33,8 @@ def phitilde_vec(om,Nf,nx=4.):
     z[np.abs(om)<A] = insDOM
     return z
 
-def phitilde_vec_norm(Nf,Nt,nx):
+
+def phitilde_vec_norm(Nf: int, Nt: int, nx: float) -> np.ndarray:
     """Normalize phitilde as needed for inverse frequency domain transform.
 
     Args:
@@ -53,17 +54,15 @@ def phitilde_vec_norm(Nf,Nt,nx):
     phif /= nrm
     return phif
 
+
 @njit
-def tukey(data,alpha,N):
+def tukey(data: np.ndarary, alpha: float, N: int) -> None:
     """Apply Tukey window function to data.
 
     Args:
         data (numpy.ndarray): 1D numpy array data.
         alpha (float): Rolling parameter.
         N (int): Length of data.
-
-    Returns:
-        numpy.ndarray: 1D numpy array data with Tukey window function applied.
     """
     imin = np.int64(alpha*(N-1)/2)
     imax = np.int64((N-1)*(1-alpha/2))
@@ -77,7 +76,8 @@ def tukey(data,alpha,N):
             f_mult = 0.5*(1.+np.cos(np.pi/Nwin*(i-imax)))
         data[i] *= f_mult
 
-def transform_wavelet_freq_helper(data,Nf,Nt,phif):
+
+def transform_wavelet_freq_helper(data: np.ndarray, Nf: int, Nt: int, phif: np.ndarray) -> np.ndarray:
     """Helper to do the wavelet transform using the fast wavelet domain transform.
 
     Args:
@@ -87,9 +87,7 @@ def transform_wavelet_freq_helper(data,Nf,Nt,phif):
         phif (numpy.ndarray): 1D numpy array wavelet.
 
     Returns:
-    -------
-    2D numpy array
-        Data in wavelet domain.
+        np.ndarray: Data in wavelet domain.
     """
     wave = np.zeros((Nt,Nf)) # wavelet wavepacket transform of the signal
 
@@ -100,7 +98,8 @@ def transform_wavelet_freq_helper(data,Nf,Nt,phif):
         DX_unpack_loop(m,Nt,Nf,DX_trans,wave)
     return wave
 
-def transform_wavelet_freq_quadrature_helper(data,Nf,Nt,phif):
+
+def transform_wavelet_freq_quadrature_helper(data: np.ndarray, Nf: int, Nt: int, phif: np.ndarray) -> np.ndarray:
     """Helper to do the wavelet transform using the fast wavelet domain quadrature transform.
 
     Args:
@@ -121,8 +120,9 @@ def transform_wavelet_freq_quadrature_helper(data,Nf,Nt,phif):
         DX_unpack_loop_quadrature(m,Nt,Nf,DX_trans,wave)
     return wave
 
+
 @njit
-def DX_assign_loop(m,Nt,Nf,DX,data,phif):
+def DX_assign_loop(m: int, Nt: int, Nf: int, DX: np.ndarray, data: np.ndarray, phif: np.ndarray) -> None:
     """Helper for assigning DX in the main loop.
 
     Args:
@@ -157,7 +157,7 @@ def DX_assign_loop(m,Nt,Nf,DX,data,phif):
             DX[i] = phif[j]*data[jj]
 
 @njit
-def DX_unpack_loop(m,Nt,Nf,DX_trans,wave):
+def DX_unpack_loop(m: int, Nt: int, Nf: int, DX_trans: np.ndarray, wave: np.ndarray) -> None:
     """Helper for unpacking fftd DX in main loop.
 
     Args:
@@ -187,8 +187,9 @@ def DX_unpack_loop(m,Nt,Nf,DX_trans,wave):
                 else:
                     wave[n,m] = np.real(DX_trans[n])
 
+
 @njit
-def DX_unpack_loop_quadrature(m,Nt,Nf,DX_trans,wave):
+def DX_unpack_loop_quadrature(m: int, Nt: int, Nf: int, DX_trans: np.ndarray, wave: np.ndarray) -> None:
     """Helper for unpacking fftd DX in main loop.
 
     Args:
