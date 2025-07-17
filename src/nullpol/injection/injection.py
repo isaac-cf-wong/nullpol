@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from typing import Callable
+
 from bilby.gw.conversion import convert_to_lal_binary_black_hole_parameters
+from bilby.gw.detector import InterferometerList
 from bilby.gw.source import lal_binary_black_hole
 from bilby.gw.waveform_generator import WaveformGenerator
 
@@ -8,14 +11,14 @@ DEFAULT_BBH_WAVEFORM_ARGUMENTS = {"waveform_approximant": "IMRPhenomPv2",
                                   "reference_frequency": 50}
 
 
-def create_injection(interferometers,
-                     duration,
-                     sampling_frequency,
-                     start_time,
-                     parameters=None,
-                     noise_type='zero_noise',
-                     frequency_domain_source_model=lal_binary_black_hole,
-                     waveform_arguments=DEFAULT_BBH_WAVEFORM_ARGUMENTS):
+def create_injection(interferometers: InterferometerList,
+                     duration: float,
+                     sampling_frequency: float,
+                     start_time: float,
+                     parameters: dict | None=None,
+                     noise_type: str='zero_noise',
+                     frequency_domain_source_model: Callable=lal_binary_black_hole,
+                     waveform_arguments: dict=DEFAULT_BBH_WAVEFORM_ARGUMENTS) -> None:
     """A helper function to inject a mock signal into interferometers.
 
     Args:
