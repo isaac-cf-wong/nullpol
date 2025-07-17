@@ -5,7 +5,7 @@ import numpy as np
 from numba import njit
 
 
-def inverse_wavelet_freq_helper_fast(wave_in,phif,Nf,Nt):
+def inverse_wavelet_freq_helper_fast(wave_in: np.ndarray, phif: np.ndarray, Nf: int, Nt: int) -> np.ndarray:
     """Helper for fast inverse wavelet transform in frequency domain.
 
     Args:
@@ -31,7 +31,7 @@ def inverse_wavelet_freq_helper_fast(wave_in,phif,Nf,Nt):
     return res
 
 @njit
-def unpack_wave_inverse(m,Nt,Nf,phif,fft_prefactor2s,res):
+def unpack_wave_inverse(m: int, Nt: int, Nf: int, phif: np.ndarray, fft_prefactor2s: np.ndarray, res: np.ndarray) -> None:
     """Helper for unpacking results of frequency domain inverse transform.
 
     Args:
@@ -89,7 +89,7 @@ def unpack_wave_inverse(m,Nt,Nf,phif,fft_prefactor2s,res):
 #            res[i] += fft_prefactor2s[i%Nt]*phif[i_ind]
 
 @njit
-def pack_wave_inverse(m,Nt,Nf,prefactor2s,wave_in):
+def pack_wave_inverse(m: int, Nt: int, Nf: int, prefactor2s: np.ndarray, wave_in: np.ndarray) -> None:
     """Helper for fast frequency domain inverse transform to preare for Fourier transform.
 
     Args:
