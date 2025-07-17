@@ -3,14 +3,12 @@ from __future__ import annotations
 import numpy as np
 
 
-def compute_filter_by_quantile(time_freq_transformed, quantile=0.9, **kwargs):
+def compute_filter_by_quantile(time_freq_transformed: np.ndarray, quantile: float=0.9, **kwargs):
     """Filter the time-frequency transformed data with a threshold.
 
     Args:
         time_freq_transformed (numpy.ndarray): Time-frequency transformed data in shape (n_time, n_freq).
         quantile (float, optional): The threshold for the filtering. Defaults to 0.9.
-        dt (float): The time resolution in seconds.
-        df (float): The frequency resolution in Hz.
         **kwargs: Additional keyword arguments (unused, for compatibility).
 
     Returns:
