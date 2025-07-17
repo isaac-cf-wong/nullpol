@@ -56,7 +56,7 @@ def phitilde_vec_norm(Nf: int, Nt: int, nx: float) -> np.ndarray:
 
 
 @njit
-def tukey(data: np.ndarary, alpha: float, N: int) -> None:
+def tukey(data: np.ndarray, alpha: float, N: int) -> None:
     """Apply Tukey window function to data.
 
     Args:
