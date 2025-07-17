@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+from argparse import Namespace
 
 import bilby
 import bilby_pipe.utils
@@ -29,11 +30,11 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
     """Handles user-input for the data generation script.
 
     Args:
-        args: Parsed command line arguments containing configuration.
-        unknown_args: List of unrecognized command line arguments.
+        args (argparse.Namespace): Parsed command line arguments containing configuration.
+        unknown_args (list): List of unrecognized command line arguments.
         create_data (bool, optional): If False, no data is generated (used for testing). Defaults to True.
     """
-    def __init__(self, args, unknown_args, create_data=True):
+    def __init__(self, args:  Namespace, unknown_args: list, create_data: bool=True):
         Input.__init__(self, args, unknown_args)
 
         # Generic initialisation
