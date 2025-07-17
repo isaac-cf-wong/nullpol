@@ -7,7 +7,7 @@ from numba import njit
 from .transform_freq_funcs import phitilde_vec
 
 
-def transform_wavelet_time_helper(data, Nf, Nt, phi, mult):
+def transform_wavelet_time_helper(data: np.ndarray, Nf: int, Nt: int, phi: np.ndarray, mult: int) -> np.ndarray:
     """Helper function to do the wavelet transform in the time domain.
 
     Args:
@@ -46,7 +46,7 @@ def transform_wavelet_time_helper(data, Nf, Nt, phi, mult):
 
 
 @njit
-def assign_wdata(i, K, ND, Nf, wdata, data_pad, phi):
+def assign_wdata(i: int, K: int, ND: int, Nf: int, wdata: np.ndarray, data_pad: np.ndarray, phi: np.ndarray) -> None:
     """Assign wdata to be fftd in loop, data_pad needs K extra values on the right to loop.
 
     Args:
@@ -73,7 +73,7 @@ def assign_wdata(i, K, ND, Nf, wdata, data_pad, phi):
 
 
 @njit
-def pack_wave(i, mult, Nf, wdata_trans, wave):
+def pack_wave(i: int, mult: int, Nf: int, wdata_trans: np.ndarray, wave: np.ndarray) -> None:
     """Pack fftd wdata into wave array.
 
     Args:
@@ -95,7 +95,7 @@ def pack_wave(i, mult, Nf, wdata_trans, wave):
             wave[i, j] = np.real(wdata_trans[j*mult])
 
 
-def phi_vec(Nf, nx=4., mult=16):
+def phi_vec(Nf: int, nx: float=4., mult: int=16) -> np.ndarray:
     """Get time domain phi as Fourier transform of phitilde_vec.
 
     Args:
