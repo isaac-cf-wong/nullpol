@@ -10,6 +10,45 @@ def lal_binary_black_hole_non_gr_simple_map(
     amp_p=1., amp_c=1., amp_x=0., amp_y=0., amp_b=0., amp_l=0.,
     **kwargs,
 ):
+    """Generate binary black hole waveform with simple amplitude scaling for non-GR polarizations.
+
+    Computes frequency-domain gravitational waveforms for binary black hole coalescence
+    including non-General Relativity polarization modes through simple amplitude scaling.
+    The additional polarization modes (vector x/y, breathing, longitudinal) are constructed
+    by scaling the standard plus and cross polarizations.
+
+    Args:
+        frequency_array (numpy.ndarray): Array of frequencies in Hz.
+        mass_1 (float): Primary mass in solar masses.
+        mass_2 (float): Secondary mass in solar masses.
+        luminosity_distance (float): Luminosity distance in Mpc.
+        a_1 (float): Dimensionless spin magnitude of primary.
+        tilt_1 (float): Tilt angle of primary spin in radians.
+        phi_12 (float): Azimuthal angle between spins in radians.
+        a_2 (float): Dimensionless spin magnitude of secondary.
+        tilt_2 (float): Tilt angle of secondary spin in radians.
+        phi_jl (float): Azimuthal angle between total angular momentum and orbital angular momentum in radians.
+        theta_jn (float): Inclination angle in radians.
+        phase (float): Phase at reference frequency in radians.
+        amp_p (float, optional): Amplitude scaling factor for plus polarization. Defaults to 1.
+        amp_c (float, optional): Amplitude scaling factor for cross polarization. Defaults to 1.
+        amp_x (float, optional): Amplitude scaling factor for vector x polarization. Defaults to 0.
+        amp_y (float, optional): Amplitude scaling factor for vector y polarization. Defaults to 0.
+        amp_b (float, optional): Amplitude scaling factor for breathing polarization. Defaults to 0.
+        amp_l (float, optional): Amplitude scaling factor for longitudinal polarization. Defaults to 0.
+        **kwargs: Additional waveform generation arguments passed to LAL waveform function.
+
+    Returns:
+        dict: Dictionary containing frequency-domain polarizations with keys:
+            'plus', 'cross', 'x', 'y', 'breathing', 'longitudinal'.
+            Each value is a complex numpy array matching frequency_array shape.
+
+    Note:
+        This implements a simplified model where non-GR modes are constructed by
+        scaling the GR modes: x/y scale h_plus, breathing scales h_plus,
+        longitudinal scales h_cross. This is not physically motivated but serves
+        as a phenomenological test.
+    """
     waveform_kwargs = dict(
         waveform_approximant='IMRPhenomPv2', reference_frequency=50.0,
         minimum_frequency=20.0, maximum_frequency=frequency_array[-1],

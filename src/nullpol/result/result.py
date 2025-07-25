@@ -14,10 +14,40 @@ from ..utils import logger
 
 
 class PolarizationResult(Result):
+    """Result class for gravitational wave polarization analysis.
+
+    Extends bilby's Result class to handle results from polarization-specific
+    parameter estimation, including access to likelihood metadata and
+    polarization-aware plotting and post-processing capabilities.
+
+    Args:
+        **kwargs: Keyword arguments passed to parent Result class,
+            including samples, log_evidence, priors, meta_data, etc.
+
+    Attributes:
+        Inherits all attributes from bilby.core.result.Result plus
+        polarization-specific metadata access methods.
+    """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     def __get_from_nested_meta_data(self, *keys):
+        """Retrieve value from nested meta_data dictionary structure.
+
+        Navigates through a nested dictionary hierarchy using the provided
+        keys to access deeply nested metadata from the likelihood object.
+
+        Args:
+            *keys: Variable number of dictionary keys forming the path
+                to the desired nested value.
+
+        Returns:
+            Any: The value found at the specified nested location.
+
+        Raises:
+            AttributeError: If any key in the path is not found in the
+                meta_data structure.
+        """
         dictionary = self.meta_data
         try:
             item = None

@@ -19,6 +19,46 @@ def run_time_frequency_clustering(interferometers,
                                   skypoints,
                                   return_sky_maximized_spectrogram=False,
                                   threshold_type="quantile"):
+    """Perform time-frequency clustering analysis on interferometer data.
+
+    Identifies significant excess power regions in time-frequency spectrograms by:
+    1. Computing sky-maximized spectrograms across multiple sky positions
+    2. Applying statistical thresholds to identify candidate pixels
+    3. Clustering connected pixels and selecting the largest cluster
+    4. Applying padding around the cluster for robust analysis
+
+    Args:
+        interferometers (list): List of bilby.gw.detector.Interferometer objects.
+        frequency_domain_strain_array (numpy.ndarray): Frequency domain strain data
+            with shape (n_detectors, n_frequencies).
+        wavelet_frequency_resolution (float): Frequency resolution for wavelet transform in Hz.
+        wavelet_nx (float): Wavelet steepness parameter.
+        threshold (float): Threshold value for pixel selection. Interpretation depends
+            on threshold_type.
+        time_padding (float): Time padding around clusters in seconds.
+        frequency_padding (float): Frequency padding around clusters in Hz.
+        skypoints (numpy.ndarray): Array of sky positions (RA, Dec) to test, with shape
+            (n_points, 2).
+        return_sky_maximized_spectrogram (bool, optional): If True, also return the
+            sky-maximized spectrogram. Defaults to False.
+        threshold_type (str, optional): Method for interpreting threshold value:
+            - "quantile": threshold is quantile of non-zero values (0-1)
+            - "confidence": threshold is confidence level for chi-squared distribution
+            - "variance": threshold multiplied by number of detectors
+            Defaults to "quantile".
+
+    Returns:
+        numpy.ndarray or tuple: If return_sky_maximized_spectrogram is False,
+            returns cluster mask array with shape (n_time, n_frequency).
+            If True, returns tuple of (cluster_mask, sky_maximized_spectrogram).
+
+    Raises:
+        NullpolError: If threshold_type is not recognized.
+
+    Note:
+        The cluster is cleaned to remove contributions outside the interferometer
+        frequency band [minimum_frequency, maximum_frequency].
+    """
     sky_maximized_spectrogram = compute_sky_maximized_spectrogram(
         interferometers=interferometers,
         frequency_domain_strain_array=frequency_domain_strain_array,

@@ -15,6 +15,39 @@ def compute_sky_maximized_spectrogram(interferometers,
                                       wavelet_frequency_resolution,
                                       wavelet_nx,
                                       skypoints):
+    """Compute sky-maximized spectrogram over multiple sky locations.
+
+    Generates a time-frequency spectrogram by maximizing over different sky positions
+    to identify the most coherent excess power across the detector network. This is
+    used to find candidate gravitational wave signals without knowing the source location.
+
+    The algorithm:
+    1. Whitens the frequency domain strain data using detector PSDs
+    2. For each random sky position, computes time delays between detectors
+    3. Time-shifts data to account for light travel time differences
+    4. Transforms time-shifted data to time-frequency domain using wavelets
+    5. Computes power spectrogram for each sky position
+    6. Returns pixel-wise maximum across all sky positions
+
+    Args:
+        interferometers (list): List of bilby.gw.detector.Interferometer objects
+            containing strain data and detector parameters.
+        frequency_domain_strain_array (numpy.ndarray): Frequency domain strain data
+            with shape (n_detectors, n_frequencies).
+        wavelet_frequency_resolution (float): Frequency resolution for wavelet transform in Hz.
+        wavelet_nx (float): Wavelet steepness parameter controlling time-frequency localization.
+        skypoints (int): Number of random sky positions to test.
+
+    Returns:
+        numpy.ndarray: Sky-maximized spectrogram with shape (n_time, n_frequency).
+            Each pixel contains the maximum power across all tested sky positions.
+
+    Note:
+        - Sky positions are randomly sampled uniformly over the sphere
+        - Uses both real and quadrature wavelet components for power calculation
+        - The returned spectrogram represents coherent power maximized over sky location
+        - Whitening uses the average PSD over the data duration
+    """
     # Whiten the data
     psd_array = np.array([
         ifo.power_spectral_density_array for ifo in interferometers
