@@ -19,13 +19,10 @@ class Nullpol(Bilby):
     """
     The nullpol pipeline.
 
-    Parameters
-    ----------
-    production : :class:`asimov.Production`
-       The production object.
-    category : str, optional
-        The category of the job.
-        Defaults to "C01_offline".
+    Args:
+        production (asimov.Production): The production object.
+        category (str, optional): The category of the job.
+            Defaults to "C01_offline".
     """
 
     name = "nullpol"

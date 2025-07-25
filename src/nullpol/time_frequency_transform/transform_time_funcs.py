@@ -7,26 +7,18 @@ from numba import njit
 from .transform_freq_funcs import phitilde_vec
 
 
-def transform_wavelet_time_helper(data, Nf, Nt, phi, mult):
+def transform_wavelet_time_helper(data: np.ndarray, Nf: int, Nt: int, phi: np.ndarray, mult: int) -> np.ndarray:
     """Helper function to do the wavelet transform in the time domain.
 
-    Parameters
-    ----------
-    data: 1D numpy array
-        Data.
-    Nf: int
-        Number of frequency bins.
-    Nt: int
-        Number of time bins.
-    phi: 1D numpy array
-        Wavelet.
-    mult: int
-        mult
+    Args:
+        data (numpy.ndarray): 1D numpy array of data.
+        Nf (int): Number of frequency bins.
+        Nt (int): Number of time bins.
+        phi (numpy.ndarray): 1D numpy array representing the wavelet.
+        mult (int): Multiplier value.
 
-    Returns
-    -------
-    2D numpy array
-        Data in wavelet domain.
+    Returns:
+        numpy.ndarray: 2D numpy array containing data in wavelet domain.
     """
     # the time domain data stream
     ND = Nf*Nt
@@ -54,26 +46,17 @@ def transform_wavelet_time_helper(data, Nf, Nt, phi, mult):
 
 
 @njit
-def assign_wdata(i, K, ND, Nf, wdata, data_pad, phi):
-    """Assign wdata to be fftd in loop, data_pad needs K extra values on the
-    right to loop.
+def assign_wdata(i: int, K: int, ND: int, Nf: int, wdata: np.ndarray, data_pad: np.ndarray, phi: np.ndarray) -> None:
+    """Assign wdata to be fftd in loop, data_pad needs K extra values on the right to loop.
 
-    Parameters
-    ----------
-    i: int
-        Time index.
-    K: int
-        Frequency cutoff.
-    ND: int
-        ND.
-    Nf: int
-        Number of frequency bins.
-    wdata: 1D numpy array
-        wdata.
-    data_pad: 1D numpy array
-        Padded data.
-    phi: 1D numpy array
-        Wavelet.
+    Args:
+        i (int): Time index.
+        K (int): Frequency cutoff.
+        ND (int): Total number of data points.
+        Nf (int): Number of frequency bins.
+        wdata (numpy.ndarray): 1D numpy array for windowed data.
+        data_pad (numpy.ndarray): 1D numpy array of padded data.
+        phi (numpy.ndarray): 1D numpy array representing the wavelet.
     """
     # half_K = np.int64(K/2)
     jj = i*Nf-K//2
@@ -90,21 +73,15 @@ def assign_wdata(i, K, ND, Nf, wdata, data_pad, phi):
 
 
 @njit
-def pack_wave(i, mult, Nf, wdata_trans, wave):
+def pack_wave(i: int, mult: int, Nf: int, wdata_trans: np.ndarray, wave: np.ndarray) -> None:
     """Pack fftd wdata into wave array.
 
-    Parameters
-    ----------
-    i: int
-        Time index.
-    mult: int
-        mult.
-    Nf: int
-        Number of frequency bins.
-    wdata_trans: 1D complex numpy array
-        wdata_trans.
-    wave: 2D numpy array
-        wdata.
+    Args:
+        i (int): Time index.
+        mult (int): Multiplier value.
+        Nf (int): Number of frequency bins.
+        wdata_trans (numpy.ndarray): 1D complex numpy array of transformed windowed data.
+        wave (numpy.ndarray): 2D numpy array to store the result.
     """
     if i % 2 == 0 and i < wave.shape[0]-1:
         # m=0 value at even Nt and
@@ -118,22 +95,16 @@ def pack_wave(i, mult, Nf, wdata_trans, wave):
             wave[i, j] = np.real(wdata_trans[j*mult])
 
 
-def phi_vec(Nf, nx=4., mult=16):
+def phi_vec(Nf: int, nx: float=4., mult: int=16) -> np.ndarray:
     """Get time domain phi as Fourier transform of phitilde_vec.
 
-    Parameters
-    ----------
-    Nf: int
-        Number of frequency bins.
-    nx: float, optional
-        Steepness of filter. Defaults to 4..
-    mult: int, optional
-        mult. Defaults to 16.
+    Args:
+        Nf (int): Number of frequency bins.
+        nx (float, optional): Steepness of filter. Defaults to 4.0.
+        mult (int, optional): Multiplier value. Defaults to 16.
 
-    Returns
-    -------
-    1D numpy array
-        Time domain phi.
+    Returns:
+        numpy.ndarray: 1D numpy array representing time domain phi.
     """
     # TODO fix mult
 

@@ -115,3 +115,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 .DS_Store
+
+# Avoid output files from the package to be committed
+*.png
+*.pdf
+*.jpg
+*.jpeg

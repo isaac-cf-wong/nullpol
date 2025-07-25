@@ -5,24 +5,17 @@ import numpy as np
 from numba import njit
 
 
-def inverse_wavelet_freq_helper_fast(wave_in,phif,Nf,Nt):
-    """Loop for inverse_wavelet_freq.
+def inverse_wavelet_freq_helper_fast(wave_in: np.ndarray, phif: np.ndarray, Nf: int, Nt: int) -> np.ndarray:
+    """Helper for fast inverse wavelet transform in frequency domain.
 
-    Parameters
-    ----------
-    wave_in: 2D numpy array
-        Input data in wavelet domain.
-    phif: 1D numpy array
-        Wavelet.
-    Nf: int
-        Number of frequency bins.
-    Nt: int
-        Number of time bins.
+    Args:
+        wave_in (numpy.ndarray): 2D numpy array of input data in wavelet domain.
+        phif (numpy.ndarray): 1D numpy array representing the wavelet.
+        Nf (int): Number of frequency bins.
+        Nt (int): Number of time bins.
 
-    Returns
-    -------
-    1D complex numpy array
-        Result.
+    Returns:
+        numpy.ndarray: 1D complex numpy array result.
     """
     ND=Nf*Nt
 
@@ -38,23 +31,16 @@ def inverse_wavelet_freq_helper_fast(wave_in,phif,Nf,Nt):
     return res
 
 @njit
-def unpack_wave_inverse(m,Nt,Nf,phif,fft_prefactor2s,res):
+def unpack_wave_inverse(m: int, Nt: int, Nf: int, phif: np.ndarray, fft_prefactor2s: np.ndarray, res: np.ndarray) -> None:
     """Helper for unpacking results of frequency domain inverse transform.
 
-    Parameters
-    ----------
-    m: int
-        Frequency index.
-    Nt: int
-        Number of time bins.
-    Nf: int
-        Number of frequency bins.
-    phif: 1D numpy array
-        Wavelet.
-    fft_prefactor2s: 1D numpy array
-        Prefactors of FFT.
-    res: 1D numpy array
-        Result.
+    Args:
+        m (int): Frequency index.
+        Nt (int): Number of time bins.
+        Nf (int): Number of frequency bins.
+        phif (numpy.ndarray): 1D numpy array wavelet.
+        fft_prefactor2s (numpy.ndarray): 1D numpy array prefactors of FFT.
+        res (numpy.ndarray): 1D numpy array for results.
     """
     if m==0 or m==Nf:
         for i_ind in range(0,Nt//2):
@@ -103,21 +89,15 @@ def unpack_wave_inverse(m,Nt,Nf,phif,fft_prefactor2s,res):
 #            res[i] += fft_prefactor2s[i%Nt]*phif[i_ind]
 
 @njit
-def pack_wave_inverse(m,Nt,Nf,prefactor2s,wave_in):
+def pack_wave_inverse(m: int, Nt: int, Nf: int, prefactor2s: np.ndarray, wave_in: np.ndarray) -> None:
     """Helper for fast frequency domain inverse transform to preare for Fourier transform.
 
-    Parameters
-    ----------
-    m: int
-        Frequency index.
-    Nt: int
-        Number of time bins.
-    Nf: int
-        Number of frequency bins.
-    prefactor2s: 1D complex numpy array
-        Prefactors for the 1D numpy array.
-    wave_in: 2D numpy array
-        Input data in wavelet domain.
+    Args:
+        m (int): Frequency index.
+        Nt (int): Number of time bins.
+        Nf (int): Number of frequency bins.
+        prefactor2s (numpy.ndarray): 1D complex numpy array prefactors.
+        wave_in (numpy.ndarray): 2D numpy array input data in wavelet domain.
     """
     if m==0:
         for n in range(0,Nt):

@@ -7,6 +7,7 @@ from bilby.gw.source import lal_binary_black_hole
 
 logger.setLevel('CRITICAL')
 import numpy as np
+import pytest
 import scipy.stats
 from tqdm import tqdm
 
@@ -15,45 +16,89 @@ from nullpol.injection import create_injection
 from nullpol.likelihood.chi2_time_frequency_likelihood import \
     Chi2TimeFrequencyLikelihood
 
-seed = 12
-# Set the seed
-np.random.seed(seed)
-bilby.core.utils.random.seed(seed)
-duration = 8
-sampling_frequency = 4096
-geocent_time = 1126259642.413
-start_time = geocent_time - 4
-wavelet_frequency_resolution = 16
-wavelet_nx = 4.
-minimum_frequency = 20
-maximum_frequency = sampling_frequency / 2
-threshold = 1.
-time_padding = 0.1
-frequency_padding = 1
-skypoints = 10
-parameters = dict(
-    mass_1=36.0,
-    mass_2=29.0,
-    a_1=0.,
-    a_2=0.,
-    tilt_1=0.,
-    tilt_2=0.,
-    phi_12=0.,
-    phi_jl=0.,
-    luminosity_distance=2000.0,
-    theta_jn=0.,
-    psi=2.659,
-    phase=1.3,
-    geocent_time=geocent_time,
-    ra=1.375,
-    dec=-1.2108,
-)
 
+@pytest.fixture(scope='module')
+def configuration() -> dict:
+    """This specifies the configurations of the unit tests in this module.
 
-def create_time_frequency_filter():
+    Returns:
+        Dict: A dictionary of configuration.
+    """
+    seed = 12
+    # Set the seed
+    np.random.seed(seed)
+    bilby.core.utils.random.seed(seed)
+    duration = 8
+    sampling_frequency = 4096
+    geocent_time = 1126259642.413
+    start_time = geocent_time - 4
+    wavelet_frequency_resolution = 16
+    wavelet_nx = 4.
+    minimum_frequency = 20
+    maximum_frequency = sampling_frequency / 2
+    threshold = 1.
+    time_padding = 0.1
+    frequency_padding = 1
+    skypoints = 10
+    parameters = dict(
+        mass_1=36.0,
+        mass_2=29.0,
+        a_1=0.,
+        a_2=0.,
+        tilt_1=0.,
+        tilt_2=0.,
+        phi_12=0.,
+        phi_jl=0.,
+        luminosity_distance=2000.0,
+        theta_jn=0.,
+        psi=2.659,
+        phase=1.3,
+        geocent_time=geocent_time,
+        ra=1.375,
+        dec=-1.2108,
+    )
+
+    return {
+        'seed': seed,
+        'duration': duration,
+        'sampling_frequency': sampling_frequency,
+        'geocent_time': geocent_time,
+        'start_time': start_time,
+        'wavelet_frequency_resolution': wavelet_frequency_resolution,
+        'wavelet_nx': wavelet_nx,
+        'minimum_frequency': minimum_frequency,
+        'maximum_frequency': maximum_frequency,
+        'threshold': threshold,
+        'time_padding': time_padding,
+        'frequency_padding': frequency_padding,
+        'skypoints': skypoints,
+        'parameters': parameters
+    }
+
+@pytest.fixture(scope='module')
+def time_frequency_filter(configuration: dict) -> np.ndarray:
+    """This method computes the time-frequency filter.
+
+    Args:
+        configuration (Dict): A dictionary of configuration.
+
+    Returns:
+        np.ndarray: A time-frequency mask. (time, frequency).
+    """
+    parameters = configuration['parameters']
+    duration = configuration['duration']
+    sampling_frequency = configuration['sampling_frequency']
+    start_time = configuration['start_time']
+    wavelet_frequency_resolution = configuration['wavelet_frequency_resolution']
+    wavelet_nx = configuration['wavelet_nx']
+    threshold = configuration['threshold']
+    time_padding = configuration['time_padding']
+    frequency_padding = configuration['frequency_padding']
+    skypoints = configuration['skypoints']
+
     interferometers = InterferometerList(['H1', 'L1', 'V1'])
     noise_type = 'zero_noise'
-    freuency_domain_source_model = lal_binary_black_hole
+    frequency_domain_source_model = lal_binary_black_hole
     waveform_arguments = dict(waveform_approximant='IMRPhenomPv2',
                                 reference_frequency=50)
     create_injection(interferometers=interferometers,
@@ -62,10 +107,10 @@ def create_time_frequency_filter():
                         sampling_frequency=sampling_frequency,
                         start_time=start_time,
                         noise_type=noise_type,
-                        frequency_domain_source_model=freuency_domain_source_model,
+                        frequency_domain_source_model=frequency_domain_source_model,
                         waveform_arguments=waveform_arguments)
     frequency_domain_strain_array = np.array([ifo.frequency_domain_strain.copy() for ifo in interferometers])
-    time_frequency_filter, spectrogram = run_time_frequency_clustering(
+    time_frequency_filter, _ = run_time_frequency_clustering(
         interferometers=interferometers,
         frequency_domain_strain_array=frequency_domain_strain_array,
         wavelet_frequency_resolution=wavelet_frequency_resolution,
@@ -76,17 +121,23 @@ def create_time_frequency_filter():
         skypoints=skypoints,
         return_sky_maximized_spectrogram=True,
         threshold_type='variance')
-    import matplotlib.pyplot as plt
-    plt.imshow(time_frequency_filter, aspect='auto')
-    plt.savefig('TF_filter.png')
-    plt.imshow(spectrogram, aspect='auto')
-    plt.savefig('spectrogram.png')
     return time_frequency_filter
 
-time_frequency_filter = create_time_frequency_filter()
 
+def test_noise_residual_energy(configuration: dict, time_frequency_filter: np.ndarray) -> None:
+    r"""Test whether the residual energy of noise follows the :math:`\chi^{2}` distribution.
 
-def test_noise_residual_energy():
+    Args:
+        configuration (Dict): A dictionary of configuration.
+        time_frequency_filter (np.ndarray): A time-frequency mask. (time, frequency).
+    """
+    duration = configuration['duration']
+    sampling_frequency = configuration['sampling_frequency']
+    start_time = configuration['start_time']
+    wavelet_frequency_resolution = configuration['wavelet_frequency_resolution']
+    wavelet_nx = configuration['wavelet_nx']
+    geocent_time = configuration['geocent_time']
+
     samples = []
 
     for i in tqdm(range(200), desc='test_noise_residual_energy'):
@@ -114,11 +165,29 @@ def test_noise_residual_energy():
         samples.append(energy)
 
     result = scipy.stats.kstest(samples, cdf='chi2', args=(likelihood.DoF,))
-    print(f"p-value = {result.pvalue}")
-    assert result.pvalue >= 0.05
+    print(f"p-value = {result.pvalue}, mean = {np.mean(samples)}, var = {np.var(samples)}, DoF = {likelihood.DoF}")
+    assert result.pvalue >= 0.05, f"Expected p-value >= 0.05, got{result.pvalue}"
 
 
-def test_signal_residual_energy():
+def test_signal_residual_energy(configuration: dict, time_frequency_filter: np.ndarray) -> None:
+    r"""Test whether the residual energy for a noisy injection with signals
+    follows the :math:`\chi^{2}` distribution.
+
+    Args:
+        configuration (Dict): A dictionary of configuration.
+        time_frequency_filter (np.ndarray): Time-frequency mask. (time, frequency).
+    """
+    duration = configuration['duration']
+    sampling_frequency = configuration['sampling_frequency']
+    start_time = configuration['start_time']
+    wavelet_frequency_resolution = configuration['wavelet_frequency_resolution']
+    wavelet_nx = configuration['wavelet_nx']
+    parameters = configuration['parameters']
+    ra = parameters['ra']
+    dec = parameters['dec']
+    psi = parameters['psi']
+    geocent_time = parameters['geocent_time']
+
     samples = []
 
     for i in tqdm(range(200), desc='test_signal_residual_energy'):
@@ -139,18 +208,36 @@ def test_signal_residual_energy():
             polarization_modes=polarization_modes,
             polarization_basis=polarization_basis,
             time_frequency_filter=time_frequency_filter)
-        likelihood.parameters = dict(ra=parameters['ra'],
-                                     dec=parameters['dec'],
-                                     psi=parameters['psi'],
-                                     geocent_time=parameters['geocent_time'])
+        likelihood.parameters = dict(ra=ra,
+                                     dec=dec,
+                                     psi=psi,
+                                     geocent_time=geocent_time)
         energy = likelihood._compute_residual_energy()
         samples.append(energy)
     result = scipy.stats.kstest(samples, cdf='chi2', args=(likelihood.DoF,))
-    print(f"p-value = {result.pvalue}")
-    assert result.pvalue >= 0.05
+    print(f"p-value = {result.pvalue}, mean = {np.mean(samples)}, var = {np.var(samples)}, DoF = {likelihood.DoF}")
+    assert result.pvalue >= 0.05, f"Expected p-value >= 0.05, got{result.pvalue}"
 
 
-def test_signal_residual_energy_incorrect_parameters():
+def test_signal_residual_energy_incorrect_parameters(configuration: dict, time_frequency_filter: np.ndarray) -> None:
+    r"""Test whether the residual energy of a noisy injection with signals does not
+    follow the :math:`\chi^{2}` distribution.
+
+    Args:
+        configuration (Dict): A dictionary of configuration.
+        time_frequency_filter (np.ndarray): Time-frequency mask. (time, frequency).
+    """
+    duration = configuration['duration']
+    sampling_frequency = configuration['sampling_frequency']
+    start_time = configuration['start_time']
+    wavelet_frequency_resolution = configuration['wavelet_frequency_resolution']
+    wavelet_nx = configuration['wavelet_nx']
+    parameters = configuration['parameters']
+    ra = parameters['ra'] + 0.5
+    dec = parameters['dec'] - 0.5
+    psi = parameters['psi'] + 0.5
+    geocent_time = parameters['geocent_time'] + 10000
+
     samples = []
 
     for i in tqdm(range(200), desc='test_signal_residual_energy_incorrect_parameters'):
@@ -171,20 +258,41 @@ def test_signal_residual_energy_incorrect_parameters():
             polarization_modes=polarization_modes,
             polarization_basis=polarization_basis,
             time_frequency_filter=time_frequency_filter)
-        likelihood.parameters = dict(ra=parameters['ra']+0.5,
-                                    dec=parameters['dec']-0.5,
-                                    psi=parameters['psi']+0.5,
-                                    geocent_time=parameters['geocent_time']+10000)
+        likelihood.parameters = dict(ra=ra,
+                                    dec=dec,
+                                    psi=psi,
+                                    geocent_time=geocent_time)
         energy = likelihood._compute_residual_energy()
         samples.append(energy)
     result = scipy.stats.kstest(samples, cdf='chi2', args=(likelihood.DoF,))
-    print(f"p-value = {result.pvalue}")
-    assert result.pvalue < 0.05
+    print(f"p-value = {result.pvalue}, mean = {np.mean(samples)}, var = {np.var(samples)}, DoF = {likelihood.DoF}")
+    assert result.pvalue < 0.05, f"Expected p-value < 0.05, got{result.pvalue}"
 
 
-def test_signal_pc_c_residual_energy():
+def test_signal_pc_c_residual_energy(configuration: dict, time_frequency_filter: np.ndarray) -> None:
+    r"""Test whether the residual energy for a noisy injection with signals
+    with the single-mode effective antenna pattern function
+    follows the :math:`\chi^{2}` distribution.
+
+    Args:
+        configuration (Dict): A dictionary of configuration.
+        time_frequency_filter (np.ndarray): Time-frequency mask. (time, frequency).
+    """
+    duration = configuration['duration']
+    sampling_frequency = configuration['sampling_frequency']
+    start_time = configuration['start_time']
+    wavelet_frequency_resolution = configuration['wavelet_frequency_resolution']
+    wavelet_nx = configuration['wavelet_nx']
+    parameters = configuration['parameters']
+    ra = parameters['ra']
+    dec = parameters['dec']
+    psi = parameters['psi']
+    geocent_time = parameters['geocent_time']
+    amplitude_cp = 1
+    phase_cp = -np.pi/2
+
     samples = []
-    freuency_domain_source_model = lal_binary_black_hole
+    frequency_domain_source_model = lal_binary_black_hole
     waveform_arguments = dict(waveform_approximant='IMRPhenomPv2',
                                 reference_frequency=50)
     for i in tqdm(range(200), desc='test_signal_pc_p_residual_energy'):
@@ -196,7 +304,7 @@ def test_signal_pc_c_residual_energy():
                             start_time=start_time,
                             parameters=parameters,
                             noise_type='gaussian',
-                            frequency_domain_source_model=freuency_domain_source_model,
+                            frequency_domain_source_model=frequency_domain_source_model,
                             waveform_arguments=waveform_arguments)
         polarization_modes = 'pc'
         polarization_basis = 'p'
@@ -207,22 +315,43 @@ def test_signal_pc_c_residual_energy():
             polarization_modes=polarization_modes,
             polarization_basis=polarization_basis,
             time_frequency_filter=time_frequency_filter)
-        likelihood.parameters = dict(ra=parameters['ra'],
-                                    dec=parameters['dec'],
-                                    psi=parameters['psi'],
-                                    geocent_time=parameters['geocent_time'],
-                                    amplitude_cp=1.,
-                                    phase_cp=-np.pi/2)
+        likelihood.parameters = dict(ra=ra,
+                                     dec=dec,
+                                     psi=psi,
+                                     geocent_time=geocent_time,
+                                     amplitude_cp=amplitude_cp,
+                                     phase_cp=phase_cp)
         energy = likelihood._compute_residual_energy()
         samples.append(energy)
     result = scipy.stats.kstest(samples, cdf='chi2', args=(likelihood.DoF,))
-    print(f"p-value = {result.pvalue}")
-    assert result.pvalue >= 0.05
+    print(f"p-value = {result.pvalue}, mean = {np.mean(samples)}, var = {np.var(samples)}, DoF = {likelihood.DoF}")
+    assert result.pvalue >= 0.05, f"Expected p-value >= 0.05, got{result.pvalue}"
 
 
-def test_signal_pc_c_residual_energy_incorrect_parameters():
+def test_signal_pc_c_residual_energy_incorrect_parameters(configuration: dict, time_frequency_filter: np.ndarray) -> None:
+    r"""Test whether the residual energy for a noisy injection with signals
+    with the single-mode effective antenna pattern function using the incorrect parameters
+    does not follow the :math:`\chi^{2}` distribution.
+
+    Args:
+        configuration (Dict): A dictionary of configuration.
+        time_frequency_filter (np.ndarray): Time-frequency mask. (time, frequency).
+    """
+    duration = configuration['duration']
+    sampling_frequency = configuration['sampling_frequency']
+    start_time = configuration['start_time']
+    wavelet_frequency_resolution = configuration['wavelet_frequency_resolution']
+    wavelet_nx = configuration['wavelet_nx']
+    parameters = configuration['parameters']
+    ra = parameters['ra']
+    dec = parameters['dec']
+    psi = parameters['psi']
+    geocent_time = parameters['geocent_time']
+    amplitude_cp = 1
+    phase_cp = np.pi/2
+
     samples = []
-    freuency_domain_source_model = lal_binary_black_hole
+    frequency_domain_source_model = lal_binary_black_hole
     waveform_arguments = dict(waveform_approximant='IMRPhenomPv2',
                                 reference_frequency=50)
     for i in tqdm(range(200), desc='test_signal_pc_p_residual_energy_incorrect_parameters'):
@@ -234,7 +363,7 @@ def test_signal_pc_c_residual_energy_incorrect_parameters():
                             start_time=start_time,
                             parameters=parameters,
                             noise_type='gaussian',
-                            frequency_domain_source_model=freuency_domain_source_model,
+                            frequency_domain_source_model=frequency_domain_source_model,
                             waveform_arguments=waveform_arguments)
         polarization_modes = 'pc'
         polarization_basis = 'p'
@@ -245,14 +374,14 @@ def test_signal_pc_c_residual_energy_incorrect_parameters():
             polarization_modes=polarization_modes,
             polarization_basis=polarization_basis,
             time_frequency_filter=time_frequency_filter)
-        likelihood.parameters = dict(ra=parameters['ra'],
-                                        dec=parameters['dec'],
-                                        psi=parameters['psi'],
-                                        geocent_time=parameters['geocent_time'],
-                                        amplitude_cp=1.,
-                                        phase_cp=np.pi/2)
+        likelihood.parameters = dict(ra=ra,
+                                     dec=dec,
+                                     psi=psi,
+                                     geocent_time=geocent_time,
+                                     amplitude_cp=amplitude_cp,
+                                     phase_cp=phase_cp)
         energy = likelihood._compute_residual_energy()
         samples.append(energy)
     result = scipy.stats.kstest(samples, cdf='chi2', args=(likelihood.DoF,))
-    print(f"p-value = {result.pvalue}")
-    assert result.pvalue < 0.05
+    print(f"p-value = {result.pvalue}, mean = {np.mean(samples)}, var = {np.var(samples)}, DoF = {likelihood.DoF}")
+    assert result.pvalue < 0.05, f"Expected p-value < 0.05, got{result.pvalue}"
