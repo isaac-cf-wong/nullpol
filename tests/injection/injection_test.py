@@ -1,3 +1,9 @@
+"""Test module for signal injection functionality.
+
+This module tests the injection of simulated gravitational wave signals into
+detector data streams.
+"""
+
 from __future__ import annotations
 
 import unittest
@@ -9,7 +15,20 @@ from nullpol.injection import create_injection
 
 
 class TestInjection(unittest.TestCase):
+    """Test class for signal injection procedures.
+
+    This class validates the injection of binary black hole signals into
+    detector strain data under various noise conditions, ensuring proper
+    signal generation and detector response calculation.
+    """
+
     def test_create_injection_zero_noise(self):
+        """Test signal injection into noiseless detector data.
+
+        Validates that binary black hole signals can be properly injected
+        into zero-noise detector data, testing the fundamental signal
+        generation and detector response computation without noise contamination.
+        """
         interferometers = InterferometerList(['H1', 'L1', 'V1'])
         parameters = dict(
             mass_1=36.0,
@@ -45,6 +64,12 @@ class TestInjection(unittest.TestCase):
                          waveform_arguments=waveform_arguments)
 
     def test_create_injection_gaussian(self):
+        """Test signal injection into Gaussian noise.
+
+        Validates that binary black hole signals can be properly injected
+        into detector data with simulated Gaussian noise, testing realistic
+        signal-plus-noise scenarios for detection algorithm validation.
+        """
         interferometers = InterferometerList(['H1', 'L1', 'V1'])
         parameters = dict(
             mass_1=36.0,
@@ -80,6 +105,12 @@ class TestInjection(unittest.TestCase):
                          waveform_arguments=waveform_arguments)
 
     def test_create_injection_noise(self):
+        """Test noise-only injection for background characterization.
+
+        Validates the generation of noise-only detector data without
+        gravitational wave signals, essential for background characterization
+        and noise property studies.
+        """
         interferometers = InterferometerList(['H1', 'L1', 'V1'])
         duration = 8
         sampling_frequency = 4096

@@ -9,6 +9,11 @@ from bilby.core.utils import logger
 
 @property
 def time_domain_strain_array(self):
+    """Array of time domain strain data from all interferometers.
+
+    Returns:
+        numpy.ndarray: Time domain strain array with shape (n_detectors, n_samples).
+    """
     if self._time_domain_strain_array is None:
         nifo = len(self)
         nfreq = len(self[0].time_domain_strain)
@@ -21,6 +26,11 @@ def time_domain_strain_array(self):
 
 @property
 def frequency_domain_strain_array(self):
+    """Array of frequency domain strain data from all interferometers.
+
+    Returns:
+        numpy.ndarray: Frequency domain strain array with shape (n_detectors, n_frequencies).
+    """
     if self._frequency_domain_strain_array is None:
         nifo = len(self)
         nfreq = len(self[0].frequency_domain_strain)
@@ -33,6 +43,11 @@ def frequency_domain_strain_array(self):
 
 @property
 def time_frequency_domain_strain_array(self):
+    """Array of time-frequency domain strain data from all interferometers.
+
+    Returns:
+        numpy.ndarray: Time-frequency domain strain array with shape (n_detectors, n_time, n_frequencies).
+    """
     if self._frequency_domain_strain_array is None:
         nifo = len(self)
         ntime, nfreq = self[0].time_frequency_domain_strain.shape
@@ -45,6 +60,11 @@ def time_frequency_domain_strain_array(self):
 
 @property
 def whitened_frequency_domain_strain_array(self):
+    """Array of whitened frequency domain strain data from all interferometers.
+
+    Returns:
+        numpy.ndarray: Whitened frequency domain strain array with shape (n_detectors, n_frequencies).
+    """
     if self._whitened_frequency_domain_strain_array is None:
         nifo = len(self)
         nfreq = len(self[0].frequency_domain_strain)

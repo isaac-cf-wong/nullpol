@@ -21,13 +21,49 @@ bilby_pipe.utils.logger = logger
 
 
 def get_detectors_list(inputs):
+    """Get list of detector combinations for parallel processing.
+
+    Args:
+        inputs: Input configuration object containing detector specifications.
+
+    Returns:
+        list: List containing the detector configuration.
+    """
     detectors_list = []
     detectors_list.append(inputs.detectors)
     return detectors_list
 
 
 def generate_dag(inputs):
-    """Core logic setting up parent-child structure between nodes"""
+    """Generate the Directed Acyclic Graph (DAG) structure for nullpol pipeline.
+
+    Creates a complete workflow DAG including data generation, analysis, and
+    post-processing nodes with proper parent-child dependencies. The DAG handles
+    multiple polarization mode combinations and parallel processing over different
+    trigger times.
+
+    Args:
+        inputs: Configuration object containing all pipeline parameters including:
+            - trigger times to analyze
+            - polarization modes and basis combinations
+            - detector configurations
+            - analysis settings
+            - post-processing options
+
+    Returns:
+        Dag: Complete DAG object ready for HTCondor submission with all nodes
+            and dependencies properly configured.
+
+    Raises:
+        NullpolError: If polarization modes and basis lists have different lengths.
+
+    Note:
+        The DAG structure follows this hierarchy:
+        1. Generation nodes (data preparation) - all depend on the first generation node
+        2. Analysis nodes (parameter estimation) - depend on corresponding generation nodes
+        3. Merge nodes (combine parallel results) - depend on analysis nodes
+        4. Post-processing nodes (plots, summaries) - depend on merge nodes
+    """
     inputs = copy.deepcopy(inputs)
     dag = Dag(inputs)
     trigger_times = get_trigger_time_list(inputs)

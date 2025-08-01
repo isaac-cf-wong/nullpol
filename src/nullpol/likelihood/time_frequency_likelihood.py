@@ -164,6 +164,16 @@ class TimeFrequencyLikelihood(Likelihood):
 
     @property
     def filtered_frequency_mask(self):
+        """Frequency mask filtered by the time-frequency filter boundaries.
+
+        Determines which frequency bins are covered by the time-frequency filter
+        by finding the minimum and maximum frequencies spanned by the filter
+        and creating a mask for the corresponding frequency range.
+
+        Returns:
+            numpy.ndarray: Boolean array indicating which frequencies are within
+                the time-frequency filter bounds.
+        """
         if self._filtered_frequency_mask is None:
             self._filtered_frequency_mask = np.full_like(self.frequency_mask, False)
             # Check the minimum and maximum frequencies implied
@@ -178,6 +188,15 @@ class TimeFrequencyLikelihood(Likelihood):
 
     @property
     def filtered_masked_frequency_array(self):
+        """Frequency array filtered by both general and time-frequency filter masks.
+
+        Returns the frequency array values that pass both the interferometer
+        frequency mask and the time-frequency filter boundaries.
+
+        Returns:
+            numpy.ndarray: Array of frequency values that are both in the general
+                frequency mask and within the time-frequency filter bounds.
+        """
         if self._filtered_masked_frequency_array is None:
             self._filtered_masked_frequency_array = self.frequency_array[self.frequency_mask]
         return self._filtered_masked_frequency_array

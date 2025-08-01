@@ -39,6 +39,15 @@ class GaussianTimeFrequencyLikelihood(TimeFrequencyLikelihood):
         self._log_normalization_constant = -np.log(2. * np.pi) * 0.5 * (len(self.interferometers) - np.sum(self.polarization_basis)) * np.sum(self.time_frequency_filter)
 
     def _compute_residual(self):
+        """Compute the residual null stream after signal subtraction.
+
+        This method estimates the gravitational wave signal at the geocenter
+        and subtracts it from the observed strain data to obtain the null
+        stream residual used in likelihood calculations.
+
+        Returns:
+            numpy.ndarray: Complex-valued residual null stream in the wavelet domain.
+        """
         s_est = self.estimate_wavelet_domain_signal_at_geocenter()
         d_wavelet = self.compute_cached_wavelet_domain_strain_array_at_geocenter()
 
@@ -47,6 +56,15 @@ class GaussianTimeFrequencyLikelihood(TimeFrequencyLikelihood):
         return d_null
 
     def log_likelihood(self):
+        """Calculate the Gaussian log-likelihood for time-frequency domain analysis.
+
+        Computes the log-likelihood assuming Gaussian statistics for the null stream
+        energy after optimal signal subtraction. The likelihood includes proper
+        normalization constants for the multivariate Gaussian distribution.
+
+        Returns:
+            float: Log-likelihood value for the current parameter set.
+        """
         residual = self._compute_residual()
         E_null = np.sum(np.abs(residual * self.time_frequency_filter)**2)
         log_likelihood = -0.5 * E_null + self._log_normalization_constant

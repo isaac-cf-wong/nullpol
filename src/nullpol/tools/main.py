@@ -18,6 +18,26 @@ bilby_pipe.utils.logger = logger
 
 
 class MainInput(BilbyMainInput, Input):
+    """Configuration manager for main nullpol polarization analysis pipeline.
+
+    This class extends both bilby_pipe's MainInput and nullpol's Input classes to
+    provide comprehensive configuration management for gravitational wave polarization
+    analysis workflows. It handles parameter specification for HTCondor job submission,
+    data analysis settings, and post-processing options.
+
+    The class manages all aspects of the analysis pipeline including:
+    - Data acquisition and preprocessing parameters
+    - Likelihood and sampling configuration
+    - Job scheduling and resource allocation
+    - Post-processing and visualization options
+    - Polarization-specific analysis settings
+
+    Attributes:
+        All attributes from BilbyMainInput and Input classes, plus workflow-specific
+        settings for polarization analysis including detector configuration,
+        scheduling parameters, and output management.
+    """
+
     def __init__(self, args, unknown_args, perform_checks=True):
         Input.__init__(self, args, unknown_args, print_msg=False)
 

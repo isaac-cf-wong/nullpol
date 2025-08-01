@@ -1,3 +1,11 @@
+"""Test module for verifying nullpol package imports.
+
+This module contains basic import tests to ensure all nullpol submodules
+can be imported successfully without errors. This is essential for
+validating the package structure and detecting any missing dependencies
+or circular import issues in the pipeline.
+"""
+
 from __future__ import annotations
 
 import nullpol

@@ -7,6 +7,29 @@ from bilby_pipe.job_creation.nodes.analysis_node import touch_checkpoint_files
 
 
 class AnalysisNode(Node):
+    """HTCondor job node for polarization-aware parameter estimation analysis.
+
+    Extends bilby_pipe's Node class to handle nullpol-specific analysis jobs
+    with polarization mode configurations. Creates and manages the HTCondor
+    job for running parameter estimation on gravitational wave data with
+    specific polarization basis and derived modes.
+
+    Args:
+        inputs: Configuration object containing analysis parameters.
+        generation_node: Parent data generation node this analysis depends on.
+        detectors (list[str]): List of detector names to analyze.
+        sampler (str): MCMC sampler to use for parameter estimation.
+        parallel_idx (int): Index for parallel processing.
+        dag: Parent DAG object.
+        polarization_modes (str): Polarization modes to include in analysis.
+        polarization_basis (str): Polarization basis modes for the analysis.
+
+    Attributes:
+        polarization_modes (str): Polarization modes being analyzed.
+        polarization_basis (str): Basis polarization modes.
+        base_job_name (str): Base name for the HTCondor job incorporating
+            detectors and polarization configuration.
+    """
     def __init__(self,
                  inputs,
                  generation_node,

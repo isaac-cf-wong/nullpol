@@ -1,3 +1,9 @@
+"""Test module for time-frequency filter creation tool from sample parameters.
+
+This module tests the command-line tool for creating time-frequency filters
+based on signal parameters.
+"""
+
 from __future__ import annotations
 
 import json
@@ -12,7 +18,19 @@ from nullpol.tools.create_time_frequency_filter_from_sample import main
 
 
 class TestCreateTimeFrequencyFilterFromSample(unittest.TestCase):
+    """Test class for the time-frequency filter creation tool.
+
+    This class validates the functionality of the time-frequency filter
+    generation tool that creates optimal filters in the wavelet domain
+    based on signal parameters.
+    """
+
     def test_generate_config(self):
+        """Test configuration file generation for filter creation.
+
+        Validates that the tool correctly generates default configuration
+        files for time-frequency filter creation.
+        """
         # Create a temporary config file path
         with tempfile.NamedTemporaryFile(suffix='.ini', delete=False) as temp_config_file:
             config_file_path = temp_config_file.name
@@ -41,6 +59,12 @@ class TestCreateTimeFrequencyFilterFromSample(unittest.TestCase):
         self.assertEqual(generated_content.strip(), default_generated_content.strip())
 
     def test_create_time_frequency_filter(self):
+        """Test time-frequency filter creation from signal parameters.
+
+        Validates that the tool can successfully generate time-frequency
+        filters based on signal parameters and custom power spectral densities
+        for multi-detector networks.
+        """
         # Create a temporary config file path
         with tempfile.NamedTemporaryFile(suffix='.ini', delete=True) as temp_config_file:
             config_file_path = temp_config_file.name

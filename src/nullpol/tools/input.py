@@ -20,6 +20,23 @@ bilby_pipe.utils.logger = logger
 
 
 class Input(BilbyInput):
+    """Input configuration class for nullpol analysis.
+
+    Extends bilby_pipe's BilbyInput to handle polarization-specific parameters
+    and time-frequency analysis settings for gravitational wave parameter estimation.
+
+    Args:
+        args (argparse.Namespace): Parsed command-line arguments containing analysis configuration.
+        unknown_args (list): List of unrecognized command-line arguments.
+        print_msg (bool, optional): Whether to print initialization messages. Defaults to True.
+
+    Attributes:
+        polarization_modes (list[str]): List of polarization modes to include in analysis.
+        polarization_basis (list[str]): List of polarization modes to use as basis.
+        wavelet_frequency_resolution (float): Frequency resolution for wavelet transforms in Hz.
+        wavelet_nx (float): Wavelet steepness parameter.
+        calibration_correction_type (str): Type of calibration correction to apply.
+    """
     def __init__(self, args, unknown_args, print_msg=True):
         super().__init__(args=args,
                                     unknown_args=unknown_args,
