@@ -1,3 +1,9 @@
+"""Test module for wavelet-based time-frequency transform functionality.
+
+This module tests the wavelet transform implementation used for time-frequency
+analysis.
+"""
+
 from __future__ import annotations
 
 import unittest
@@ -14,12 +20,29 @@ from nullpol.time_frequency_transform import (
 
 
 class TestWaveletTransform(unittest.TestCase):
+    """Test class for wavelet transform operations.
+
+    This class validates the implementation of forward and inverse wavelet
+    transforms, ensuring proper time-frequency decomposition and reconstruction
+    of gravitational wave strain data.
+    """
+
     def setUp(self):
+        """Set up test environment with deterministic random seeds.
+
+        Initializes random number generators with fixed seeds to ensure
+        reproducible test results for wavelet transform operations.
+        """
         seed = 12
         np.random.seed(seed)
         bilby.core.utils.random.seed(seed)
 
     def test_wavelet_transform_of_sine_wave(self):
+        """Test wavelet transform correctly localizes sinusoidal signals.
+
+        Validates that a pure sinusoidal signal at 32Hz is correctly localized
+        in the frequency domain across all time bins.
+        """
         srate = 128
         inj_freq = 32
         seglen = 4
@@ -36,6 +59,11 @@ class TestWaveletTransform(unittest.TestCase):
             self.assertEqual(np.argmax(np.abs(data2[i])), inj_freq_idx)
 
     def test_inverse_wavelet_time(self):
+        """Test time-domain wavelet transform invertibility.
+
+        Validates that the inverse wavelet transform correctly reconstructs
+        the original time-domain signal.
+        """
         srate = 128
         inj_freq = 32
         seglen = 4
@@ -49,6 +77,11 @@ class TestWaveletTransform(unittest.TestCase):
         self.assertTrue(np.allclose(data, data_rec))
 
     def test_inverse_wavelet_freq_time(self):
+        """Test frequency-time wavelet transform invertibility.
+
+        Validates that the inverse frequency-time wavelet transform correctly
+        reconstructs the original signal.
+        """
         srate = 128
         inj_freq = 32
         seglen = 4
@@ -61,6 +94,11 @@ class TestWaveletTransform(unittest.TestCase):
         self.assertTrue(np.allclose(data, data_rec))
 
     def test_whitened_wavelet_domain_data(self):
+        """Test wavelet-domain whitened data follows expected noise statistics.
+
+        Validates that whitened strain data transformed to the wavelet domain
+        maintains proper Gaussian noise statistics.
+        """
         sampling_frequency = 2048
         duration = 16
         minimum_frequency = 20

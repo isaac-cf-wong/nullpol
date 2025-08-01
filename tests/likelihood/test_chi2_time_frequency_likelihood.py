@@ -1,3 +1,9 @@
+"""Test module for chi-squared time-frequency likelihood functionality.
+
+This module tests the chi-squared likelihood implementation for time-frequency
+domain analysis.
+"""
+
 from __future__ import annotations
 
 import bilby
@@ -19,10 +25,11 @@ from nullpol.likelihood.chi2_time_frequency_likelihood import \
 
 @pytest.fixture(scope='module')
 def configuration() -> dict:
-    """This specifies the configurations of the unit tests in this module.
+    """Configuration fixture for time-frequency likelihood tests.
 
     Returns:
-        Dict: A dictionary of configuration.
+        Dict: A dictionary containing all test configuration parameters
+            including detector setup, signal parameters, and analysis settings.
     """
     seed = 12
     # Set the seed
@@ -77,13 +84,14 @@ def configuration() -> dict:
 
 @pytest.fixture(scope='module')
 def time_frequency_filter(configuration: dict) -> np.ndarray:
-    """This method computes the time-frequency filter.
+    """Time-frequency filter fixture for likelihood testing.
 
     Args:
-        configuration (Dict): A dictionary of configuration.
+        configuration (Dict): Test configuration parameters.
 
     Returns:
-        np.ndarray: A time-frequency mask. (time, frequency).
+        np.ndarray: A time-frequency mask computed from injected signal
+            parameters for optimal filtering in the wavelet domain.
     """
     parameters = configuration['parameters']
     duration = configuration['duration']
@@ -125,11 +133,15 @@ def time_frequency_filter(configuration: dict) -> np.ndarray:
 
 
 def test_noise_residual_energy(configuration: dict, time_frequency_filter: np.ndarray) -> None:
-    r"""Test whether the residual energy of noise follows the :math:`\chi^{2}` distribution.
+    """Test noise-only residual energy follows chi-squared distribution.
+
+    Validates that the chi-squared likelihood correctly models noise-only
+    data by testing whether residual energies follow the expected chi-squared
+    distribution with appropriate degrees of freedom.
 
     Args:
-        configuration (Dict): A dictionary of configuration.
-        time_frequency_filter (np.ndarray): A time-frequency mask. (time, frequency).
+        configuration (Dict): Test configuration parameters.
+        time_frequency_filter (np.ndarray): Time-frequency mask for filtering.
     """
     duration = configuration['duration']
     sampling_frequency = configuration['sampling_frequency']
@@ -170,12 +182,15 @@ def test_noise_residual_energy(configuration: dict, time_frequency_filter: np.nd
 
 
 def test_signal_residual_energy(configuration: dict, time_frequency_filter: np.ndarray) -> None:
-    r"""Test whether the residual energy for a noisy injection with signals
-    follows the :math:`\chi^{2}` distribution.
+    """Test signal residual energy with correct parameters follows chi-squared distribution.
+
+    Validates that when analyzing injected signals with correct recovery parameters,
+    the likelihood residual energy follows the expected chi-squared distribution,
+    confirming proper signal subtraction in the likelihood calculation.
 
     Args:
-        configuration (Dict): A dictionary of configuration.
-        time_frequency_filter (np.ndarray): Time-frequency mask. (time, frequency).
+        configuration (Dict): Test configuration parameters.
+        time_frequency_filter (np.ndarray): Time-frequency mask for filtering.
     """
     duration = configuration['duration']
     sampling_frequency = configuration['sampling_frequency']
@@ -220,12 +235,16 @@ def test_signal_residual_energy(configuration: dict, time_frequency_filter: np.n
 
 
 def test_signal_residual_energy_incorrect_parameters(configuration: dict, time_frequency_filter: np.ndarray) -> None:
-    r"""Test whether the residual energy of a noisy injection with signals does not
-    follow the :math:`\chi^{2}` distribution.
+    """Test signal residual energy with incorrect parameters deviates from chi-squared.
+
+    Validates that when analyzing injected signals with incorrect recovery
+    parameters, the likelihood residual energy deviates from the expected
+    chi-squared distribution, confirming the likelihood's sensitivity to
+    parameter mismatches.
 
     Args:
-        configuration (Dict): A dictionary of configuration.
-        time_frequency_filter (np.ndarray): Time-frequency mask. (time, frequency).
+        configuration (Dict): Test configuration parameters.
+        time_frequency_filter (np.ndarray): Time-frequency mask for filtering.
     """
     duration = configuration['duration']
     sampling_frequency = configuration['sampling_frequency']
@@ -270,13 +289,14 @@ def test_signal_residual_energy_incorrect_parameters(configuration: dict, time_f
 
 
 def test_signal_pc_c_residual_energy(configuration: dict, time_frequency_filter: np.ndarray) -> None:
-    r"""Test whether the residual energy for a noisy injection with signals
-    with the single-mode effective antenna pattern function
-    follows the :math:`\chi^{2}` distribution.
+    """Test single-mode effective antenna pattern residual energy distribution.
+
+    Validates the likelihood behavior when using single-mode effective antenna
+    patterns with relative amplification factors.
 
     Args:
-        configuration (Dict): A dictionary of configuration.
-        time_frequency_filter (np.ndarray): Time-frequency mask. (time, frequency).
+        configuration (Dict): Test configuration parameters.
+        time_frequency_filter (np.ndarray): Time-frequency mask for filtering.
     """
     duration = configuration['duration']
     sampling_frequency = configuration['sampling_frequency']
@@ -329,13 +349,15 @@ def test_signal_pc_c_residual_energy(configuration: dict, time_frequency_filter:
 
 
 def test_signal_pc_c_residual_energy_incorrect_parameters(configuration: dict, time_frequency_filter: np.ndarray) -> None:
-    r"""Test whether the residual energy for a noisy injection with signals
-    with the single-mode effective antenna pattern function using the incorrect parameters
-    does not follow the :math:`\chi^{2}` distribution.
+    """Test single-mode likelihood with incorrect amplification parameters.
+
+    Validates that the likelihood correctly identifies parameter mismatches
+    when using incorrect relative amplification factors in single-mode
+    effective antenna pattern analyses.
 
     Args:
-        configuration (Dict): A dictionary of configuration.
-        time_frequency_filter (np.ndarray): Time-frequency mask. (time, frequency).
+        configuration (Dict): Test configuration parameters.
+        time_frequency_filter (np.ndarray): Time-frequency mask for filtering.
     """
     duration = configuration['duration']
     sampling_frequency = configuration['sampling_frequency']

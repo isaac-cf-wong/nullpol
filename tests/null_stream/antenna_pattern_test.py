@@ -1,3 +1,9 @@
+"""Test module for detector antenna pattern functionality.
+
+This module tests the computation of antenna response patterns for interferometers
+across different polarization modes.
+"""
+
 from __future__ import annotations
 
 import unittest
@@ -13,7 +19,20 @@ from nullpol.null_stream import (get_antenna_pattern,
 
 
 class TestAntennaPattern(unittest.TestCase):
+    """Test class for detector antenna pattern computations.
+
+    This class validates the calculation of antenna response patterns for
+    multi-detector networks across various polarization modes, including
+    polarization modes beyond General Relativity predictions.
+    """
+
     def setUp(self):
+        """Set up test interferometer network and antenna pattern calculations.
+
+        Initializes a three-detector network (H1, L1, V1) and pre-computes
+        reference antenna patterns for all six polarization modes (plus, cross,
+        breathing, longitudinal, vector-x, vector-y) at a fixed sky location.
+        """
         seed = 12
         np.random.seed(seed)
         self.interferometers = InterferometerList(['H1', 'L1', 'V1'])
@@ -61,6 +80,12 @@ class TestAntennaPattern(unittest.TestCase):
             self.antenna_pattern_matrix[i,5] = antenna_pattern_y
 
     def test_get_antenna_pattern(self):
+        """Test single detector antenna pattern computation.
+
+        Validates that the antenna pattern function correctly computes
+        response patterns for individual detectors across all polarization
+        modes, ensuring consistency with reference bilby calculations.
+        """
         for i in range(len(self.interferometers)):
             antenna_pattern = get_antenna_pattern(self.interferometers[i],
                                                   right_ascension=self.right_ascension,
@@ -76,6 +101,12 @@ class TestAntennaPattern(unittest.TestCase):
             self.assertTrue(np.allclose(antenna_pattern[5], self.antenna_pattern_matrix[i,5]))
 
     def test_get_antenna_pattern_matrix(self):
+        """Test multi-detector antenna pattern matrix computation.
+
+        Validates that the antenna pattern matrix function correctly computes
+        response patterns for the entire detector network, organizing results
+        in a matrix format suitable for null stream construction.
+        """
         antenna_pattern_matrix = get_antenna_pattern_matrix(interferometers=self.interferometers,
                                                             right_ascension=self.right_ascension,
                                                             declination=self.declination,
@@ -85,6 +116,11 @@ class TestAntennaPattern(unittest.TestCase):
         self.assertTrue(np.allclose(antenna_pattern_matrix, self.antenna_pattern_matrix))
 
     def test_relative_amplitification_factor_map(self):
+        """Test relative amplification factor parameter mapping.
+
+        Validates the creation of parameter name maps that connect
+        polarization modes to their basis mode components.
+        """
         polarization_basis = np.array([True, True, False, False, False, False])
         polarization_derived = np.array([False, False, True, True, True, True])
         expected_output = np.array([['bp', 'bc'],
@@ -95,6 +131,12 @@ class TestAntennaPattern(unittest.TestCase):
         self.assertTrue(np.array_equal(expected_output, output))
 
     def test_relative_amplification_factor_helper(self):
+        """Test relative amplification factor computation from parameters.
+
+        Validates the conversion of amplitude and phase parameters into
+        complex amplification factors for combining polarization modes with
+        basis modes.
+        """
         polarization_basis = np.array([True, True, False, False, False, False])
         polarization_derived = np.array([False, False, True, True, True, True])
         parameters_map = relative_amplification_factor_map(polarization_basis, polarization_derived)
@@ -114,6 +156,12 @@ class TestAntennaPattern(unittest.TestCase):
         self.assertTrue(np.allclose(expected_output, output))
 
     def test_get_collapsed_antenna_pattern_matrix(self):
+        """Test collapsed antenna pattern matrix.
+
+        Validates the construction of effective antenna pattern matrices that
+        combine basis polarization modes with other modes using relative
+        amplification factors.
+        """
         polarization_basis = np.array([True, True, False, False, False, False])
         polarization_derived = np.array([False, False, True, True, True, True])
         antenna_pattern_matrix = get_antenna_pattern_matrix(interferometers=self.interferometers,
