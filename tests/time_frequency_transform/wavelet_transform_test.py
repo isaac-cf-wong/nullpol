@@ -118,7 +118,7 @@ class TestWaveletTransform(unittest.TestCase):
             frequency_domain_strain_array=ifo.frequency_domain_strain[np.newaxis, :],
             power_spectral_density_array=ifo.power_spectral_density_array[np.newaxis, :],
         )
-        k_freq_low = int(minimum_frequency*duration)
+        # k_freq_low = int(minimum_frequency*duration)
 
         # Transform the data to wavelet domain
         whitened_wavelet_domain_strain = transform_wavelet_freq(

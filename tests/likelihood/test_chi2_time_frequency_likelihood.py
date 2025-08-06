@@ -6,21 +6,23 @@ domain analysis.
 
 from __future__ import annotations
 
-import bilby
-from bilby.core.utils import logger
-from bilby.gw.detector import InterferometerList
-from bilby.gw.source import lal_binary_black_hole
-
-logger.setLevel('CRITICAL')
 import numpy as np
 import pytest
 import scipy.stats
 from tqdm import tqdm
 
+import bilby
+from bilby.core.utils import logger
+from bilby.gw.detector import InterferometerList
+from bilby.gw.source import lal_binary_black_hole
+
 from nullpol.clustering import run_time_frequency_clustering
 from nullpol.injection import create_injection
 from nullpol.likelihood.chi2_time_frequency_likelihood import \
     Chi2TimeFrequencyLikelihood
+
+# Configure logging after imports
+logger.setLevel('CRITICAL')
 
 
 @pytest.fixture(scope='module')

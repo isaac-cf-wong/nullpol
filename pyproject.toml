@@ -79,6 +79,39 @@ targets = "src"
 line-length = 120
 fast = true
 
+[tool.ruff]
+exclude = ["docs"]
+
+[tool.ruff.format]
+# Use Black-compatible formatting
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.ruff.lint]
+# Disable formatting rules that conflict with Black
+ignore = [
+    "E501",  # Line too long (handled by Black)
+    "W191",  # Indentation contains tabs (handled by Black)
+    "E111",  # Indentation is not a multiple of four (handled by Black)
+    "E114",  # Indentation is not a multiple of four (comment) (handled by Black)
+    "E117",  # Over-indented (handled by Black)
+    "D206",  # Docstring should be indented with spaces (handled by Black)
+    "D300",  # Use """triple double quotes""" (handled by Black)
+    "Q000",  # Single quotes found but double quotes preferred (handled by Black)
+    "Q001",  # Single quote multiline found but double quotes preferred (handled by Black)
+    "Q002",  # Single quote docstring found but double quotes preferred (handled by Black)
+    "Q003",  # Change outer quotes to avoid escaping inner quotes (handled by Black)
+    "COM812", # Missing trailing comma (handled by Black)
+    "COM819", # Prohibited trailing comma (handled by Black)
+    "ISC001", # Single line implicit string concatenation (handled by Black)
+    "ISC002", # Multi line implicit string concatenation (handled by Black)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"*/__init__.py" = ["F403", "F405"]  # Allow star imports in __init__.py files
+
 [tool.coverage.run]
 branch = true
 

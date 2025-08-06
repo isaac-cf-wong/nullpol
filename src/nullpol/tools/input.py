@@ -203,7 +203,7 @@ class Input(BilbyInput):
             logger.debug(f"wavelet_nx set to {wavelet_nx}")
         else:
             self._wavelet_nx = 4.
-            logger.debug(f"wavelet_nx set to default value of 4.")
+            logger.debug("wavelet_nx set to default value of 4.")
 
     @property
     def wavelet_frequency_resolution(self):

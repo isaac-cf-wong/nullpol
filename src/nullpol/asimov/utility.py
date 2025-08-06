@@ -54,7 +54,7 @@ def fill_in_pol_specific_metadata(analysis, corresponding_analysis):
     """
     analysis_output = {}
     analysis_output["AnalysisSoftware"] = str(analysis.pipeline)
-    analysis_output["Description"] = f"Polarization analyses"
+    analysis_output["Description"] = "Polarization analyses"
     return analysis_output
 
 def bilby_config_to_asimov(config_name):

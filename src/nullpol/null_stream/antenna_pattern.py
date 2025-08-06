@@ -119,7 +119,8 @@ def relative_amplification_factor_helper(parameters_map,
         numpy.ndarray: Matrix of complex relative amplification factors with the same
             shape as parameters_map.
     """
-    func = lambda x: parameters[f'amplitude_{x}']*np.exp(1.j*parameters[f'phase_{x}'])
+    def func(x):
+        return parameters[f'amplitude_{x}']*np.exp(1.j*parameters[f'phase_{x}'])
     return np.vectorize(func)(parameters_map)
 
 

@@ -179,7 +179,7 @@ class PESummaryPipeline(PostPipeline):
                     htcondor.DaemonTypes.Schedd, config.get("condor", "scheduler")
                 )
                 schedd = htcondor.Schedd(schedulers)
-            except:
+            except Exception:
                 # If you can't find a specified scheduler, use the first one you find
                 schedd = htcondor.Schedd()
             with schedd.transaction() as txn:

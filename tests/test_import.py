@@ -29,4 +29,4 @@ import nullpol.tools.data_generation
 import nullpol.tools.input
 import nullpol.tools.main
 import nullpol.tools.parser
-import nullpol.utils
+import nullpol.utils  # noqa: F401

@@ -46,7 +46,7 @@ class Nullpol(Bilby):
         """
         self.logger.info("Checking if the nullpol job has completed")
         results_dir = glob.glob(f"{self.production.rundir}/result")
-        config = self.read_ini(self.config_file_path)
+        # config = self.read_ini(self.config_file_path)
         expected_number_of_result_files = len(self.production.meta['likelihood']['polarization modes'])
         if len(results_dir) > 0:  # dynesty_merge_result.json
             results_files = glob.glob(

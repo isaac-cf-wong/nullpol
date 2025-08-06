@@ -6,8 +6,7 @@ import pickle
 
 import numpy as np
 from bilby.core.result import Result
-from bilby.core.utils import (check_directory_exists_and_if_not_mkdir, infft,
-                              latex_plot_format, safe_file_dump,
+from bilby.core.utils import (check_directory_exists_and_if_not_mkdir, safe_file_dump,
                               safe_save_figure)
 
 from ..utils import logger
