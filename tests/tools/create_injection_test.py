@@ -34,15 +34,15 @@ class TestCreateInjection(unittest.TestCase):
         realizations and detector configurations.
         """
         cls.test_dir = tempfile.mkdtemp()
-        cls.H1_TEST_frame_path = os.path.join(cls.test_dir, 'H1-TEST-2024-16.gwf')
-        cls.L1_TEST_frame_path = os.path.join(cls.test_dir, 'L1-TEST-2024-16.gwf')
-        cls.V1_TEST_frame_path = os.path.join(cls.test_dir, 'V1-TEST-2024-16.gwf')
-        cls.H1_TEST_WITH_SIGNAL_FRAME_frame_path = os.path.join(cls.test_dir, 'H1-TEST_WITH_SIGNAL_FRAME-2024-16.gwf')
-        cls.L1_TEST_WITH_SIGNAL_FRAME_frame_path = os.path.join(cls.test_dir, 'L1-TEST_WITH_SIGNAL_FRAME-2024-16.gwf')
-        cls.V1_TEST_WITH_SIGNAL_FRAME_frame_path = os.path.join(cls.test_dir, 'V1-TEST_WITH_SIGNAL_FRAME-2024-16.gwf')
-        cls.H1_TEST_PSD_frame_path = os.path.join(cls.test_dir, 'H1-TEST_PSD-2024-16.gwf')
-        cls.L1_TEST_PSD_frame_path = os.path.join(cls.test_dir, 'L1-TEST_PSD-2024-16.gwf')
-        cls.V1_TEST_PSD_frame_path = os.path.join(cls.test_dir, 'V1-TEST_PSD-2024-16.gwf')
+        cls.H1_TEST_frame_path = os.path.join(cls.test_dir, "H1-TEST-2024-16.gwf")
+        cls.L1_TEST_frame_path = os.path.join(cls.test_dir, "L1-TEST-2024-16.gwf")
+        cls.V1_TEST_frame_path = os.path.join(cls.test_dir, "V1-TEST-2024-16.gwf")
+        cls.H1_TEST_WITH_SIGNAL_FRAME_frame_path = os.path.join(cls.test_dir, "H1-TEST_WITH_SIGNAL_FRAME-2024-16.gwf")
+        cls.L1_TEST_WITH_SIGNAL_FRAME_frame_path = os.path.join(cls.test_dir, "L1-TEST_WITH_SIGNAL_FRAME-2024-16.gwf")
+        cls.V1_TEST_WITH_SIGNAL_FRAME_frame_path = os.path.join(cls.test_dir, "V1-TEST_WITH_SIGNAL_FRAME-2024-16.gwf")
+        cls.H1_TEST_PSD_frame_path = os.path.join(cls.test_dir, "H1-TEST_PSD-2024-16.gwf")
+        cls.L1_TEST_PSD_frame_path = os.path.join(cls.test_dir, "L1-TEST_PSD-2024-16.gwf")
+        cls.V1_TEST_PSD_frame_path = os.path.join(cls.test_dir, "V1-TEST_PSD-2024-16.gwf")
 
     @classmethod
     def tearDownClass(cls):
@@ -78,9 +78,9 @@ class TestCreateInjection(unittest.TestCase):
         of injection parameters.
         """
         # Create a temporary config file path
-        with tempfile.NamedTemporaryFile(suffix='.ini', delete=False) as temp_config_file:
+        with tempfile.NamedTemporaryFile(suffix=".ini", delete=False) as temp_config_file:
             config_file_path = temp_config_file.name
-        with mock.patch('sys.argv', ['nullpol_create_injection', '--generate-config', config_file_path]):
+        with mock.patch("sys.argv", ["nullpol_create_injection", "--generate-config", config_file_path]):
             try:
                 main()
             except SystemExit as e:
@@ -94,7 +94,9 @@ class TestCreateInjection(unittest.TestCase):
             generated_content = f.read()
 
         # Load the default config file
-        default_config_file_path = pkg_resources.resource_filename('nullpol.tools', 'default_config_create_injection.ini')
+        default_config_file_path = pkg_resources.resource_filename(
+            "nullpol.tools", "default_config_create_injection.ini"
+        )
         with open(default_config_file_path) as f:
             default_generated_content = f.read()
 
@@ -112,23 +114,37 @@ class TestCreateInjection(unittest.TestCase):
         detectors in a multi-detector network.
         """
         # Create a temporary config file path
-        with tempfile.NamedTemporaryFile(suffix='.ini', delete=False) as temp_config_file:
+        with tempfile.NamedTemporaryFile(suffix=".ini", delete=False) as temp_config_file:
             config_file_path = temp_config_file.name
-        example_signal_parameters_create_injection_path = pkg_resources.resource_filename('nullpol.tools', 'example_signal_parameters_create_injection.json')
-        with mock.patch('sys.argv', ['nullpol_create_injection',
-                                     '--generate-config', config_file_path,
-                                     '--signal-parameters', example_signal_parameters_create_injection_path,
-                                     '--outdir', self.test_dir,
-                                     '--label', 'TEST',
-                                     '--start-time', '2024',
-                                     '--duration', '16',
-                                     '--detectors', 'H1, L1, V1']):
+        example_signal_parameters_create_injection_path = pkg_resources.resource_filename(
+            "nullpol.tools", "example_signal_parameters_create_injection.json"
+        )
+        with mock.patch(
+            "sys.argv",
+            [
+                "nullpol_create_injection",
+                "--generate-config",
+                config_file_path,
+                "--signal-parameters",
+                example_signal_parameters_create_injection_path,
+                "--outdir",
+                self.test_dir,
+                "--label",
+                "TEST",
+                "--start-time",
+                "2024",
+                "--duration",
+                "16",
+                "--detectors",
+                "H1, L1, V1",
+            ],
+        ):
             try:
                 main()
             except SystemExit as e:
                 self.assertEqual(e.code, 0)  # Ensure that it exited with code 0
         # Execute the tool
-        with mock.patch('sys.argv', ['nullpol_create_injection', '--config', config_file_path]):
+        with mock.patch("sys.argv", ["nullpol_create_injection", "--config", config_file_path]):
             try:
                 main()
             except SystemExit as e:
@@ -150,26 +166,44 @@ class TestCreateInjection(unittest.TestCase):
         multi-signal injection scenarios.
         """
         # Create a temporary config file path
-        with tempfile.NamedTemporaryFile(suffix='.ini', delete=False) as temp_config_file:
+        with tempfile.NamedTemporaryFile(suffix=".ini", delete=False) as temp_config_file:
             config_file_path = temp_config_file.name
-        example_signal_parameters_create_injection_path = pkg_resources.resource_filename('nullpol.tools', 'example_signal_parameters_create_injection.json')
-        print('testing', self.H1_TEST_frame_path)
-        with mock.patch('sys.argv', ['nullpol_create_injection',
-                                     '--generate-config', config_file_path,
-                                     '--signal-parameters', example_signal_parameters_create_injection_path,
-                                     '--outdir', self.test_dir,
-                                     '--label', 'TEST_WITH_SIGNAL_FRAME',
-                                     '--start-time', '2024',
-                                     '--duration', '16',
-                                     '--detectors', 'H1, L1, V1',
-                                     '--signal-files', json.dumps(f'{{"H1": "{self.H1_TEST_frame_path}", "L1": "{self.L1_TEST_frame_path}", "V1": "{self.V1_TEST_frame_path}"}}'),
-                                     '--signal-file-channels', json.dumps('{"H1": "H1:STRAIN", "L1": "L1:STRAIN", "V1": "V1:STRAIN"}')]):
+        example_signal_parameters_create_injection_path = pkg_resources.resource_filename(
+            "nullpol.tools", "example_signal_parameters_create_injection.json"
+        )
+        print("testing", self.H1_TEST_frame_path)
+        with mock.patch(
+            "sys.argv",
+            [
+                "nullpol_create_injection",
+                "--generate-config",
+                config_file_path,
+                "--signal-parameters",
+                example_signal_parameters_create_injection_path,
+                "--outdir",
+                self.test_dir,
+                "--label",
+                "TEST_WITH_SIGNAL_FRAME",
+                "--start-time",
+                "2024",
+                "--duration",
+                "16",
+                "--detectors",
+                "H1, L1, V1",
+                "--signal-files",
+                json.dumps(
+                    f'{{"H1": "{self.H1_TEST_frame_path}", "L1": "{self.L1_TEST_frame_path}", "V1": "{self.V1_TEST_frame_path}"}}'
+                ),
+                "--signal-file-channels",
+                json.dumps('{"H1": "H1:STRAIN", "L1": "L1:STRAIN", "V1": "V1:STRAIN"}'),
+            ],
+        ):
             try:
                 main()
             except SystemExit as e:
                 self.assertEqual(e.code, 0)  # Ensure that it exited with code 0
         # Execute the tool
-        with mock.patch('sys.argv', ['nullpol_create_injection', '--config', config_file_path]):
+        with mock.patch("sys.argv", ["nullpol_create_injection", "--config", config_file_path]):
             try:
                 main()
             except SystemExit as e:
@@ -191,33 +225,48 @@ class TestCreateInjection(unittest.TestCase):
         enabling studies with realistic or historical detector sensitivities.
         """
         # Create a temporary config file path
-        with tempfile.NamedTemporaryFile(suffix='.ini', delete=False) as temp_config_file:
+        with tempfile.NamedTemporaryFile(suffix=".ini", delete=False) as temp_config_file:
             config_file_path = temp_config_file.name
-        example_signal_parameters_create_injection_path = pkg_resources.resource_filename('nullpol.tools', 'example_signal_parameters_create_injection.json')
+        example_signal_parameters_create_injection_path = pkg_resources.resource_filename(
+            "nullpol.tools", "example_signal_parameters_create_injection.json"
+        )
         current_dir = os.path.dirname(__file__)
-        mock_psd_path = os.path.join(current_dir, 'mock_psd.txt')
-        with mock.patch('sys.argv', ['nullpol_create_injection',
-                                     '--generate-config', config_file_path,
-                                     '--signal-parameters', example_signal_parameters_create_injection_path,
-                                     '--outdir', self.test_dir,
-                                     '--label', 'TEST_PSD',
-                                     '--start-time', '2024',
-                                     '--duration', '16',
-                                     '--detectors', 'H1, L1, V1',
-                                     '--psds', json.dumps(f'{{"H1": "{mock_psd_path}", "L1": "{mock_psd_path}", "V1": "{mock_psd_path}"}}')]):
+        mock_psd_path = os.path.join(current_dir, "mock_psd.txt")
+        with mock.patch(
+            "sys.argv",
+            [
+                "nullpol_create_injection",
+                "--generate-config",
+                config_file_path,
+                "--signal-parameters",
+                example_signal_parameters_create_injection_path,
+                "--outdir",
+                self.test_dir,
+                "--label",
+                "TEST_PSD",
+                "--start-time",
+                "2024",
+                "--duration",
+                "16",
+                "--detectors",
+                "H1, L1, V1",
+                "--psds",
+                json.dumps(f'{{"H1": "{mock_psd_path}", "L1": "{mock_psd_path}", "V1": "{mock_psd_path}"}}'),
+            ],
+        ):
             try:
                 main()
             except SystemExit as e:
                 self.assertEqual(e.code, 0)  # Ensure that it exited with code 0
         # Execute the tool
-        with mock.patch('sys.argv', ['nullpol_create_injection', '--config', config_file_path]):
+        with mock.patch("sys.argv", ["nullpol_create_injection", "--config", config_file_path]):
             try:
                 main()
             except SystemExit as e:
                 self.assertEqual(e.code, 0)  # Ensure that it exited with code 0
 
         # Clean up the temporary config file
-        #os.remove(config_file_path)
+        # os.remove(config_file_path)
 
         # Check that the output file is created
         self.assertTrue(os.path.exists(self.H1_TEST_PSD_frame_path), "Output file was not created.")
@@ -225,5 +274,5 @@ class TestCreateInjection(unittest.TestCase):
         self.assertTrue(os.path.exists(self.V1_TEST_PSD_frame_path), "Output file was not created.")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

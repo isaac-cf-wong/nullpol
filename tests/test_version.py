@@ -18,6 +18,7 @@ def test_get_version_information():
     """
     get_version_information()
 
+
 def test_log_version_information():
     """Test that version information can be logged without errors.
 
