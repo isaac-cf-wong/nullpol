@@ -28,5 +28,5 @@ def stft(data, sampling_frequency, frequency_resolution, window_function):
     # Iterate over each segment
     for t in range(num_segments):
         start_idx = t * hop_size
-        segments[t, :] = data[start_idx:start_idx + N]
-    return np.fft.rfft(segments*window_function) / sampling_frequency
+        segments[t, :] = data[start_idx : start_idx + N]
+    return np.fft.rfft(segments * window_function) / sampling_frequency

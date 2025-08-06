@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 
 
-def compute_filter_by_quantile(time_freq_transformed: np.ndarray, quantile: float=0.9, **kwargs):
+def compute_filter_by_quantile(time_freq_transformed: np.ndarray, quantile: float = 0.9, **kwargs):
     """Filter the time-frequency transformed data with a threshold.
 
     Args:
@@ -15,6 +15,6 @@ def compute_filter_by_quantile(time_freq_transformed: np.ndarray, quantile: floa
         numpy.ndarray: A mask with the largest cluster in shape (n_time, n_freq).
     """
     # threshold the data
-    filter = time_freq_transformed > np.quantile(time_freq_transformed[time_freq_transformed>0.], quantile)
+    filter = time_freq_transformed > np.quantile(time_freq_transformed[time_freq_transformed > 0.0], quantile)
 
     return filter

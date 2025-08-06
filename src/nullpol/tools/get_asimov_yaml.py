@@ -17,24 +17,22 @@ def main():
     )
 
     parser.add_argument(
-        '-o', '--outdir',
-        default=os.getcwd(),
-        help="Destination directory (default: current directory)."
+        "-o", "--outdir", default=os.getcwd(), help="Destination directory (default: current directory)."
     )
 
     # Parse arguments
     args = parser.parse_args()
 
     # Path to the data file within the package
-    analysis_defaults_path = pkg_resources.resource_filename('nullpol.asimov', 'analysis_defaults.yaml')
-    nullpol_analysis_path = pkg_resources.resource_filename('nullpol.asimov', 'nullpol_analysis.yaml')
+    analysis_defaults_path = pkg_resources.resource_filename("nullpol.asimov", "analysis_defaults.yaml")
+    nullpol_analysis_path = pkg_resources.resource_filename("nullpol.asimov", "nullpol_analysis.yaml")
 
     dest_dir = Path(args.outdir)
     if dest_dir.is_dir():
-        analysis_defaults_dest_path = dest_dir/'analysis_defaults.yaml'
-        nullpol_analysis_dest_path = dest_dir/'nullpol_analysis.yaml'
+        analysis_defaults_dest_path = dest_dir / "analysis_defaults.yaml"
+        nullpol_analysis_dest_path = dest_dir / "nullpol_analysis.yaml"
     else:
-        raise NullpolError(f'{dest_dir} is not a directory.')
+        raise NullpolError(f"{dest_dir} is not a directory.")
     # Copy the file
     shutil.copy(analysis_defaults_path, analysis_defaults_dest_path)
     logger.info(f"Copied '{analysis_defaults_path}' to '{analysis_defaults_dest_path}'.")

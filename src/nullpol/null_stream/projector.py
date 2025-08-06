@@ -5,8 +5,7 @@ from numba import njit
 
 
 @njit
-def compute_gw_projector_masked(whitened_antenna_pattern_matrix,
-                                frequency_mask):
+def compute_gw_projector_masked(whitened_antenna_pattern_matrix, frequency_mask):
     """Compute gravitational wave signal projector with frequency masking.
 
     Calculates the orthogonal projection operator that projects detector strain
@@ -29,7 +28,7 @@ def compute_gw_projector_masked(whitened_antenna_pattern_matrix,
     output = np.zeros((nfreq, ndet, ndet), dtype=whitened_antenna_pattern_matrix.dtype)
     for i in range(len(frequency_mask)):
         if frequency_mask[i]:
-            F = np.ascontiguousarray(whitened_antenna_pattern_matrix[i,:,:])
+            F = np.ascontiguousarray(whitened_antenna_pattern_matrix[i, :, :])
             F_dagger = np.ascontiguousarray(np.conj(F).T)
             output[i, :, :] = F @ np.linalg.inv(F_dagger @ F) @ F_dagger
     return output
@@ -56,14 +55,12 @@ def compute_null_projector_from_gw_projector(gw_projector):
     output = -gw_projector.copy()
     for i in range(nfreq):
         for j in range(ndet):
-            output[i,j,j] += 1.
+            output[i, j, j] += 1.0
     return output
 
 
 @njit
-def compute_projection_squared(time_frequency_domain_strain_array,
-                               projector,
-                               time_freuency_filter):
+def compute_projection_squared(time_frequency_domain_strain_array, projector, time_freuency_filter):
     """Compute squared magnitude of projected strain in time-frequency domain.
 
     Projects the detector strain data onto a subspace defined by the projector
@@ -88,18 +85,17 @@ def compute_projection_squared(time_frequency_domain_strain_array,
     ## projector: (freq, detector, detector)
     ## time_frequency_filter: (time, frequency)
     ndet, ntime, nfreq = time_frequency_domain_strain_array.shape
-    output = np.zeros((ntime,nfreq), dtype=np.float64)
+    output = np.zeros((ntime, nfreq), dtype=np.float64)
     for i in range(ntime):
         for j in range(nfreq):
-            if time_freuency_filter[i,j]:
-                d = np.ascontiguousarray(time_frequency_domain_strain_array[:,i,j].astype(projector.dtype))
-                output[i,j] = np.abs(np.conj(d) @ projector[j] @ d)
+            if time_freuency_filter[i, j]:
+                d = np.ascontiguousarray(time_frequency_domain_strain_array[:, i, j].astype(projector.dtype))
+                output[i, j] = np.abs(np.conj(d) @ projector[j] @ d)
     return output
 
 
 @njit
-def compute_time_frequency_domain_strain_array_squared(time_frequency_domain_strain_array,
-                                                       time_frequency_filter):
+def compute_time_frequency_domain_strain_array_squared(time_frequency_domain_strain_array, time_frequency_filter):
     """Compute squared magnitude of strain in time-frequency domain.
 
     Calculates the squared magnitude of the strain vector at each time-frequency pixel,
@@ -121,10 +117,10 @@ def compute_time_frequency_domain_strain_array_squared(time_frequency_domain_str
     ## time_frequency_domain_strain_array: (detector, time, frequency)
     ## time_freuency_filter: (time, frequency)
     ndet, ntime, nfreq = time_frequency_domain_strain_array.shape
-    output = np.zeros((ntime,nfreq), dtype=np.float64)
+    output = np.zeros((ntime, nfreq), dtype=np.float64)
     for i in range(ntime):
         for j in range(nfreq):
-            if time_frequency_filter[i,j]:
-                d = np.ascontiguousarray(time_frequency_domain_strain_array[:,i,j])
-                output[i,j] = np.abs(np.conj(d) @ d)
+            if time_frequency_filter[i, j]:
+                d = np.ascontiguousarray(time_frequency_domain_strain_array[:, i, j])
+                output[i, j] = np.abs(np.conj(d) @ d)
     return output

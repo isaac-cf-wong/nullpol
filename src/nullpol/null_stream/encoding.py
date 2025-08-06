@@ -3,16 +3,16 @@ from __future__ import annotations
 import numpy as np
 
 # Mapping from polarization short names to array indices
-POLARIZATION_ENCODING = dict(p=0,c=1,b=2,l=3,x=4,y=5)
+POLARIZATION_ENCODING = dict(p=0, c=1, b=2, l=3, x=4, y=5)
 
 # Array for converting indices back to short names
-POLARIZATION_DECODING = np.array(['p', 'c', 'b', 'l', 'x', 'y'])
+POLARIZATION_DECODING = np.array(["p", "c", "b", "l", "x", "y"])
 
 # Mapping from short names to descriptive long names
-POLARIZATION_LONG_NAMES = dict(p='plus', c='cross', b='breathing', l='longitudinal', x='vector_x', y='vector_y')
+POLARIZATION_LONG_NAMES = dict(p="plus", c="cross", b="breathing", l="longitudinal", x="vector_x", y="vector_y")
 
 # Mapping from long names back to short names
-POLARIZATION_SHORT_NAMES = dict(plus='p', cross='c', breathing='b', longitudinal='l', vector_x='x', vector_y='y')
+POLARIZATION_SHORT_NAMES = dict(plus="p", cross="c", breathing="b", longitudinal="l", vector_x="x", vector_y="y")
 
 
 def encode_polarization(polarization_modes, polarization_basis):

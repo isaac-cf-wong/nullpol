@@ -11,13 +11,12 @@ from bilby.gw.detector import InterferometerList, PowerSpectralDensity
 from bilby.gw.waveform_generator import WaveformGenerator
 from configargparse import ArgParser
 
-from ..time_frequency_transform import (transform_wavelet_freq,
-                                        transform_wavelet_freq_quadrature)
+from ..time_frequency_transform import transform_wavelet_freq, transform_wavelet_freq_quadrature
 from ..utils import logger
 
 
 def import_function(path):
-    module_path, func_name = path.rsplit('.', 1)
+    module_path, func_name = path.rsplit(".", 1)
     module = importlib.import_module(module_path)
     func = getattr(module, func_name)
     return func
@@ -29,30 +28,32 @@ def get_file_extension(file_path):
 
 def json_loads_with_none(value):
     # Replace 'None' with 'null' to make it valid JSON
-    value = value.replace('None', 'null')
+    value = value.replace("None", "null")
     return json.loads(value)
 
 
 def main():
-    default_config_file_path = pkg_resources.resource_filename('nullpol.tools', 'default_config_create_time_frequency_filter_from_sample.ini')
+    default_config_file_path = pkg_resources.resource_filename(
+        "nullpol.tools", "default_config_create_time_frequency_filter_from_sample.ini"
+    )
     parser = ArgParser(default_config_files=[default_config_file_path])
-    parser.add('-c', '--config', is_config_file=True, help='Path to custom config file.')
-    parser.add('-o', '--output', type=str, help='Path of output.')
-    parser.add('--detectors', type=str, nargs="+", help='Detector prefix.')
-    parser.add('--psds', type=json_loads_with_none, help='A dictionary of PSD files.')
-    parser.add('--minimum-frequency', type=float, help='Minimum frequency in Hz.')
-    parser.add('--signal-parameters', type=str, help='Path to a JSON file with a list of signal parameters.')
-    parser.add('--waveform-arguments', type=str, help='A dictionary of additional arguments for the waveform model.')
-    parser.add('--frequency-domain-source-model', type=str, help='Path to the frequency domain source function.')
-    parser.add('--parameter-conversion', type=str, help="Parameter conversion function.")
-    parser.add('--duration', type=int, help='Duration of the data in second.')
-    parser.add('--start-time', type=int, help='GPS start time in second.')
-    parser.add('--sampling-frequency', type=float, help='Sampling frequency in Hz.')
-    parser.add('--nside', type=int, help='nside should be a power of 2. 12 * nside * nside sky pixels are generated.')
-    parser.add('--nx', type=float, help='Sharpness of wavelet.', default=4.)
-    parser.add('--wavelet-df', type=float, help='Frequency resolution of wavelet transform in Hz.', default=16)
-    parser.add('--threshold', type=float, help='Threshild to apply the filter.', default=0.1)
-    parser.add('--generate-config', help='Generate default config file and exit.', is_write_out_config_file_arg=True)
+    parser.add("-c", "--config", is_config_file=True, help="Path to custom config file.")
+    parser.add("-o", "--output", type=str, help="Path of output.")
+    parser.add("--detectors", type=str, nargs="+", help="Detector prefix.")
+    parser.add("--psds", type=json_loads_with_none, help="A dictionary of PSD files.")
+    parser.add("--minimum-frequency", type=float, help="Minimum frequency in Hz.")
+    parser.add("--signal-parameters", type=str, help="Path to a JSON file with a list of signal parameters.")
+    parser.add("--waveform-arguments", type=str, help="A dictionary of additional arguments for the waveform model.")
+    parser.add("--frequency-domain-source-model", type=str, help="Path to the frequency domain source function.")
+    parser.add("--parameter-conversion", type=str, help="Parameter conversion function.")
+    parser.add("--duration", type=int, help="Duration of the data in second.")
+    parser.add("--start-time", type=int, help="GPS start time in second.")
+    parser.add("--sampling-frequency", type=float, help="Sampling frequency in Hz.")
+    parser.add("--nside", type=int, help="nside should be a power of 2. 12 * nside * nside sky pixels are generated.")
+    parser.add("--nx", type=float, help="Sharpness of wavelet.", default=4.0)
+    parser.add("--wavelet-df", type=float, help="Frequency resolution of wavelet transform in Hz.", default=16)
+    parser.add("--threshold", type=float, help="Threshild to apply the filter.", default=0.1)
+    parser.add("--generate-config", help="Generate default config file and exit.", is_write_out_config_file_arg=True)
 
     args = parser.parse_args()
 
@@ -69,16 +70,20 @@ def main():
             detector_name = interferometers[i].name
             if detector_name in args.psds and args.psds[detector_name] is not None:
                 # Update the PSD.
-                interferometers[i].power_spectral_density = PowerSpectralDensity.from_power_spectral_density_file(args.psds[detector_name])
-                logger.info(f'{detector_name} PSD file loaded: {args.psds[detector_name]}.')
+                interferometers[i].power_spectral_density = PowerSpectralDensity.from_power_spectral_density_file(
+                    args.psds[detector_name]
+                )
+                logger.info(f"{detector_name} PSD file loaded: {args.psds[detector_name]}.")
             else:
-                logger.info(f'{detector_name} PSD is not provided. Default ASD file: {interferometers[i].power_spectral_density.asd_file} or default PSD file: {interferometers[i].power_spectral_density.psd_file} is used.')
+                logger.info(
+                    f"{detector_name} PSD is not provided. Default ASD file: {interferometers[i].power_spectral_density.asd_file} or default PSD file: {interferometers[i].power_spectral_density.psd_file} is used."
+                )
 
     # Load the signal parameters
     if args.signal_parameters is not None:
         # Check the extension of a file.
         if get_file_extension(args.signal_parameters) != ".json":
-            raise ValueError('--signal-parameters needs to be a .json file.')
+            raise ValueError("--signal-parameters needs to be a .json file.")
         with open(args.signal_parameters) as f:
             signal_parameters = json.load(f)
     else:
@@ -106,25 +111,24 @@ def main():
             sampling_frequency=args.sampling_frequency,
             frequency_domain_source_model=frequency_domain_source_model,
             parameter_conversion=parameter_conversion,
-            waveform_arguments=waveform_arguments)
+            waveform_arguments=waveform_arguments,
+        )
     else:
-        logger.info('frequency-domain-source-model is not provided. Not injecting signals from source model.')
+        logger.info("frequency-domain-source-model is not provided. Not injecting signals from source model.")
         waveform_generator = None
 
     # Set zero noise
     interferometers.set_strain_data_from_zero_noise(
-        sampling_frequency=args.sampling_frequency,
-        duration=args.duration,
-        start_time=args.start_time)
+        sampling_frequency=args.sampling_frequency, duration=args.duration, start_time=args.start_time
+    )
 
     # Inject signal
     if signal_parameters is not None and waveform_generator is not None:
         for i in range(len(signal_parameters)):
-            interferometers.inject_signal(
-                parameters=signal_parameters[i],
-                waveform_generator=waveform_generator
+            interferometers.inject_signal(parameters=signal_parameters[i], waveform_generator=waveform_generator)
+            logger.info(
+                f"Signal {i+1}/{len(signal_parameters)} - Injected a signal with parameters: {signal_parameters[i]}"
             )
-            logger.info(f'Signal {i+1}/{len(signal_parameters)} - Injected a signal with parameters: {signal_parameters[i]}')
 
     # Construct the whitened frequency-domain strain.
     whitened_frequency_domain_strains = []
@@ -132,11 +136,14 @@ def main():
         frequency_domain_strain = interferometer.frequency_domain_strain
         power_spectral_density_array = interferometer.power_spectral_density_array
         scaling_factor = args.duration / 2
-        whitened_frequency_domain_strains.append(np.divide(
-            interferometer.frequency_domain_strain,
-            np.sqrt(power_spectral_density_array * scaling_factor),
-            out=np.zeros_like(frequency_domain_strain),
-            where=power_spectral_density_array != 0.))
+        whitened_frequency_domain_strains.append(
+            np.divide(
+                interferometer.frequency_domain_strain,
+                np.sqrt(power_spectral_density_array * scaling_factor),
+                out=np.zeros_like(frequency_domain_strain),
+                where=power_spectral_density_array != 0.0,
+            )
+        )
 
     # Construct the sky-maximized time-frequency filter
     wavelet_Nf = int(args.sampling_frequency / 2 / args.wavelet_df)
@@ -162,26 +169,30 @@ def main():
                 data=whitened_frequency_domain_strain_copy,
                 sampling_frequency=args.sampling_frequency,
                 frequency_resolution=args.wavelet_df,
-                nx=args.nx)
+                nx=args.nx,
+            )
             whitened_wavelet_domain_strain_quadrature = transform_wavelet_freq_quadrature(
                 data=whitened_frequency_domain_strain_copy,
                 sampling_frequency=args.sampling_frequency,
                 frequency_resolution=args.wavelet_df,
-                nx=args.nx)
-            whitened_wavelet_domain_power = whitened_wavelet_domain_strain ** 2 + whitened_wavelet_domain_strain_quadrature ** 2
+                nx=args.nx,
+            )
+            whitened_wavelet_domain_power = (
+                whitened_wavelet_domain_strain**2 + whitened_wavelet_domain_strain_quadrature**2
+            )
             time_frequency_map += whitened_wavelet_domain_power
         maximized_time_frequency_map = np.maximum(maximized_time_frequency_map, time_frequency_map)
-        logger.info(f'Maximizing signal power over the sky sphere - {ipix+1}/{npix}.')
+        logger.info(f"Maximizing signal power over the sky sphere - {ipix+1}/{npix}.")
 
     # Perform the clustering on the sky-maximized time-frequency map.
     # Apply a threshold
     time_frequency_filter = maximized_time_frequency_map >= args.threshold
     # Remove the frequency content beyond the range
     # Always remove the Nyquist frequency
-    time_frequency_filter[:, -1] = 0.
+    time_frequency_filter[:, -1] = 0.0
     # Remove the components below the minimum frequency.
     freq_low_idx = int(np.ceil(args.minimum_frequency / args.wavelet_df))
-    time_frequency_filter[:, :freq_low_idx] = 0.
+    time_frequency_filter[:, :freq_low_idx] = 0.0
     # Save the file to disk.
     np.save(args.output, time_frequency_filter)
-    logger.info(f'Time-frequency filter is written to {args.output}.')
+    logger.info(f"Time-frequency filter is written to {args.output}.")

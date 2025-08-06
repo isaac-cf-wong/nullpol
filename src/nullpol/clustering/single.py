@@ -27,6 +27,7 @@ def _get_neighbours(i, j, mask):
                 neighbours.append((i + x, j + y))
     return neighbours
 
+
 # Depth-first search
 def _dfs(i, j, mask, visited):
     """Perform depth-first search to identify a connected cluster in a binary mask.
@@ -56,6 +57,7 @@ def _dfs(i, j, mask, visited):
             if mask[neighbour[0], neighbour[1]]:
                 stack.append(neighbour)
     return cluster
+
 
 def clustering(filter, dt, df, padding_time=0.1, padding_freq=10, **kwargs):
     """Find the largest connected cluster in a time-frequency filter and apply padding.

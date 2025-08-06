@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from bilby_pipe.job_creation.nodes.generation_node import \
-    GenerationNode as Node
+from bilby_pipe.job_creation.nodes.generation_node import GenerationNode as Node
 
 
 class GenerationNode(Node):
@@ -24,12 +23,9 @@ class GenerationNode(Node):
         bilby_pipe generation executable to handle polarization-specific
         data preparation.
     """
+
     def __init__(self, inputs, trigger_time, idx, dag, parent=None):
-        super().__init__(inputs=inputs,
-                                             trigger_time=trigger_time,
-                                             idx=idx,
-                                             dag=dag,
-                                             parent=parent)
+        super().__init__(inputs=inputs, trigger_time=trigger_time, idx=idx, dag=dag, parent=parent)
 
     @property
     def executable(self):

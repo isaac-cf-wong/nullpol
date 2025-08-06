@@ -8,9 +8,7 @@ from .projector import compute_gw_projector_masked
 
 @njit
 def estimate_frequency_domain_signal_at_geocenter(
-    frequency_mask,
-    whitened_frequency_domain_strain_array_at_geocenter,
-    whitened_antenna_pattern_matrix
+    frequency_mask, whitened_frequency_domain_strain_array_at_geocenter, whitened_antenna_pattern_matrix
 ):
     """Estimate frequency domain signal at geocenter.
 
@@ -24,8 +22,7 @@ def estimate_frequency_domain_signal_at_geocenter(
     """
     # Compute the signal projector.
     gw_projector = compute_gw_projector_masked(
-        whitened_antenna_pattern_matrix=whitened_antenna_pattern_matrix,
-        frequency_mask=frequency_mask
+        whitened_antenna_pattern_matrix=whitened_antenna_pattern_matrix, frequency_mask=frequency_mask
     )
     # Compute the signal estimator.
     s_est = np.zeros_like(whitened_frequency_domain_strain_array_at_geocenter)

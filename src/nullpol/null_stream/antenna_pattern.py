@@ -5,13 +5,7 @@ import numpy as np
 from .encoding import POLARIZATION_DECODING
 
 
-def get_antenna_pattern(
-        interferometer,
-        right_ascension,
-        declination,
-        polarization_angle,
-        gps_time,
-        polarization):
+def get_antenna_pattern(interferometer, right_ascension, declination, polarization_angle, gps_time, polarization):
     """
     Get antenna pattern for a given interferometer at a specific sky location and time.
 
@@ -27,18 +21,21 @@ def get_antenna_pattern(
     Returns:
         numpy.ndarray: Antenna pattern for the given sky location and time with shape (n_polarization,).
     """
-    polarization_name_list = np.array(['plus', 'cross', 'breathing', 'longitudinal', 'x', 'y'])
+    polarization_name_list = np.array(["plus", "cross", "breathing", "longitudinal", "x", "y"])
 
-    return np.array([interferometer.antenna_response(right_ascension, declination, gps_time, polarization_angle, str(polarization_name)) for polarization_name in polarization_name_list[polarization]])
+    return np.array(
+        [
+            interferometer.antenna_response(
+                right_ascension, declination, gps_time, polarization_angle, str(polarization_name)
+            )
+            for polarization_name in polarization_name_list[polarization]
+        ]
+    )
 
 
 def get_antenna_pattern_matrix(
-        interferometers,
-        right_ascension,
-        declination,
-        polarization_angle,
-        gps_time,
-        polarization):
+    interferometers, right_ascension, declination, polarization_angle, gps_time, polarization
+):
     """
     Get antenna pattern matrix for a given sky location and time.
 
@@ -55,16 +52,17 @@ def get_antenna_pattern_matrix(
         numpy.ndarray: Antenna pattern matrix for the given sky location and time
             with shape (n_interferometers, n_polarization).
     """
-    return np.array([get_antenna_pattern(interferometer,
-                                         right_ascension,
-                                         declination,
-                                         polarization_angle,
-                                         gps_time,
-                                         polarization) for interferometer in interferometers])
+    return np.array(
+        [
+            get_antenna_pattern(
+                interferometer, right_ascension, declination, polarization_angle, gps_time, polarization
+            )
+            for interferometer in interferometers
+        ]
+    )
 
 
-def relative_amplification_factor_map(polarization_basis,
-                                      polarization_derived):
+def relative_amplification_factor_map(polarization_basis, polarization_derived):
     """
     Generate a mapping matrix of keyword labels for relative amplification factors.
 
@@ -96,15 +94,14 @@ def relative_amplification_factor_map(polarization_basis,
         row = []
         for j in range(len(polarization_basis)):
             if polarization_basis[j]:
-                row.append(f'{POLARIZATION_DECODING[i]}{POLARIZATION_DECODING[j]}')
+                row.append(f"{POLARIZATION_DECODING[i]}{POLARIZATION_DECODING[j]}")
             j_counter += 1
         output.append(row)
         i_counter += 1
     return np.array(output)
 
 
-def relative_amplification_factor_helper(parameters_map,
-                                         parameters):
+def relative_amplification_factor_helper(parameters_map, parameters):
     """
     Construct a matrix of relative amplification factors from parameter mappings.
 
@@ -119,16 +116,16 @@ def relative_amplification_factor_helper(parameters_map,
         numpy.ndarray: Matrix of complex relative amplification factors with the same
             shape as parameters_map.
     """
+
     def func(x):
-        return parameters[f'amplitude_{x}']*np.exp(1.j*parameters[f'phase_{x}'])
+        return parameters[f"amplitude_{x}"] * np.exp(1.0j * parameters[f"phase_{x}"])
+
     return np.vectorize(func)(parameters_map)
 
 
 def get_collapsed_antenna_pattern_matrix(
-        antenna_pattern_matrix,
-        polarization_basis,
-        polarization_derived,
-        relative_amplification_factor):
+    antenna_pattern_matrix, polarization_basis, polarization_derived, relative_amplification_factor
+):
     """
     Compute the collapsed antenna pattern matrix by combining basis and derived modes.
 
@@ -152,5 +149,7 @@ def get_collapsed_antenna_pattern_matrix(
     # Dimensions:
     # antenna_pattern_matrix: (detector, polarization)
     # Select the columns corresponds to the basis
-    return antenna_pattern_matrix[:, polarization_basis] + \
-        antenna_pattern_matrix[:, polarization_derived] @ relative_amplification_factor
+    return (
+        antenna_pattern_matrix[:, polarization_basis]
+        + antenna_pattern_matrix[:, polarization_derived] @ relative_amplification_factor
+    )

@@ -13,6 +13,7 @@ class PESummaryPipeline(PostPipeline):
     """
 
     name = "PESummary"
+
     def submit_dag(self, dryrun=False):
         """
         Run PESummary on the results of this job.
@@ -20,27 +21,19 @@ class PESummaryPipeline(PostPipeline):
 
         psds = {ifo: os.path.abspath(psd) for ifo, psd in self.production.psds.items()}
 
-        polarization_modes = self.production.meta['likelihood']['polarization modes']
-        polarization_basis = self.production.meta['likelihood']['polarization basis']
+        polarization_modes = self.production.meta["likelihood"]["polarization modes"]
+        polarization_basis = self.production.meta["likelihood"]["polarization basis"]
         number_of_subruns = len(polarization_modes)
 
         if "calibration" in self.production.meta["data"]:
             calibration = [
-                (
-                    os.path.abspath(
-                        os.path.join(self.production.repository.directory, cal)
-                    )
-                    if not cal[0] == "/"
-                    else cal
-                )
+                (os.path.abspath(os.path.join(self.production.repository.directory, cal)) if not cal[0] == "/" else cal)
                 for cal in self.production.meta["data"]["calibration"].values()
             ]
         else:
             calibration = None
 
-        configfile = self.production.event.repository.find_prods(
-            self.production.name, self.category
-        )[0]
+        configfile = self.production.event.repository.find_prods(self.production.name, self.category)[0]
         command = [
             "--webdir",
             os.path.join(
@@ -53,10 +46,11 @@ class PESummaryPipeline(PostPipeline):
             "--labels",
         ]
         for i in range(number_of_subruns):
-            command += [f'{self.production.name}_{polarization_modes[i]}_{polarization_basis[i]}']
-        command += ["--gw",
-                    "--f_low",
-                    str(min(self.production.meta["quality"]["minimum frequency"].values())),
+            command += [f"{self.production.name}_{polarization_modes[i]}_{polarization_basis[i]}"]
+        command += [
+            "--gw",
+            "--f_low",
+            str(min(self.production.meta["quality"]["minimum frequency"].values())),
         ]
         command = [
             "--webdir",
@@ -76,9 +70,7 @@ class PESummaryPipeline(PostPipeline):
         if "skymap samples" in self.meta:
             command += [
                 "--nsamples_for_skymap",
-                str(
-                    self.meta["skymap samples"]
-                ),  # config.get('pesummary', 'skymap_samples'),
+                str(self.meta["skymap samples"]),  # config.get('pesummary', 'skymap_samples'),
             ]
 
         if "multiprocess" in self.meta:
@@ -89,16 +81,15 @@ class PESummaryPipeline(PostPipeline):
 
         # Config file
         command += ["--config"]
-        config_filename = os.path.join(
-                self.production.event.repository.directory, self.category, configfile
-            )
+        config_filename = os.path.join(self.production.event.repository.directory, self.category, configfile)
         for i in range(number_of_subruns):
             command += [config_filename]
         # Samples
         command += ["--samples"]
         for i in range(number_of_subruns):
-            command += self.production.pipeline.subrun_samples(subrun_label=f'{polarization_modes[i]}_{polarization_basis[i]}',
-                                                               absolute=True)
+            command += self.production.pipeline.subrun_samples(
+                subrun_label=f"{polarization_modes[i]}_{polarization_basis[i]}", absolute=True
+            )
         # Calibration information
         if calibration:
             command += ["--calibration"]
@@ -121,13 +112,9 @@ class PESummaryPipeline(PostPipeline):
 
         with utils.set_directory(self.production.rundir):
             with open(f"{self.production.name}_pesummary.sh", "w") as bash_file:
-                bash_file.write(
-                    f"{config.get('pesummary', 'executable')} " + " ".join(command)
-                )
+                bash_file.write(f"{config.get('pesummary', 'executable')} " + " ".join(command))
 
-        self.logger.info(
-            f"PE summary command: {config.get('pesummary', 'executable')} {' '.join(command)}"
-        )
+        self.logger.info(f"PE summary command: {config.get('pesummary', 'executable')} {' '.join(command)}")
 
         if dryrun:
             print("PESUMMARY COMMAND")
@@ -175,9 +162,7 @@ class PESummaryPipeline(PostPipeline):
 
             try:
                 # There should really be a specified submit node, and if there is, use it.
-                schedulers = htcondor.Collector().locate(
-                    htcondor.DaemonTypes.Schedd, config.get("condor", "scheduler")
-                )
+                schedulers = htcondor.Collector().locate(htcondor.DaemonTypes.Schedd, config.get("condor", "scheduler"))
                 schedd = htcondor.Schedd(schedulers)
             except Exception:
                 # If you can't find a specified scheduler, use the first one you find

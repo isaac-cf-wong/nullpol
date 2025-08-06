@@ -11,9 +11,11 @@ from bilby_pipe.input import Input as BilbyInput
 from bilby_pipe.utils import strip_quotes
 
 from .. import prior as nullpol_prior
-from ..likelihood import (Chi2TimeFrequencyLikelihood,
-                          FractionalProjectionTimeFrequencyLikelihood,
-                          GaussianTimeFrequencyLikelihood)
+from ..likelihood import (
+    Chi2TimeFrequencyLikelihood,
+    FractionalProjectionTimeFrequencyLikelihood,
+    GaussianTimeFrequencyLikelihood,
+)
 from ..utils import NullpolError, logger
 
 bilby_pipe.utils.logger = logger
@@ -37,10 +39,9 @@ class Input(BilbyInput):
         wavelet_nx (float): Wavelet steepness parameter.
         calibration_correction_type (str): Type of calibration correction to apply.
     """
+
     def __init__(self, args, unknown_args, print_msg=True):
-        super().__init__(args=args,
-                                    unknown_args=unknown_args,
-                                    print_msg=print_msg)
+        super().__init__(args=args, unknown_args=unknown_args, print_msg=print_msg)
         self.polarization_modes = args.polarization_modes
         self.polarization_basis = args.polarization_basis
         self.wavelet_frequency_resolution = args.wavelet_frequency_resolution
@@ -83,14 +84,14 @@ class Input(BilbyInput):
         self._priors = priors
 
     def _add_default_extrinsic_priors(self):
-        if 'ra' not in self._priors:
-            self._priors['ra'] = bilby.core.prior.Uniform(name='ra', minimum=0, maximum=2 * np.pi, boundary="periodic")
+        if "ra" not in self._priors:
+            self._priors["ra"] = bilby.core.prior.Uniform(name="ra", minimum=0, maximum=2 * np.pi, boundary="periodic")
             logger.info(f"Added missing prior for ra: {self._priors['ra']}")
-        if 'dec' not in self._priors:
-            self._priors['dec'] = bilby.core.prior.Cosine(name="dec")
+        if "dec" not in self._priors:
+            self._priors["dec"] = bilby.core.prior.Cosine(name="dec")
             logger.info(f"Added missing prior for dec: {self._priors['dec']}")
-        if 'psi' not in self._priors:
-            self._priors['psi'] = bilby.core.prior.Uniform(name='psi', minimum=0, maximum=np.pi, boundary='periodic')
+        if "psi" not in self._priors:
+            self._priors["psi"] = bilby.core.prior.Uniform(name="psi", minimum=0, maximum=np.pi, boundary="periodic")
             logger.info(f"Added missing prior for psi: {self._priors['psi']}")
 
     @property
@@ -102,7 +103,7 @@ class Input(BilbyInput):
             wavelet_nx=self.wavelet_nx,
             polarization_modes=self.polarization_modes,
             polarization_basis=self.polarization_basis,
-            time_frequency_filter=self.meta_data['time_frequency_filter'],
+            time_frequency_filter=self.meta_data["time_frequency_filter"],
             priors=self.search_priors,
         )
         if self.likelihood_type == "Chi2TimeFrequencyLikelihood":
@@ -129,9 +130,7 @@ class Input(BilbyInput):
             if key in inspect.getfullargspec(Likelihood.__init__).args
         }
 
-        logger.debug(
-            f"Initialise likelihood {Likelihood} with kwargs: \n{likelihood_kwargs}"
-        )
+        logger.debug(f"Initialise likelihood {Likelihood} with kwargs: \n{likelihood_kwargs}")
         likelihood = Likelihood(**likelihood_kwargs)
 
         # If requested, use a zero likelihood: for testing purposes
@@ -156,7 +155,7 @@ class Input(BilbyInput):
 
     @property
     def polarization_modes(self):
-        return getattr(self, '_polarization_modes', None)
+        return getattr(self, "_polarization_modes", None)
 
     @polarization_modes.setter
     def polarization_modes(self, modes):
@@ -181,7 +180,7 @@ class Input(BilbyInput):
 
     @property
     def polarization_basis(self):
-        return getattr(self, '_polarization_basis', None)
+        return getattr(self, "_polarization_basis", None)
 
     @polarization_basis.setter
     def polarization_basis(self, basis):
@@ -202,7 +201,7 @@ class Input(BilbyInput):
         if wavelet_nx is not None:
             logger.debug(f"wavelet_nx set to {wavelet_nx}")
         else:
-            self._wavelet_nx = 4.
+            self._wavelet_nx = 4.0
             logger.debug("wavelet_nx set to default value of 4.")
 
     @property

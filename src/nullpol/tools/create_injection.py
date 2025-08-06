@@ -16,7 +16,7 @@ from ..utils import logger
 
 
 def import_function(path):
-    module_path, func_name = path.rsplit('.', 1)
+    module_path, func_name = path.rsplit(".", 1)
     module = importlib.import_module(module_path)
     func = getattr(module, func_name)
     return func
@@ -28,30 +28,32 @@ def get_file_extension(file_path):
 
 def json_loads_with_none(value):
     # Replace 'None' with 'null' to make it valid JSON
-    value = value.replace('None', 'null')
+    value = value.replace("None", "null")
     return json.loads(value)
 
 
 def main():
-    default_config_file_path = pkg_resources.resource_filename('nullpol.tools', 'default_config_create_injection.ini')
+    default_config_file_path = pkg_resources.resource_filename("nullpol.tools", "default_config_create_injection.ini")
     parser = ArgParser(default_config_files=[default_config_file_path])
-    parser.add('-c', '--config', is_config_file=True, help='Path to custom config file.')
-    parser.add('-o', '--outdir', type=str, help='Path of output.')
-    parser.add('--label', type=str, help='Label of the injection')
-    parser.add('--detectors', type=str, nargs="+", help='Detector prefix.')
-    parser.add('--psds', type=json_loads_with_none, help='A dictionary of PSD files.')
-    parser.add('--minimum-frequency', type=float, help='Minimum frequency in Hz.')
-    parser.add('--signal-files', type=json_loads_with_none, help='A dictionary of files that contains the signal.')
-    parser.add('--signal-file-channels', type=json_loads_with_none, help='A dictionary of channel names for the signal files.')
-    parser.add('--signal-parameters', type=str, help='Path to a JSON file with a list of signal parameters.')
-    parser.add('--waveform-arguments', type=str, help='A dictionary of additional arguments for the waveform model.')
-    parser.add('--frequency-domain-source-model', type=str, help='Path to the frequency domain source function.')
-    parser.add('--parameter-conversion', type=str, help="Parameter conversion function.")
-    parser.add('--duration', type=int, help='Duration of the data in second.')
-    parser.add('--start-time', type=int, help='GPS start time in second.')
-    parser.add('--sampling-frequency', type=float, help='Sampling frequency in Hz.')
-    parser.add('--calibration-errors', type=json.loads, help='A dictionary of calibration errors.')
-    parser.add('--generate-config', help='Generate default config file and exit.', is_write_out_config_file_arg=True)
+    parser.add("-c", "--config", is_config_file=True, help="Path to custom config file.")
+    parser.add("-o", "--outdir", type=str, help="Path of output.")
+    parser.add("--label", type=str, help="Label of the injection")
+    parser.add("--detectors", type=str, nargs="+", help="Detector prefix.")
+    parser.add("--psds", type=json_loads_with_none, help="A dictionary of PSD files.")
+    parser.add("--minimum-frequency", type=float, help="Minimum frequency in Hz.")
+    parser.add("--signal-files", type=json_loads_with_none, help="A dictionary of files that contains the signal.")
+    parser.add(
+        "--signal-file-channels", type=json_loads_with_none, help="A dictionary of channel names for the signal files."
+    )
+    parser.add("--signal-parameters", type=str, help="Path to a JSON file with a list of signal parameters.")
+    parser.add("--waveform-arguments", type=str, help="A dictionary of additional arguments for the waveform model.")
+    parser.add("--frequency-domain-source-model", type=str, help="Path to the frequency domain source function.")
+    parser.add("--parameter-conversion", type=str, help="Parameter conversion function.")
+    parser.add("--duration", type=int, help="Duration of the data in second.")
+    parser.add("--start-time", type=int, help="GPS start time in second.")
+    parser.add("--sampling-frequency", type=float, help="Sampling frequency in Hz.")
+    parser.add("--calibration-errors", type=json.loads, help="A dictionary of calibration errors.")
+    parser.add("--generate-config", help="Generate default config file and exit.", is_write_out_config_file_arg=True)
 
     args = parser.parse_args()
 
@@ -68,16 +70,20 @@ def main():
             detector_name = interferometers[i].name
             if detector_name in args.psds and args.psds[detector_name] is not None:
                 # Update the PSD.
-                interferometers[i].power_spectral_density = PowerSpectralDensity.from_power_spectral_density_file(args.psds[detector_name])
-                logger.info(f'{detector_name} PSD file loaded: {args.psds[detector_name]}.')
+                interferometers[i].power_spectral_density = PowerSpectralDensity.from_power_spectral_density_file(
+                    args.psds[detector_name]
+                )
+                logger.info(f"{detector_name} PSD file loaded: {args.psds[detector_name]}.")
             else:
-                logger.info(f'{detector_name} PSD is not provided. Default ASD file: {interferometers[i].power_spectral_density.asd_file} or default PSD file: {interferometers[i].power_spectral_density.psd_file} is used.')
+                logger.info(
+                    f"{detector_name} PSD is not provided. Default ASD file: {interferometers[i].power_spectral_density.asd_file} or default PSD file: {interferometers[i].power_spectral_density.psd_file} is used."
+                )
 
     # Load the signal parameters
     if args.signal_parameters is not None:
         # Check the extension of a file.
         if get_file_extension(args.signal_parameters) != ".json":
-            raise ValueError('--signal-parameters needs to be a .json file.')
+            raise ValueError("--signal-parameters needs to be a .json file.")
         with open(args.signal_parameters) as f:
             signal_parameters = json.load(f)
     else:
@@ -100,13 +106,15 @@ def main():
         else:
             parameter_conversion = None
 
-        waveform_generator = WaveformGenerator(duration=args.duration,
-                                            sampling_frequency=args.sampling_frequency,
-                                            frequency_domain_source_model=frequency_domain_source_model,
-                                            parameter_conversion=parameter_conversion,
-                                            waveform_arguments=waveform_arguments)
+        waveform_generator = WaveformGenerator(
+            duration=args.duration,
+            sampling_frequency=args.sampling_frequency,
+            frequency_domain_source_model=frequency_domain_source_model,
+            parameter_conversion=parameter_conversion,
+            waveform_arguments=waveform_arguments,
+        )
     else:
-        logger.info('frequency-domain-source-model is not provided. Not injecting signals from source model.')
+        logger.info("frequency-domain-source-model is not provided. Not injecting signals from source model.")
         waveform_generator = None
 
     # Create noise from PSD
@@ -119,11 +127,10 @@ def main():
     # Inject signal
     if signal_parameters is not None and waveform_generator is not None:
         for i in range(len(signal_parameters)):
-            interferometers.inject_signal(
-                parameters=signal_parameters[i],
-                waveform_generator=waveform_generator
+            interferometers.inject_signal(parameters=signal_parameters[i], waveform_generator=waveform_generator)
+            logger.info(
+                f"Signal {i+1}/{len(signal_parameters)} - Injected a signal with parameters: {signal_parameters[i]}"
             )
-            logger.info(f'Signal {i+1}/{len(signal_parameters)} - Injected a signal with parameters: {signal_parameters[i]}')
 
     # Load the signal files if they are not empty
     if args.signal_files is not None:
@@ -135,14 +142,18 @@ def main():
                 signal_file = args.signal_files[interferometer.name]
                 signal_file_channel = args.signal_file_channels[interferometer.name]
                 # Load frame file
-                signal_interferometer.set_strain_data_from_frame_file(frame_file=signal_file,
-                                                                      sampling_frequency=args.sampling_frequency,
-                                                                      duration=args.duration,
-                                                                      start_time=args.start_time,
-                                                                      channel=signal_file_channel)
+                signal_interferometer.set_strain_data_from_frame_file(
+                    frame_file=signal_file,
+                    sampling_frequency=args.sampling_frequency,
+                    duration=args.duration,
+                    start_time=args.start_time,
+                    channel=signal_file_channel,
+                )
                 # Add the signal to the interferometer
-                interferometer.strain_data.frequency_domain_strain += signal_interferometer.strain_data.frequency_domain_strain
-                logger.info(f'{interferometer.name} - Injected signal file {signal_file}.')
+                interferometer.strain_data.frequency_domain_strain += (
+                    signal_interferometer.strain_data.frequency_domain_strain
+                )
+                logger.info(f"{interferometer.name} - Injected signal file {signal_file}.")
 
     outdir = Path(args.outdir)
 
@@ -153,7 +164,13 @@ def main():
             calibration_error_data = np.loadtxt(args.calibration_errors[interferometer.name])
 
             # Interpolate the calibration errors
-            calibration_error_interp = interp1d(calibration_error_data[:,0], calibration_error_data[:,1], kind='cubic', bounds_error=False, fill_value=1.)
+            calibration_error_interp = interp1d(
+                calibration_error_data[:, 0],
+                calibration_error_data[:, 1],
+                kind="cubic",
+                bounds_error=False,
+                fill_value=1.0,
+            )
 
             # Compute the calibration errors using the strain frequency array
             calibration_error = calibration_error_interp(interferometer.frequency_array)
@@ -162,19 +179,23 @@ def main():
             interferometer.strain_data.frequency_domain_strain /= calibration_error
 
             # Update the noise PSD
-            new_psd = interferometer.power_spectral_density.get_power_spectral_density_array(interferometer.frequency_array) / np.abs(calibration_error)**2
+            new_psd = (
+                interferometer.power_spectral_density.get_power_spectral_density_array(interferometer.frequency_array)
+                / np.abs(calibration_error) ** 2
+            )
 
             # Save the PSD to disk.
-            np.savetxt(outdir/f'{interferometer.name}-{args.label}-{args.start_time}-{args.duration}-psd.dat',
-                       np.array(
-                           [interferometer.frequency_array,
-                            new_psd]
-                       ).T)
+            np.savetxt(
+                outdir / f"{interferometer.name}-{args.label}-{args.start_time}-{args.duration}-psd.dat",
+                np.array([interferometer.frequency_array, new_psd]).T,
+            )
 
     # Write the strain data
     for interferometer in interferometers:
         ts = interferometer.strain_data.to_pycbc_timeseries()
-        output_path = str(outdir/f'{interferometer.name}-{args.label}-{args.start_time}-{args.duration}.gwf')
-        channel_name = f'{interferometer.name}:STRAIN'
+        output_path = str(outdir / f"{interferometer.name}-{args.label}-{args.start_time}-{args.duration}.gwf")
+        channel_name = f"{interferometer.name}:STRAIN"
         write_frame(output_path, channel_name, ts)
-        logger.info(f'{interferometer.name} strain data is written to the channel: {channel_name} in the file located at {output_path}.')
+        logger.info(
+            f"{interferometer.name} strain data is written to the channel: {channel_name} in the file located at {output_path}."
+        )

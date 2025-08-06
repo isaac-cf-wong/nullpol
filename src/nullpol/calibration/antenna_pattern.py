@@ -20,8 +20,7 @@ def compute_calibrated_whitened_antenna_pattern_matrix(
     Returns:
         numpy array: Calibrated and whitened antenna pattern matrix (frequency, detector, mode).
     """
-    output = np.zeros_like(whitened_antenna_pattern_matrix,
-                           dtype=calibration_error_matrix.dtype)
+    output = np.zeros_like(whitened_antenna_pattern_matrix, dtype=calibration_error_matrix.dtype)
     nfreq, ndet, nmode = whitened_antenna_pattern_matrix.shape
     for i in range(nfreq):
         if frequency_mask[i]:

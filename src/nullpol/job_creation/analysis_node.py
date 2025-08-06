@@ -30,15 +30,10 @@ class AnalysisNode(Node):
         base_job_name (str): Base name for the HTCondor job incorporating
             detectors and polarization configuration.
     """
-    def __init__(self,
-                 inputs,
-                 generation_node,
-                 detectors,
-                 sampler,
-                 parallel_idx,
-                 dag,
-                 polarization_modes,
-                 polarization_basis):
+
+    def __init__(
+        self, inputs, generation_node, detectors, sampler, parallel_idx, dag, polarization_modes, polarization_basis
+    ):
         super().__init__(inputs=inputs, retry=3)
         self.polarization_modes = polarization_modes
         self.polarization_basis = polarization_basis
@@ -58,23 +53,13 @@ class AnalysisNode(Node):
         self.label = self.job_name
 
         if self.inputs.use_mpi:
-            self.setup_arguments(
-                parallel_program=self._get_executable_path(
-                    self.inputs.analysis_executable
-                )
-            )
+            self.setup_arguments(parallel_program=self._get_executable_path(self.inputs.analysis_executable))
 
         else:
             self.setup_arguments()
 
-        self.arguments.add(
-            'polarization-modes',
-            self.polarization_modes
-        )
-        self.arguments.add(
-            'polarization-basis',
-            self.polarization_basis
-        )
+        self.arguments.add("polarization-modes", self.polarization_modes)
+        self.arguments.add("polarization-basis", self.polarization_basis)
 
         if self.inputs.transfer_files or self.inputs.osg:
             data_dump_file = generation_node.data_dump_file
@@ -121,7 +106,7 @@ class AnalysisNode(Node):
 
     @polarization_modes.setter
     def polarization_modes(self, polarization_modes):
-        self._polarization_modes = polarization_modes.replace('"', '').replace("'", '')
+        self._polarization_modes = polarization_modes.replace('"', "").replace("'", "")
 
     @property
     def polarization_basis(self):
@@ -129,7 +114,7 @@ class AnalysisNode(Node):
 
     @polarization_basis.setter
     def polarization_basis(self, polarization_basis):
-        self._polarization_basis = polarization_basis.replace('"', '').replace("'", '')
+        self._polarization_basis = polarization_basis.replace('"', "").replace("'", "")
 
     @property
     def executable(self):

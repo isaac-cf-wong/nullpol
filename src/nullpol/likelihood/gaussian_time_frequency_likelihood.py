@@ -18,15 +18,19 @@ class GaussianTimeFrequencyLikelihood(TimeFrequencyLikelihood):
         time_frequency_filter (str): The time-frequency filter.
         priors (dict, optional): If given, used in the calibration marginalization.
     """
-    def __init__(self,
-                 interferometers,
-                 wavelet_frequency_resolution,
-                 wavelet_nx,
-                 polarization_modes,
-                 polarization_basis=None,
-                 time_frequency_filter=None,
-                 priors=None,
-                 *args, **kwargs):
+
+    def __init__(
+        self,
+        interferometers,
+        wavelet_frequency_resolution,
+        wavelet_nx,
+        polarization_modes,
+        polarization_basis=None,
+        time_frequency_filter=None,
+        priors=None,
+        *args,
+        **kwargs,
+    ):
         super().__init__(
             interferometers=interferometers,
             wavelet_frequency_resolution=wavelet_frequency_resolution,
@@ -35,8 +39,15 @@ class GaussianTimeFrequencyLikelihood(TimeFrequencyLikelihood):
             polarization_basis=polarization_basis,
             time_frequency_filter=time_frequency_filter,
             priors=priors,
-            *args, **kwargs)
-        self._log_normalization_constant = -np.log(2. * np.pi) * 0.5 * (len(self.interferometers) - np.sum(self.polarization_basis)) * np.sum(self.time_frequency_filter)
+            *args,
+            **kwargs,
+        )
+        self._log_normalization_constant = (
+            -np.log(2.0 * np.pi)
+            * 0.5
+            * (len(self.interferometers) - np.sum(self.polarization_basis))
+            * np.sum(self.time_frequency_filter)
+        )
 
     def _compute_residual(self):
         """Compute the residual null stream after signal subtraction.
@@ -66,7 +77,7 @@ class GaussianTimeFrequencyLikelihood(TimeFrequencyLikelihood):
             float: Log-likelihood value for the current parameter set.
         """
         residual = self._compute_residual()
-        E_null = np.sum(np.abs(residual * self.time_frequency_filter)**2)
+        E_null = np.sum(np.abs(residual * self.time_frequency_filter) ** 2)
         log_likelihood = -0.5 * E_null + self._log_normalization_constant
         return log_likelihood
 
@@ -76,15 +87,18 @@ class GaussianTimeFrequencyLikelihood(TimeFrequencyLikelihood):
         Returns:
             float: noise log likelihood.
         """
-        wavelet_domain_strain_array = np.array([transform_wavelet_freq(
-            data=self.whitened_frequency_domain_strain_array[i],
-            sampling_frequency=self.sampling_frequency,
-            frequency_resolution=self.wavelet_frequency_resolution,
-            nx=self.wavelet_nx) for i in range(len(self.interferometers))]
+        wavelet_domain_strain_array = np.array(
+            [
+                transform_wavelet_freq(
+                    data=self.whitened_frequency_domain_strain_array[i],
+                    sampling_frequency=self.sampling_frequency,
+                    frequency_resolution=self.wavelet_frequency_resolution,
+                    nx=self.wavelet_nx,
+                )
+                for i in range(len(self.interferometers))
+            ]
         )
-        E = np.sum(np.abs(wavelet_domain_strain_array *
-                          self.time_frequency_filter)**2)
-        log_normalization = -np.log(2. * np.pi) * 0.5 * \
-            len(self.interferometers) * np.sum(self.time_frequency_filter)
+        E = np.sum(np.abs(wavelet_domain_strain_array * self.time_frequency_filter) ** 2)
+        log_normalization = -np.log(2.0 * np.pi) * 0.5 * len(self.interferometers) * np.sum(self.time_frequency_filter)
         log_likelihood = -0.5 * E + log_normalization
         return log_likelihood

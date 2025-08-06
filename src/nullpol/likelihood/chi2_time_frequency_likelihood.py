@@ -19,15 +19,19 @@ class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
         time_frequency_filter (str): The time-frequency filter.
         priors (dict, optional): If given, used in the calibration marginalization.
     """
-    def __init__(self,
-                 interferometers,
-                 wavelet_frequency_resolution,
-                 wavelet_nx,
-                 polarization_modes,
-                 polarization_basis=None,
-                 time_frequency_filter=None,
-                 priors=None,
-                 *args, **kwargs):
+
+    def __init__(
+        self,
+        interferometers,
+        wavelet_frequency_resolution,
+        wavelet_nx,
+        polarization_modes,
+        polarization_basis=None,
+        time_frequency_filter=None,
+        priors=None,
+        *args,
+        **kwargs,
+    ):
         super().__init__(
             interferometers=interferometers,
             wavelet_frequency_resolution=wavelet_frequency_resolution,
@@ -36,7 +40,9 @@ class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
             polarization_basis=polarization_basis,
             time_frequency_filter=time_frequency_filter,
             priors=priors,
-            *args, **kwargs)
+            *args,
+            **kwargs,
+        )
 
     @property
     def DoF(self):
@@ -45,7 +51,7 @@ class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
         Returns:
             int: Degree of freedom.
         """
-        return (len(self.interferometers)-np.sum(self.polarization_basis)) * np.sum(self.time_frequency_filter)
+        return (len(self.interferometers) - np.sum(self.polarization_basis)) * np.sum(self.time_frequency_filter)
 
     def _compute_residual_energy(self):
         s_est = self.estimate_wavelet_domain_signal_at_geocenter()
@@ -55,7 +61,7 @@ class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
         d_null = d_wavelet - s_est
 
         # Compute the null energy
-        E_null = np.sum(np.abs(d_null * self.time_frequency_filter)**2)
+        E_null = np.sum(np.abs(d_null * self.time_frequency_filter) ** 2)
         return E_null
 
     def log_likelihood(self):
@@ -69,12 +75,17 @@ class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
         Returns:
             float: noise log likelihood.
         """
-        wavelet_domain_strain_array = np.array([transform_wavelet_freq(
-            data=self.whitened_frequency_domain_strain_array[i],
-            sampling_frequency=self.sampling_frequency,
-            frequency_resolution=self.wavelet_frequency_resolution,
-            nx=self.wavelet_nx) for i in range(len(self.interferometers))]
+        wavelet_domain_strain_array = np.array(
+            [
+                transform_wavelet_freq(
+                    data=self.whitened_frequency_domain_strain_array[i],
+                    sampling_frequency=self.sampling_frequency,
+                    frequency_resolution=self.wavelet_frequency_resolution,
+                    nx=self.wavelet_nx,
+                )
+                for i in range(len(self.interferometers))
+            ]
         )
-        E = np.sum(np.abs(wavelet_domain_strain_array * self.time_frequency_filter)**2)
-        log_likelihood = scipy.stats.chi2.logpdf(E, df=len(self.interferometers)*np.sum(self.time_frequency_filter))
+        E = np.sum(np.abs(wavelet_domain_strain_array * self.time_frequency_filter) ** 2)
+        log_likelihood = scipy.stats.chi2.logpdf(E, df=len(self.interferometers) * np.sum(self.time_frequency_filter))
         return log_likelihood

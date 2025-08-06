@@ -30,15 +30,14 @@ class Nullpol(Bilby):
 
     @property
     def config_template(self):
-        return pkg_resources.resource_filename('nullpol.asimov', 'nullpol.ini')
+        return pkg_resources.resource_filename("nullpol.asimov", "nullpol.ini")
 
     def __init__(self, production, category=None):
         Pipeline.__init__(self, production=production, category=category)
         self.logger.info("Using the nullpol pipeline")
 
         if not production.pipeline.lower() == "nullpol":
-            raise PipelineException(f'Pipeline {production.pipeline.lower()} '
-                                    'is not recognized.')
+            raise PipelineException(f"Pipeline {production.pipeline.lower()} " "is not recognized.")
 
     def detect_completion(self):
         """
@@ -47,20 +46,18 @@ class Nullpol(Bilby):
         self.logger.info("Checking if the nullpol job has completed")
         results_dir = glob.glob(f"{self.production.rundir}/result")
         # config = self.read_ini(self.config_file_path)
-        expected_number_of_result_files = len(self.production.meta['likelihood']['polarization modes'])
+        expected_number_of_result_files = len(self.production.meta["likelihood"]["polarization modes"])
         if len(results_dir) > 0:  # dynesty_merge_result.json
-            results_files = glob.glob(
-                os.path.join(results_dir[0], "*merge*_result.hdf5")
-            )
-            results_files += glob.glob(
-                os.path.join(results_dir[0], "*merge*_result.json")
-            )
+            results_files = glob.glob(os.path.join(results_dir[0], "*merge*_result.hdf5"))
+            results_files += glob.glob(os.path.join(results_dir[0], "*merge*_result.json"))
             self.logger.debug(f"results files {results_files}")
             if len(results_files) == expected_number_of_result_files:
                 self.logger.info(f"{len(results_files)} result files found, the job is finished.")
                 return True
             elif len(results_files) > 0:
-                self.logger.info(f"{len(results_files)} < {expected_number_of_result_files} result files found, the job is not finished.")
+                self.logger.info(
+                    f"{len(results_files)} < {expected_number_of_result_files} result files found, the job is not finished."
+                )
             else:
                 self.logger.info("No results files found.")
                 return False
@@ -78,9 +75,9 @@ class Nullpol(Bilby):
         else:
             rundir = self.production.rundir
         self.logger.info(f"Rundir for samples: {rundir}")
-        return glob.glob(
-            os.path.join(rundir, "result", f"*_{subrun_label}_merge*_result.hdf5")
-        ) + glob.glob(os.path.join(rundir, "result", f"*_{subrun_label}_merge*_result.json"))
+        return glob.glob(os.path.join(rundir, "result", f"*_{subrun_label}_merge*_result.hdf5")) + glob.glob(
+            os.path.join(rundir, "result", f"*_{subrun_label}_merge*_result.json")
+        )
 
     def after_completion(self):
         post_pipeline = PESummaryPipeline(production=self.production)
@@ -99,9 +96,7 @@ class Nullpol(Bilby):
         """
         cwd = os.getcwd()
         if self.production.event.repository:
-            ini = self.production.event.repository.find_prods(
-                self.production.name, self.category
-            )[0]
+            ini = self.production.event.repository.find_prods(self.production.name, self.category)[0]
             ini = os.path.join(cwd, ini)
         else:
             ini = f"{self.production.name}.ini"
@@ -145,9 +140,7 @@ class Nullpol(Bilby):
             job_label = self.production.name
 
         command = [
-            os.path.join(config.get("pipelines", "environment"),
-                         "bin",
-                         "nullpol_pipe"),
+            os.path.join(config.get("pipelines", "environment"), "bin", "nullpol_pipe"),
             self.config_file_path,
             "--label",
             job_label,
@@ -171,22 +164,18 @@ class Nullpol(Bilby):
             print(" ".join(command))
         else:
             self.logger.info(" ".join(command))
-            pipe = subprocess.Popen(
-                command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
-            )
+            pipe = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             out, err = pipe.communicate()
             self.logger.info(out)
 
-            expected_out = 'DAG generation complete, to submit jobs'
+            expected_out = "DAG generation complete, to submit jobs"
             if err or expected_out not in str(out):
                 self.production.status = "stuck"
                 self.logger.error(err)
                 raise PipelineException(
-                    (f'DAG file could not be created.\n'
-                     f'{command}\n{out}\n\n{err}'),
+                    (f"DAG file could not be created.\n" f"{command}\n{out}\n\n{err}"),
                     production=self.production.name,
                 )
             else:
                 time.sleep(10)
-                return PipelineLogger(message=out,
-                                      production=self.production.name)
+                return PipelineLogger(message=out, production=self.production.name)

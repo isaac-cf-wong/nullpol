@@ -7,7 +7,7 @@ from bilby.core.prior.dict import PriorDict
 from ..utils import logger
 
 # Directory containing default prior configuration files
-DEFAULT_PRIOR_DIR = os.path.join(os.path.dirname(__file__), 'prior_files')
+DEFAULT_PRIOR_DIR = os.path.join(os.path.dirname(__file__), "prior_files")
 
 
 class PolarizationPriorDict(PriorDict):
@@ -58,9 +58,9 @@ class PolarizationPriorDict(PriorDict):
             from the package's prior_files directory.
         """
         if dictionary is None and filename is None:
-            fname = 'polarization.prior'
+            fname = "polarization.prior"
             filename = os.path.join(DEFAULT_PRIOR_DIR, fname)
-            logger.info(f'No prior given, using default polarization priors in {filename}.')
+            logger.info(f"No prior given, using default polarization priors in {filename}.")
         elif filename is not None:
             if not os.path.isfile(filename):
                 filename = os.path.join(DEFAULT_PRIOR_DIR, filename)
