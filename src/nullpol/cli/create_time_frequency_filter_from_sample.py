@@ -52,7 +52,7 @@ def main():
     parser.add("--nside", type=int, help="nside should be a power of 2. 12 * nside * nside sky pixels are generated.")
     parser.add("--nx", type=float, help="Sharpness of wavelet.", default=4.0)
     parser.add("--wavelet-df", type=float, help="Frequency resolution of wavelet transform in Hz.", default=16)
-    parser.add("--threshold", type=float, help="Threshild to apply the filter.", default=0.1)
+    parser.add("--threshold", type=float, help="Threshold to apply the filter.", default=0.1)
     parser.add("--generate-config", help="Generate default config file and exit.", is_write_out_config_file_arg=True)
 
     args = parser.parse_args()
