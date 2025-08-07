@@ -5,6 +5,7 @@ before_script:
 
 stages:
   - initial
+  - code-quality
   - test
 
 # ------------- Initial Stage -------------
@@ -35,14 +36,12 @@ basic-3.10:
     - merge_requests
     - main
 
-
 basic-3.11:
   <<: *test-python
   image: python:3.11
   only:
     - merge_requests
     - main
-
 
 basic-3.12:
   <<: *test-python
@@ -51,6 +50,35 @@ basic-3.12:
     - merge_requests
     - main
 
+# ------------- Code Quality Stage -------------
+
+.code-quality: &code-quality
+  stage: code-quality
+  image: python:3.12
+  script:
+    - python -m pip install --upgrade pip setuptools wheel
+    - python -m pip install .[test]
+    - *list-env
+
+black-check:
+  <<: *code-quality
+  script:
+    - python -m pip install --upgrade pip setuptools wheel
+    - python -m pip install .[test]
+    - python -m black --check --diff src/
+  only:
+    - merge_requests
+    - main
+
+ruff-check:
+  <<: *code-quality
+  script:
+    - python -m pip install --upgrade pip setuptools wheel
+    - python -m pip install .[test]
+    - python -m ruff check src/
+  only:
+    - merge_requests
+    - main
 
 # ------------- Test Stage -------------
 .unit-tests: &unit-test
@@ -78,7 +106,6 @@ python-3.10:
     - merge_requests
     - main
 
-
 python-3.11:
   <<: *unit-test
   needs: ["basic-3.11"]
@@ -87,7 +114,6 @@ python-3.11:
     - merge_requests
     - main
 
-
 python-3.12:
   <<: *unit-test
   needs: ["basic-3.12"]
@@ -95,7 +121,6 @@ python-3.12:
   only:
     - merge_requests
     - main
-
 
 # ------------- Coverage Report Summary -------------
 
