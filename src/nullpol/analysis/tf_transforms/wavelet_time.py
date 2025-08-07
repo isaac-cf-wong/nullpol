@@ -1,0 +1,140 @@
+"""helper functions for transform_time.py"""
+
+from __future__ import annotations
+
+import numpy as np
+from numba import njit
+
+from .wavelet_freq import _phitilde_vec
+
+
+def transform_wavelet_time_helper(data: np.ndarray, Nf: int, Nt: int, phi: np.ndarray, mult: int) -> np.ndarray:
+    """Helper function to do the wavelet transform in the time domain.
+
+    Args:
+        data (numpy.ndarray): 1D numpy array of data.
+        Nf (int): Number of frequency bins.
+        Nt (int): Number of time bins.
+        phi (numpy.ndarray): 1D numpy array representing the wavelet.
+        mult (int): Multiplier value.
+
+    Returns:
+        numpy.ndarray: 2D numpy array containing data in wavelet domain.
+    """
+    # the time domain data stream
+    ND = Nf * Nt
+
+    # mult, can cause bad leakage if it is too small but may be possible to
+    # mitigate
+    # Filter is mult times pixel with in time
+
+    K = mult * 2 * Nf
+
+    # windowed data packets
+    wdata = np.zeros(K)
+
+    wave = np.zeros((Nt, Nf))  # wavelet wavepacket transform of the signal
+    data_pad = np.zeros(ND + K)
+    data_pad[:ND] = data
+    data_pad[ND : ND + K] = data[:K]
+
+    for i in range(0, Nt):
+        _assign_wdata(i, K, ND, Nf, wdata, data_pad, phi)
+        wdata_trans = np.fft.rfft(wdata, K)
+        _pack_wave(i, mult, Nf, wdata_trans, wave)
+
+    return wave
+
+
+@njit
+def _assign_wdata(i: int, K: int, ND: int, Nf: int, wdata: np.ndarray, data_pad: np.ndarray, phi: np.ndarray) -> None:
+    """Assign wdata to be fftd in loop, data_pad needs K extra values on the right to loop.
+
+    Args:
+        i (int): Time index.
+        K (int): Frequency cutoff.
+        ND (int): Total number of data points.
+        Nf (int): Number of frequency bins.
+        wdata (numpy.ndarray): 1D numpy array for windowed data.
+        data_pad (numpy.ndarray): 1D numpy array of padded data.
+        phi (numpy.ndarray): 1D numpy array representing the wavelet.
+    """
+    # half_K = np.int64(K/2)
+    jj = i * Nf - K // 2
+    if jj < 0:
+        jj += ND  # periodically wrap the data
+    if jj >= ND:
+        jj -= ND  # periodically wrap the data
+    for j in range(0, K):
+        # jj = i*Nf-half_K+j
+        wdata[j] = data_pad[jj] * phi[j]  # apply the window
+        jj += 1
+        # if jj==ND:
+        #    jj -= ND # periodically wrap the data
+
+
+@njit
+def _pack_wave(i: int, mult: int, Nf: int, wdata_trans: np.ndarray, wave: np.ndarray) -> None:
+    """Pack fftd wdata into wave array.
+
+    Args:
+        i (int): Time index.
+        mult (int): Multiplier value.
+        Nf (int): Number of frequency bins.
+        wdata_trans (numpy.ndarray): 1D complex numpy array of transformed windowed data.
+        wave (numpy.ndarray): 2D numpy array to store the result.
+    """
+    if i % 2 == 0 and i < wave.shape[0] - 1:
+        # m=0 value at even Nt and
+        wave[i, 0] = np.real(wdata_trans[0]) / np.sqrt(2)
+        wave[i + 1, 0] = np.real(wdata_trans[Nf * mult]) / np.sqrt(2)
+
+    for j in range(1, Nf):
+        if (i + j) % 2:
+            wave[i, j] = -np.imag(wdata_trans[j * mult])
+        else:
+            wave[i, j] = np.real(wdata_trans[j * mult])
+
+
+def phi_vec(Nf: int, nx: float = 4.0, mult: int = 16) -> np.ndarray:
+    """Get time domain phi as Fourier transform of phitilde_vec.
+
+    Args:
+        Nf (int): Number of frequency bins.
+        nx (float, optional): Steepness of filter. Defaults to 4.0.
+        mult (int, optional): Multiplier value. Defaults to 16.
+
+    Returns:
+        numpy.ndarray: 1D numpy array representing time domain phi.
+    """
+    # TODO fix mult
+
+    OM = np.pi
+    DOM = OM / Nf
+    insDOM = 1.0 / np.sqrt(DOM)
+    K = mult * 2 * Nf
+    half_K = mult * Nf  # np.int64(K/2)
+
+    dom = 2 * np.pi / K  # max frequency is K/2*dom = pi/dt = OM
+
+    DX = np.zeros(K, dtype=np.complex128)
+
+    # zero frequency
+    DX[0] = insDOM
+
+    DX = DX.copy()
+    # positive frequencies
+    DX[1 : half_K + 1] = _phitilde_vec(dom * np.arange(1, half_K + 1), Nf, nx)
+    # negative frequencies
+    DX[half_K + 1 :] = _phitilde_vec(-dom * np.arange(half_K - 1, 0, -1), Nf, nx)
+    DX = K * np.fft.ifft(DX, K)
+
+    phi = np.zeros(K)
+    phi[0:half_K] = np.real(DX[half_K:K])
+    phi[half_K:] = np.real(DX[0:half_K])
+
+    nrm = np.sqrt(K / dom)  # *np.linalg.norm(phi)
+
+    fac = np.sqrt(2.0) / nrm
+    phi *= fac
+    return phi

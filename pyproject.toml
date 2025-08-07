@@ -22,11 +22,11 @@ requires-python = ">=3.10"
 dynamic = ["version"]
 dependencies = [
     "matplotlib",
-    "numpy<=2.0",
+    "numpy",
     "bilby",
-    "bilby_pipe<=1.4.2",
+    "bilby_pipe<=1.6.0",
     "gwpy",
-    "numba",
+    "numba>=0.56",
     "rocket-fft",
     "scipy",
     "ConfigArgParse",
@@ -38,6 +38,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+asimov = [
+    "asimov"
+]
 spark = [
     "pyspark>=3.0.0"
 ]
@@ -66,9 +69,6 @@ fast = true
 
 [tool.ruff]
 exclude = ["docs"]
-
-[tool.ruff.lint.per-file-ignores]
-"*/__init__.py" = ["F403", "F405"]  # Allow star imports in __init__.py files
 
 [tool.coverage.run]
 branch = true
@@ -110,19 +110,19 @@ markers = [
 ]
 
 [project.scripts]
-nullpol_create_injection = "nullpol.tools.create_injection:main"
-nullpol_create_time_frequency_filter_from_sample = "nullpol.tools.create_time_frequency_filter_from_sample:main"
-nullpol_pipe = "nullpol.tools.main:main"
-nullpol_pipe_analysis = "nullpol.tools.data_analysis:main"
-nullpol_pipe_generation = "nullpol.tools.data_generation:main"
-nullpol_pipe_write_default_ini = "nullpol.tools.parser:main"
-nullpol_get_asimov_yaml = "nullpol.tools.get_asimov_yaml:main"
+nullpol_create_injection = "nullpol.cli.create_injection:main"
+nullpol_create_time_frequency_filter_from_sample = "nullpol.cli.create_time_frequency_filter_from_sample:main"
+nullpol_pipe = "nullpol.cli.main:main"
+nullpol_pipe_analysis = "nullpol.cli.data_analysis:main"
+nullpol_pipe_generation = "nullpol.cli.data_generation:main"
+nullpol_pipe_write_default_ini = "nullpol.cli.parser:main"
+nullpol_get_asimov_yaml = "nullpol.cli.get_asimov_yaml:main"
 
 [project.entry-points.'asimov.pipelines']
-nullpol = "nullpol.asimov.asimov:Nullpol"
+nullpol = "nullpol.integrations.asimov.asimov:Nullpol"
 
 [project.entry-points.'asimov.hooks.postmonitor']
-tgrflow = 'nullpol.asimov.tgrflow:Collector'
+tgrflow = 'nullpol.integrations.asimov.tgrflow:Collector'
 
 [project.entry-points.'asimov.hooks.applicator']
-tgrflow = 'nullpol.asimov.tgrflow:Applicator'
+tgrflow = 'nullpol.integrations.asimov.tgrflow:Applicator'

@@ -17,18 +17,29 @@ repos:
       - id: requirements-txt-fixer
       - id: trailing-whitespace
 
+  - repo: local
+    hooks:
+      - id: auto-generate-init
+        name: Auto-generate __init__.py files
+        entry: python scripts/auto_generate_init.py
+        language: python
+        files: '^src/.*\.py$'
+        pass_filenames: false
+        description: "Auto-generate __init__.py files for leaf packages"
+        additional_dependencies: []
+
   - repo: https://github.com/psf/black-pre-commit-mirror
     rev: 25.1.0
     hooks:
       - id: black
-        files: ^src/
+        files: ^(src|tests)/
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.12.7
     hooks:
       - id: ruff
         args: ["--fix"]
-        files: ^src/
+        files: ^(src|tests)/
 
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1

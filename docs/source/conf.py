@@ -5,7 +5,7 @@ import sys
 
 import nullpol
 
-sys.path.insert(0, os.path.abspath('../../nullpol'))
+sys.path.insert(0, os.path.abspath('../../src/nullpol'))
 # Configuration file for the Sphinx documentation builder.
 #
 # For the full list of built-in configuration values, see the documentation:
@@ -45,7 +45,7 @@ exclude_patterns = ["build", ".DS_store", "requirements.txt"]
 pygments_style = "sphinx"
 
 # settings for autoapi generation
-autoapi_dirs = ["../../nullpol"]
+autoapi_dirs = ["../../src/nullpol"]
 autoapi_template_dir = "../_templates"
 autoapi_options = [
     "members",

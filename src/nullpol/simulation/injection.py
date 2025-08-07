@@ -1,0 +1,63 @@
+from __future__ import annotations
+
+from typing import Callable
+
+from bilby.gw.conversion import convert_to_lal_binary_black_hole_parameters
+from bilby.gw.detector import InterferometerList
+from bilby.gw.source import lal_binary_black_hole
+from bilby.gw.waveform_generator import WaveformGenerator
+
+_DEFAULT_BBH_WAVEFORM_ARGUMENTS = {"waveform_approximant": "IMRPhenomPv2", "reference_frequency": 50}
+
+
+def create_injection(
+    interferometers: InterferometerList,
+    duration: float,
+    sampling_frequency: float,
+    start_time: float,
+    parameters: dict | None = None,
+    noise_type: str = "zero_noise",
+    frequency_domain_source_model: Callable = lal_binary_black_hole,
+    waveform_arguments: dict = _DEFAULT_BBH_WAVEFORM_ARGUMENTS,
+) -> None:
+    """A helper function to inject a mock signal into interferometers.
+
+    Args:
+        interferometers (InterferometerList): A list of interferometers.
+        duration (float): Duration of data in second.
+        sampling_frequency (float): Sampling frequency in Hz.
+        start_time (float): Start time of the data segment in second.
+        parameters (dict, optional): A dictionary of injection parameters.
+        noise_type (str, optional): Type of noise. Supported options: ['zero_noise', 'gaussian', 'noise'].
+            Defaults to 'zero_noise'.
+        frequency_domain_source_model (callable, optional): A function that returns the frequency domain
+            polarizations. Defaults to lal_binary_black_hole.
+        waveform_arguments (dict, optional): A dictionary of additional waveform arguments.
+            Defaults to {"waveform_approximant": "IMRPhenomPv2", "reference_frequency": 50}.
+    """
+    if noise_type == "gaussian":
+        interferometers.set_strain_data_from_power_spectral_densities(
+            sampling_frequency=sampling_frequency, duration=duration, start_time=start_time
+        )
+    elif noise_type == "zero_noise":
+        interferometers.set_strain_data_from_zero_noise(
+            sampling_frequency=sampling_frequency, duration=duration, start_time=start_time
+        )
+    elif noise_type == "noise":
+        interferometers.set_strain_data_from_power_spectral_densities(
+            sampling_frequency=sampling_frequency, duration=duration, start_time=start_time
+        )
+        return
+    else:
+        raise ValueError(f"noise_type={noise_type} is not supported.")
+    # Create a waveform generator
+    waveform_generator = WaveformGenerator(
+        duration=duration,
+        sampling_frequency=sampling_frequency,
+        start_time=start_time,
+        frequency_domain_source_model=frequency_domain_source_model,
+        parameters=None,
+        parameter_conversion=convert_to_lal_binary_black_hole_parameters,
+        waveform_arguments=waveform_arguments,
+    )
+    interferometers.inject_signal(parameters=parameters, waveform_generator=waveform_generator)

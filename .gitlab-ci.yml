@@ -60,6 +60,30 @@ basic-3.12:
     - python -m pip install .[test]
     - *list-env
 
+init-files-check:
+  <<: *code-quality
+  script:
+    - python -m pip install --upgrade pip setuptools wheel
+    - python -m pip install .[test]
+    - echo "Checking that auto-generated __init__.py files are up to date..."
+    - |
+      # Check if any files would be updated (use quiet mode for clean output)
+      DRY_RUN_OUTPUT=$(python scripts/auto_generate_init.py --dry-run --quiet)
+      if [ -n "$DRY_RUN_OUTPUT" ]; then
+        echo ""
+        echo "ERROR: Auto-generated __init__.py files are out of date!"
+        echo "Files that need updates:"
+        echo "$DRY_RUN_OUTPUT"
+        echo ""
+        echo "Please run 'python scripts/auto_generate_init.py' locally and commit the changes."
+        exit 1
+      else
+        echo "SUCCESS: All auto-generated __init__.py files are up to date"
+      fi
+  only:
+    - merge_requests
+    - main
+
 black-check:
   <<: *code-quality
   script:
