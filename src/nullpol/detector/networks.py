@@ -7,6 +7,14 @@ import numpy as np
 from bilby.core.utils import logger
 
 
+# =============================================================================
+# UNUSED FUNCTIONS - LEGACY CODE
+# =============================================================================
+# The following functions are not currently used anywhere in the codebase.
+# They may be useful for future development or debugging purposes.
+# Consider removing them if they remain unused after significant development.
+
+
 @property
 def time_domain_strain_array(self):
     """Array of time domain strain data from all interferometers.
@@ -50,10 +58,10 @@ def time_frequency_domain_strain_array(self):
     Returns:
         numpy.ndarray: Time-frequency domain strain array with shape (n_detectors, n_time, n_frequencies).
     """
-    if self._frequency_domain_strain_array is None:
+    if self._time_frequency_domain_strain_array is None:
         nifo = len(self)
         ntime, nfreq = self[0].time_frequency_domain_strain.shape
-        self._frequency_domain_strain_array = np.zeros(
+        self._time_frequency_domain_strain_array = np.zeros(
             (nifo, ntime, nfreq), dtype=self[0].time_frequency_domain_strain[0, 0].dtype
         )
 
@@ -116,6 +124,8 @@ def _check_interferometers(self):
                 logger.warning(e)
 
 
+# Monkey patch bilby's InterferometerList class
+# This module must be imported for the enhancements to take effect
 bilby.gw.detector.InterferometerList._time_domain_strain_array = None
 bilby.gw.detector.InterferometerList.time_domain_strain_array = time_domain_strain_array
 bilby.gw.detector.InterferometerList._frequency_domain_strain_array = None
