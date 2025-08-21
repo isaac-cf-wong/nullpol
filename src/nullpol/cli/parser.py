@@ -107,6 +107,7 @@ def create_nullpol_parser(top_level: bool = True) -> BilbyArgParser:
     _remove_argument(parser, "--coherence-test")
     _remove_argument(parser, "--calibration-marginalization")
     _remove_argument(parser, "--calibration-lookup-table")
+    _remove_argument(parser, "--calibration-correction-type")
     _remove_argument(parser, "--number-of-response-curves")
     _remove_argument(parser, "--distance-marginalization")
     _remove_argument(parser, "--distance-marginalization-lookup-table")
