@@ -13,8 +13,6 @@ from bilby_pipe.utils import strip_quotes
 from ..analysis import prior as nullpol_prior
 from ..analysis.likelihood import (
     Chi2TimeFrequencyLikelihood,
-    FractionalProjectionTimeFrequencyLikelihood,
-    GaussianTimeFrequencyLikelihood,
 )
 from ..utils import NullpolError, logger
 
@@ -108,12 +106,6 @@ class Input(BilbyInput):
         )
         if self.likelihood_type == "Chi2TimeFrequencyLikelihood":
             Likelihood = Chi2TimeFrequencyLikelihood
-            likelihood_kwargs.update(self.extra_likelihood_kwargs)
-        elif self.likelihood_type == "GaussianTimeFrequencyLikelihood":
-            Likelihood = GaussianTimeFrequencyLikelihood
-            likelihood_kwargs.update(self.extra_likelihood_kwargs)
-        elif self.likelihood_type in ["zero", "FractionalProjectionTimeFrequencyLikelihood"]:
-            Likelihood = FractionalProjectionTimeFrequencyLikelihood
             likelihood_kwargs.update(self.extra_likelihood_kwargs)
         elif "." in self.likelihood_type:
             split_path = self.likelihood_type.split(".")

@@ -23,25 +23,12 @@ def test_core_module_imports():
     import nullpol
 
     # Core modules that should be auto-imported
-    core_modules = ["analysis", "detector", "simulation", "utils"]
+    core_modules = ["analysis", "simulation", "utils"]
 
     for module_name in core_modules:
         assert hasattr(nullpol, module_name), f"Missing core module: {module_name}"
         module = getattr(nullpol, module_name)
         assert module is not None, f"Module {module_name} is None"
-
-
-def test_detector_module_imports():
-    """Test that detector module can be imported successfully."""
-    import nullpol.detector
-
-    # Verify core detector functions are available (these are properties, not functions)
-    from nullpol.detector import frequency_domain_strain_array, time_domain_strain_array
-
-    assert nullpol.detector is not None
-    # Note: These are property descriptors on classes, not standalone callable functions
-    assert frequency_domain_strain_array is not None
-    assert time_domain_strain_array is not None
 
 
 def test_simulation_module_imports():
@@ -139,7 +126,7 @@ def test_package_api_design():
             "-c",
             """
 import nullpol
-core_modules = ['analysis', 'detector', 'simulation', 'utils']
+core_modules = ['analysis', 'simulation', 'utils']
 main_attrs = [attr for attr in dir(nullpol) if not attr.startswith('_')]
 for module_name in core_modules:
     assert module_name in main_attrs, f'Core module {module_name} not auto-imported'
@@ -175,7 +162,6 @@ print('API design test passed')
 @pytest.mark.parametrize(
     "module_path",
     [
-        "nullpol.detector",
         "nullpol.simulation.injection",
         "nullpol.analysis.likelihood",
         "nullpol.analysis.null_stream",

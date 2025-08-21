@@ -167,7 +167,6 @@ class DataAnalysisInput(BInput, Input):
         priors = self.data_dump.priors_class(self.data_dump.priors_dict)
         self.priors = priors.copy()
         self._add_default_relative_polarization_prior()
-        self._add_likelihood_specific_default_prior()
         likelihood = self.likelihood
         priors = self.search_priors
         return likelihood, priors
@@ -214,15 +213,6 @@ class DataAnalysisInput(BInput, Input):
                 )
                 logger.info(f"Added missing relative polarization prior: {missing_priors[phase_name]}")
         self.priors.update(missing_priors)
-
-    def _add_likelihood_specific_default_prior(self):
-        if self.likelihood_type == "FractionalProjectionTimeFrequencyLikelihood":
-            if "projection_fraction" not in self.priors:
-                self.priors["projection_fraction"] = bilby.core.prior.Uniform(
-                    name="projection_fraction", minimum=0.0, maximum=1.0, latex_label=r"$\zeta$"
-                )
-                logger.info("Missing prior for projection_fraction.")
-                logger.info(f"Added prior for projection_fraction: {self.priors['projection_fraction']}")
 
     def run_sampler(self):
         if self.scheduler.lower() == "condor" and not self.run_local:

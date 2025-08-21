@@ -129,12 +129,10 @@ def create_nullpol_parser(top_level: bool = True) -> BilbyArgParser:
         parser,
         "Likelihood arguments",
         "--likelihood-type",
-        default="FractionalProjectionTimeFrequencyLikelihood",
+        default="Chi2TimeFrequencyLikelihood",
         help=(
-            "The likelihood. Can be one of [Chi2TimeFrequencyLikelihood, GaussianTimeFrequencyLikelihood, FractionalProjectionTimeFrequencyLikelihood, zero] "
+            "The likelihood. Can be one of [Chi2TimeFrequencyLikelihood] "
             "or python path to a bilby likelihood class available in the users installation."
-            "If `zero` is given, a testing ZeroLikelihood is used which always "
-            "return zero."
         ),
     )
     _add_argument_to_group(
