@@ -43,18 +43,11 @@ basic-3.11:
     - merge_requests
     - main
 
-basic-3.12:
-  <<: *test-python
-  image: python:3.12
-  only:
-    - merge_requests
-    - main
-
 # ------------- Code Quality Stage -------------
 
 .code-quality: &code-quality
   stage: code-quality
-  image: python:3.12
+  image: python:3.11
   script:
     - python -m pip install --upgrade pip setuptools wheel
     - python -m pip install .[test]
@@ -138,19 +131,11 @@ python-3.11:
     - merge_requests
     - main
 
-python-3.12:
-  <<: *unit-test
-  needs: ["basic-3.12"]
-  image: python:3.12
-  only:
-    - merge_requests
-    - main
-
 # ------------- Coverage Report Summary -------------
 
 coverage-summary:
   stage: test
-  image: python:3.12
+  image: python:3.11
   script:
     - echo "Merging coverage reports"
     - python -m pip install --upgrade pip setuptools wheel
@@ -167,7 +152,6 @@ coverage-summary:
   needs:
     - job: python-3.10
     - job: python-3.11
-    - job: python-3.12
   only:
     - merge_requests
     - main
