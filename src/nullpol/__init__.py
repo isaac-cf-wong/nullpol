@@ -2,7 +2,6 @@ from __future__ import annotations
 
 # Core user-facing modules - these are what most users will need
 from . import analysis  # Analysis capabilities (includes prior distributions, clustering, etc.)
-from . import detector  # Detector handling (networks)
 from . import simulation  # Simulation utilities (injection, source models)
 from . import utils  # Common utilities
 
@@ -31,7 +30,6 @@ def log_version_information():
 
 __all__ = [
     "analysis",
-    "detector",
     "simulation",
     "utils",
     "get_version_information",
