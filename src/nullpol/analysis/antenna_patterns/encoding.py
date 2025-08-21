@@ -1,4 +1,4 @@
-"""Polarization encoding utilities."""
+"""Polarization encoding utilities for antenna pattern analysis."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ import numpy as np
 
 
 # =============================================================================
-# ENCODING UTILITIES
+# ENCODING CONSTANTS
 # =============================================================================
 
 # Mapping from polarization short names to array indices
@@ -20,6 +20,11 @@ POLARIZATION_LONG_NAMES = dict(p="plus", c="cross", b="breathing", l="longitudin
 
 # Mapping from long names back to short names
 POLARIZATION_SHORT_NAMES = dict(plus="p", cross="c", breathing="b", longitudinal="l", vector_x="x", vector_y="y")
+
+
+# =============================================================================
+# ENCODING FUNCTIONS
+# =============================================================================
 
 
 def encode_polarization(polarization_modes, polarization_basis):
@@ -60,14 +65,6 @@ def encode_polarization(polarization_modes, polarization_basis):
         _polarization_basis[POLARIZATION_ENCODING[pol]] = True
     _polarization_derived = _polarization_modes & (~_polarization_basis)
     return _polarization_modes, _polarization_basis, _polarization_derived
-
-
-# =============================================================================
-# UNUSED FUNCTIONS - LEGACY CODE
-# =============================================================================
-# The following functions are not currently used anywhere in the codebase.
-# They may be useful for future development or debugging purposes.
-# Consider removing them if they remain unused after significant development.
 
 
 def get_long_names(tokens):

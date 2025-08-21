@@ -1,7 +1,7 @@
-"""Test module for signal processing functionality.
+"""Test module for data context functionality.
 
-This module tests signal conditioning and processing functions used
-throughout the analysis pipeline.
+This module tests the TimeFrequencyDataContext class and its signal processing
+functions including whitening, time-shifting, and data management.
 """
 
 from __future__ import annotations
@@ -12,7 +12,7 @@ import pytest
 from bilby.gw.detector import InterferometerList
 from scipy.stats import kstest
 
-from nullpol.analysis.signal_processing import compute_whitened_frequency_domain_strain_array
+from nullpol.analysis.data_context import compute_whitened_frequency_domain_strain_array
 
 
 @pytest.fixture

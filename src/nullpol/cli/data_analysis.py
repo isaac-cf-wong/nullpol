@@ -12,7 +12,7 @@ from bilby_pipe.main import parse_args
 from bilby_pipe.utils import CHECKPOINT_EXIT_CODE
 
 from .. import log_version_information
-from ..analysis.encoding import encode_polarization
+from ..analysis.antenna_patterns import encode_polarization
 from ..analysis.antenna_patterns import relative_amplification_factor_map
 from ..analysis.result import PolarizationResult
 from ..utils import NullpolError, logger

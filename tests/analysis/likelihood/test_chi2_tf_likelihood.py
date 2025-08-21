@@ -177,7 +177,7 @@ def test_noise_residual_energy(configuration: dict, time_frequency_filter: np.nd
             time_frequency_filter=time_frequency_filter,
         )
         likelihood.parameters = dict(ra=0, dec=0, psi=0, geocent_time=geocent_time)
-        energy = likelihood._compute_residual_energy()
+        energy = likelihood._compute_null_energy()
         samples.append(energy)
 
     result = scipy.stats.kstest(samples, cdf="chi2", args=(likelihood.DoF,))
@@ -231,7 +231,7 @@ def test_signal_residual_energy(configuration: dict, time_frequency_filter: np.n
             time_frequency_filter=time_frequency_filter,
         )
         likelihood.parameters = dict(ra=ra, dec=dec, psi=psi, geocent_time=geocent_time)
-        energy = likelihood._compute_residual_energy()
+        energy = likelihood._compute_null_energy()
         samples.append(energy)
     result = scipy.stats.kstest(samples, cdf="chi2", args=(likelihood.DoF,))
     print(f"p-value = {result.pvalue}, mean = {np.mean(samples)}, var = {np.var(samples)}, DoF = {likelihood.DoF}")
@@ -285,7 +285,7 @@ def test_signal_residual_energy_incorrect_parameters(configuration: dict, time_f
             time_frequency_filter=time_frequency_filter,
         )
         likelihood.parameters = dict(ra=ra, dec=dec, psi=psi, geocent_time=geocent_time)
-        energy = likelihood._compute_residual_energy()
+        energy = likelihood._compute_null_energy()
         samples.append(energy)
     result = scipy.stats.kstest(samples, cdf="chi2", args=(likelihood.DoF,))
     print(f"p-value = {result.pvalue}, mean = {np.mean(samples)}, var = {np.var(samples)}, DoF = {likelihood.DoF}")
@@ -344,7 +344,7 @@ def test_signal_pc_c_residual_energy(configuration: dict, time_frequency_filter:
         likelihood.parameters = dict(
             ra=ra, dec=dec, psi=psi, geocent_time=geocent_time, amplitude_cp=amplitude_cp, phase_cp=phase_cp
         )
-        energy = likelihood._compute_residual_energy()
+        energy = likelihood._compute_null_energy()
         samples.append(energy)
     result = scipy.stats.kstest(samples, cdf="chi2", args=(likelihood.DoF,))
     print(f"p-value = {result.pvalue}, mean = {np.mean(samples)}, var = {np.var(samples)}, DoF = {likelihood.DoF}")
@@ -406,7 +406,7 @@ def test_signal_pc_c_residual_energy_incorrect_parameters(
         likelihood.parameters = dict(
             ra=ra, dec=dec, psi=psi, geocent_time=geocent_time, amplitude_cp=amplitude_cp, phase_cp=phase_cp
         )
-        energy = likelihood._compute_residual_energy()
+        energy = likelihood._compute_null_energy()
         samples.append(energy)
     result = scipy.stats.kstest(samples, cdf="chi2", args=(likelihood.DoF,))
     print(f"p-value = {result.pvalue}, mean = {np.mean(samples)}, var = {np.var(samples)}, DoF = {likelihood.DoF}")

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from ..encoding import POLARIZATION_DECODING
+from .encoding import POLARIZATION_DECODING
 
 
 def get_antenna_pattern(interferometer, right_ascension, declination, polarization_angle, gps_time, polarization):

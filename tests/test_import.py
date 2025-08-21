@@ -57,8 +57,7 @@ def test_analysis_module_imports():
         "result",
         "tf_transforms",
         "antenna_patterns",
-        "signal_processing",
-        "encoding",
+        "data_context",
         "prior",
     ]
 

@@ -51,7 +51,7 @@ def test_frame_paths():
             os.remove(path_value)
 
 
-def test_generate_config():
+def test_generate_injection_config():
     """Test configuration file generation functionality.
 
     Validates that the tool correctly generates default configuration

@@ -9,13 +9,13 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from nullpol.analysis.encoding import (
-    POLARIZATION_DECODING,
-    POLARIZATION_ENCODING,
-    POLARIZATION_LONG_NAMES,
-    POLARIZATION_SHORT_NAMES,
+from nullpol.analysis.antenna_patterns import (
     encode_polarization,
     get_long_names,
+    POLARIZATION_ENCODING,
+    POLARIZATION_DECODING,
+    POLARIZATION_LONG_NAMES,
+    POLARIZATION_SHORT_NAMES,
 )
 
 

@@ -11,7 +11,7 @@ import numpy as np
 import pytest
 import scipy.stats
 
-from nullpol.analysis.signal_processing import compute_whitened_frequency_domain_strain_array
+from nullpol.analysis.data_context import compute_whitened_frequency_domain_strain_array
 from nullpol.analysis.tf_transforms.wavelet_transforms import (
     inverse_wavelet_freq_time,
     inverse_wavelet_time,

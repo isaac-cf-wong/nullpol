@@ -16,7 +16,7 @@ from importlib.resources import files
 from nullpol.cli.create_time_frequency_filter_from_sample import main
 
 
-def test_generate_config():
+def test_generate_filter_config():
     """Test configuration file generation for filter creation.
 
     Validates that the tool correctly generates default configuration
