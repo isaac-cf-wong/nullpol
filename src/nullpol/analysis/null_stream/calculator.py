@@ -8,7 +8,6 @@ from .projections import (
     compute_gw_projector_masked,
     compute_null_projector_from_gw_projector,
     compute_projection_squared,
-    compute_time_frequency_domain_strain_array_squared,
 )
 
 
@@ -74,58 +73,6 @@ class NullStreamCalculator:
 
         # Sum over all time-frequency pixels to get total null energy
         return np.sum(null_energy_array)
-
-    def compute_signal_energy(
-        self,
-        whitened_antenna_pattern_matrix,
-        whitened_time_frequency_strain_data,
-        frequency_mask,
-        time_frequency_filter,
-    ):
-        """Compute signal (GW) energy using projection approach.
-
-        This method computes the energy in the GW signal subspace using the
-        GW projector directly: E_signal = d† P_gw d
-
-        Args:
-            whitened_antenna_pattern_matrix (numpy.ndarray): Whitened antenna patterns
-                with shape (n_frequencies, n_detectors, n_modes).
-            whitened_time_frequency_strain_data (numpy.ndarray): Whitened strain data
-                with shape (n_detectors, n_time, n_frequencies).
-            frequency_mask (numpy.ndarray): Boolean mask with shape (n_frequencies,).
-            time_frequency_filter (numpy.ndarray): Boolean filter with shape (n_time, n_frequencies).
-
-        Returns:
-            float: Signal energy computed via direct projection.
-        """
-        # Compute GW projector P_gw = F(F†F)^(-1)F†
-        gw_projector = self.compute_gw_projector(whitened_antenna_pattern_matrix, frequency_mask)
-
-        # Apply GW projection and compute squared magnitude
-        signal_energy_array = self.compute_projection_energy(
-            whitened_time_frequency_strain_data, gw_projector, time_frequency_filter
-        )
-
-        # Sum over all time-frequency pixels to get total signal energy
-        return np.sum(signal_energy_array)
-
-    def compute_total_energy(self, whitened_time_frequency_strain_data, time_frequency_filter):
-        """Compute total energy in the data (without projection).
-
-        This method computes the total energy E_total = d† d in all detectors.
-
-        Args:
-            whitened_time_frequency_strain_data (numpy.ndarray): Whitened strain data
-                with shape (n_detectors, n_time, n_frequencies).
-            time_frequency_filter (numpy.ndarray): Boolean filter with shape (n_time, n_frequencies).
-
-        Returns:
-            float: Total energy in the data.
-        """
-        total_energy_array = compute_time_frequency_domain_strain_array_squared(
-            whitened_time_frequency_strain_data, time_frequency_filter
-        )
-        return np.sum(total_energy_array)
 
     # =========================================================================
     # COMPONENT METHODS (BUILDING BLOCKS)

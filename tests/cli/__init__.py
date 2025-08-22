@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from .test_create_injection import (
-    test_cli_accepts_real_fixture_config,
     test_create_injection,
     test_create_injection_with_custom_psds,
     test_create_injection_with_signal_frame,
@@ -14,7 +13,6 @@ from .test_create_time_frequency_filter import (
 )
 
 __all__ = [
-    "test_cli_accepts_real_fixture_config",
     "test_create_injection",
     "test_create_injection_with_custom_psds",
     "test_create_injection_with_signal_frame",

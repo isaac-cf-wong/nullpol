@@ -99,35 +99,3 @@ def compute_projection_squared(time_frequency_domain_strain_array, projector, ti
                 d = np.ascontiguousarray(time_frequency_domain_strain_array[:, i, j].astype(projector.dtype))
                 output[i, j] = np.abs(np.conj(d) @ projector[j] @ d)
     return output
-
-
-@njit
-def compute_time_frequency_domain_strain_array_squared(time_frequency_domain_strain_array, time_frequency_filter):
-    """Compute squared magnitude of strain in time-frequency domain.
-
-    Calculates the squared magnitude of the strain vector at each time-frequency pixel,
-    corresponding to the total power in all detectors at that pixel.
-
-    Args:
-        time_frequency_domain_strain_array (numpy.ndarray): Time-frequency strain data
-            with shape (n_detectors, n_time, n_frequencies). Contains the strain data
-            for each detector in the time-frequency representation.
-        time_frequency_filter (numpy.ndarray): Boolean filter with shape (n_time, n_frequencies)
-            indicating which time-frequency pixels to process.
-
-    Returns:
-        numpy.ndarray: Squared strain magnitudes with shape (n_time, n_frequencies).
-            Contains |d|² for each time-frequency pixel where d is the detector strain vector.
-            Zero for pixels not in the filter.
-    """
-    # Dimensions
-    ## time_frequency_domain_strain_array: (detector, time, frequency)
-    ## time_frequency_filter: (time, frequency)
-    ndet, ntime, nfreq = time_frequency_domain_strain_array.shape
-    output = np.zeros((ntime, nfreq), dtype=np.float64)
-    for i in range(ntime):
-        for j in range(nfreq):
-            if time_frequency_filter[i, j]:
-                d = np.ascontiguousarray(time_frequency_domain_strain_array[:, i, j])
-                output[i, j] = np.abs(np.conj(d) @ d)
-    return output
