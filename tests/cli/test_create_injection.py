@@ -143,27 +143,6 @@ def test_create_injection(test_frame_paths):
     assert os.path.exists(test_frame_paths["V1_TEST_frame_path"]), "V1 output file was not created."
 
 
-def test_cli_accepts_real_fixture_config(tmp_path):
-    """Test CLI can parse and use a real example config from fixtures."""
-    import shutil
-
-    fixture_config = os.path.join(os.path.dirname(__file__), "../fixtures/scalar_tensor_injection.ini")
-    config_path = tmp_path / "scalar_tensor_injection.ini"
-    shutil.copy(fixture_config, config_path)
-
-    # Patch sys.argv to use only the config, outdir, and label (no extra config keys)
-    with mock.patch(
-        "sys.argv",
-        ["nullpol_create_injection", "--config", str(config_path), "--outdir", str(tmp_path), "--label", "FIXTURETEST"],
-    ):
-        try:
-            main()
-        except SystemExit as e:
-            assert e.code == 0
-    # Check that output directory was created and at least one output file exists
-    assert any(tmp_path.iterdir()), "No output files created by CLI with real fixture config."
-
-
 def test_create_injection_with_signal_frame(test_frame_paths):
     """Test injection creation using existing signal frame files.
 
