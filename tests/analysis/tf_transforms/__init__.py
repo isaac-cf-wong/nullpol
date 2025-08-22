@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from .wavelet_transform_test import (
+from .test_wavelet_transforms import (
     setup_random_seeds,
     test_inverse_wavelet_freq_time,
     test_inverse_wavelet_time,
