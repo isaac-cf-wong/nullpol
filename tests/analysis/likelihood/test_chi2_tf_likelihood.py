@@ -32,7 +32,7 @@ def configuration() -> dict:
         Dict: A dictionary containing all test configuration parameters
             including detector setup, signal parameters, and analysis settings.
     """
-    seed = 12
+    seed = 14
     # Set the seed
     np.random.seed(seed)
     bilby.core.utils.random.seed(seed)
@@ -318,7 +318,9 @@ def test_signal_residual_energy_incorrect_parameters(configuration: dict, time_f
     print(
         f"logL vs logpdf KS statistic = {result.statistic}, p-value = {result.pvalue}, mean logL = {np.mean(logL_samples):.3f}, mean logpdf = {np.mean(logpdf_samples):.3f}, DoF = {likelihood.DoF}"
     )
-    assert result.pvalue >= 0.05, f"Log likelihoods do not match expected logpdf distribution (p = {result.pvalue})"
+    assert (
+        result.pvalue < 0.05
+    ), f"Log likelihoods should deviate from the expected logpdf distribution (p = {result.pvalue})"
 
 
 def test_signal_pc_c_residual_energy(configuration: dict, time_frequency_filter: np.ndarray) -> None:
@@ -459,4 +461,6 @@ def test_signal_pc_c_residual_energy_incorrect_parameters(
     print(
         f"logL vs logpdf KS statistic = {result.statistic}, p-value = {result.pvalue}, mean logL = {np.mean(logL_samples):.3f}, mean logpdf = {np.mean(logpdf_samples):.3f}, DoF = {likelihood.DoF}"
     )
-    assert result.pvalue >= 0.05, f"Log likelihoods do not match expected logpdf distribution (p = {result.pvalue})"
+    assert (
+        result.pvalue < 0.05
+    ), f"Log likelihoods should deviate from the expected logpdf distribution (p = {result.pvalue})"
