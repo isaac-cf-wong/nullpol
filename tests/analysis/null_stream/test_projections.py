@@ -8,7 +8,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from nullpol.analysis.null_stream import compute_gw_projector_masked, compute_null_projector_from_gw_projector
+from nullpol.analysis.null_stream.projections import compute_gw_projector, compute_null_projector
 
 
 # =============================================================================
@@ -81,7 +81,7 @@ def test_compute_gw_projector_masked():
     whitened_antenna_pattern_matrix = np.random.randn(128, 3, 2) + 1.0j * np.random.randn(128, 3, 2)
     frequency_mask = np.full(128, True)
     frequency_mask[:20] = False
-    output = compute_gw_projector_masked(
+    output = compute_gw_projector(
         whitened_antenna_pattern_matrix=whitened_antenna_pattern_matrix, frequency_mask=frequency_mask
     )
     expected_output = np.zeros((128, 3, 3), dtype=whitened_antenna_pattern_matrix.dtype)
@@ -103,8 +103,8 @@ def test_projector_mathematical_properties():
     frequency_mask = np.full(10, True)
 
     # Compute projectors
-    gw_projector = compute_gw_projector_masked(whitened_antenna_pattern_matrix, frequency_mask)
-    null_projector = compute_null_projector_from_gw_projector(gw_projector)
+    gw_projector = compute_gw_projector(whitened_antenna_pattern_matrix, frequency_mask)
+    null_projector = compute_null_projector(gw_projector)
 
     # Validate properties for each frequency bin
     for freq_idx in range(10):

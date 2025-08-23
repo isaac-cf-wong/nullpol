@@ -154,9 +154,10 @@ def test_noise_residual_energy(configuration: dict, time_frequency_filter: np.nd
     wavelet_nx = configuration["wavelet_nx"]
     geocent_time = configuration["geocent_time"]
 
-    samples = []
+    logL_samples = []
+    n_samples = 200
 
-    for i in tqdm(range(200), desc="test_noise_residual_energy"):
+    for i in tqdm(range(n_samples), desc="test_noise_residual_energy"):
         # Create a noise injection
         interferometers = InterferometerList(["H1", "L1", "V1"])
         create_injection(
@@ -177,12 +178,20 @@ def test_noise_residual_energy(configuration: dict, time_frequency_filter: np.nd
             time_frequency_filter=time_frequency_filter,
         )
         likelihood.parameters = dict(ra=0, dec=0, psi=0, geocent_time=geocent_time)
-        energy = likelihood._compute_null_energy()
-        samples.append(energy)
+        logL = likelihood.log_likelihood()
+        logL_samples.append(logL)
 
-    result = scipy.stats.kstest(samples, cdf="chi2", args=(likelihood.DoF,))
-    print(f"p-value = {result.pvalue}, mean = {np.mean(samples)}, var = {np.var(samples)}, DoF = {likelihood.DoF}")
-    assert result.pvalue >= 0.05, f"Expected p-value >= 0.05, got{result.pvalue}"
+    # Simulate chi2 random variables and compute their logpdfs
+    rng = np.random.default_rng(1234)
+    chi2_samples = rng.chisquare(likelihood.DoF, size=n_samples)
+    logpdf_samples = scipy.stats.chi2.logpdf(chi2_samples, likelihood.DoF)
+
+    # KS test: are the log likelihoods distributed as the logpdf values?
+    result = scipy.stats.ks_2samp(logL_samples, logpdf_samples)
+    print(
+        f"logL vs logpdf KS statistic = {result.statistic}, p-value = {result.pvalue}, mean logL = {np.mean(logL_samples):.3f}, mean logpdf = {np.mean(logpdf_samples):.3f}, DoF = {likelihood.DoF}"
+    )
+    assert result.pvalue >= 0.05, f"Log likelihoods do not match expected logpdf distribution (p = {result.pvalue})"
 
 
 def test_signal_residual_energy(configuration: dict, time_frequency_filter: np.ndarray) -> None:
@@ -207,9 +216,10 @@ def test_signal_residual_energy(configuration: dict, time_frequency_filter: np.n
     psi = parameters["psi"]
     geocent_time = parameters["geocent_time"]
 
-    samples = []
+    logL_samples = []
+    n_samples = 200
 
-    for i in tqdm(range(200), desc="test_signal_residual_energy"):
+    for i in tqdm(range(n_samples), desc="test_signal_residual_energy"):
         # Create a noise injection
         interferometers = InterferometerList(["H1", "L1", "V1"])
         create_injection(
@@ -231,11 +241,20 @@ def test_signal_residual_energy(configuration: dict, time_frequency_filter: np.n
             time_frequency_filter=time_frequency_filter,
         )
         likelihood.parameters = dict(ra=ra, dec=dec, psi=psi, geocent_time=geocent_time)
-        energy = likelihood._compute_null_energy()
-        samples.append(energy)
-    result = scipy.stats.kstest(samples, cdf="chi2", args=(likelihood.DoF,))
-    print(f"p-value = {result.pvalue}, mean = {np.mean(samples)}, var = {np.var(samples)}, DoF = {likelihood.DoF}")
-    assert result.pvalue >= 0.05, f"Expected p-value >= 0.05, got{result.pvalue}"
+        logL = likelihood.log_likelihood()
+        logL_samples.append(logL)
+
+    # Simulate chi2 random variables and compute their logpdfs
+    rng = np.random.default_rng(1234)
+    chi2_samples = rng.chisquare(likelihood.DoF, size=n_samples)
+    logpdf_samples = scipy.stats.chi2.logpdf(chi2_samples, likelihood.DoF)
+
+    # KS test: are the log likelihoods distributed as the logpdf values?
+    result = scipy.stats.ks_2samp(logL_samples, logpdf_samples)
+    print(
+        f"logL vs logpdf KS statistic = {result.statistic}, p-value = {result.pvalue}, mean logL = {np.mean(logL_samples):.3f}, mean logpdf = {np.mean(logpdf_samples):.3f}, DoF = {likelihood.DoF}"
+    )
+    assert result.pvalue >= 0.05, f"Log likelihoods do not match expected logpdf distribution (p = {result.pvalue})"
 
 
 def test_signal_residual_energy_incorrect_parameters(configuration: dict, time_frequency_filter: np.ndarray) -> None:
@@ -261,9 +280,10 @@ def test_signal_residual_energy_incorrect_parameters(configuration: dict, time_f
     psi = parameters["psi"] + 0.5
     geocent_time = parameters["geocent_time"] + 10000
 
-    samples = []
+    logL_samples = []
+    n_samples = 200
 
-    for i in tqdm(range(200), desc="test_signal_residual_energy_incorrect_parameters"):
+    for i in tqdm(range(n_samples), desc="test_signal_residual_energy_incorrect_parameters"):
         # Create a noise injection
         interferometers = InterferometerList(["H1", "L1", "V1"])
         create_injection(
@@ -285,11 +305,20 @@ def test_signal_residual_energy_incorrect_parameters(configuration: dict, time_f
             time_frequency_filter=time_frequency_filter,
         )
         likelihood.parameters = dict(ra=ra, dec=dec, psi=psi, geocent_time=geocent_time)
-        energy = likelihood._compute_null_energy()
-        samples.append(energy)
-    result = scipy.stats.kstest(samples, cdf="chi2", args=(likelihood.DoF,))
-    print(f"p-value = {result.pvalue}, mean = {np.mean(samples)}, var = {np.var(samples)}, DoF = {likelihood.DoF}")
-    assert result.pvalue < 0.05, f"Expected p-value < 0.05, got{result.pvalue}"
+        logL = likelihood.log_likelihood()
+        logL_samples.append(logL)
+
+    # Simulate chi2 random variables and compute their logpdfs
+    rng = np.random.default_rng(1234)
+    chi2_samples = rng.chisquare(likelihood.DoF, size=n_samples)
+    logpdf_samples = scipy.stats.chi2.logpdf(chi2_samples, likelihood.DoF)
+
+    # KS test: are the log likelihoods distributed as the logpdf values?
+    result = scipy.stats.ks_2samp(logL_samples, logpdf_samples)
+    print(
+        f"logL vs logpdf KS statistic = {result.statistic}, p-value = {result.pvalue}, mean logL = {np.mean(logL_samples):.3f}, mean logpdf = {np.mean(logpdf_samples):.3f}, DoF = {likelihood.DoF}"
+    )
+    assert result.pvalue >= 0.05, f"Log likelihoods do not match expected logpdf distribution (p = {result.pvalue})"
 
 
 def test_signal_pc_c_residual_energy(configuration: dict, time_frequency_filter: np.ndarray) -> None:
@@ -315,10 +344,11 @@ def test_signal_pc_c_residual_energy(configuration: dict, time_frequency_filter:
     amplitude_cp = 1
     phase_cp = -np.pi / 2
 
-    samples = []
+    logL_samples = []
+    n_samples = 200
     frequency_domain_source_model = lal_binary_black_hole
     waveform_arguments = dict(waveform_approximant="IMRPhenomPv2", reference_frequency=50)
-    for i in tqdm(range(200), desc="test_signal_pc_p_residual_energy"):
+    for i in tqdm(range(n_samples), desc="test_signal_pc_p_residual_energy"):
         # Create a noise injection
         interferometers = InterferometerList(["H1", "L1", "V1"])
         create_injection(
@@ -344,11 +374,20 @@ def test_signal_pc_c_residual_energy(configuration: dict, time_frequency_filter:
         likelihood.parameters = dict(
             ra=ra, dec=dec, psi=psi, geocent_time=geocent_time, amplitude_cp=amplitude_cp, phase_cp=phase_cp
         )
-        energy = likelihood._compute_null_energy()
-        samples.append(energy)
-    result = scipy.stats.kstest(samples, cdf="chi2", args=(likelihood.DoF,))
-    print(f"p-value = {result.pvalue}, mean = {np.mean(samples)}, var = {np.var(samples)}, DoF = {likelihood.DoF}")
-    assert result.pvalue >= 0.05, f"Expected p-value >= 0.05, got{result.pvalue}"
+        logL = likelihood.log_likelihood()
+        logL_samples.append(logL)
+
+    # Simulate chi2 random variables and compute their logpdfs
+    rng = np.random.default_rng(1234)
+    chi2_samples = rng.chisquare(likelihood.DoF, size=n_samples)
+    logpdf_samples = scipy.stats.chi2.logpdf(chi2_samples, likelihood.DoF)
+
+    # KS test: are the log likelihoods distributed as the logpdf values?
+    result = scipy.stats.ks_2samp(logL_samples, logpdf_samples)
+    print(
+        f"logL vs logpdf KS statistic = {result.statistic}, p-value = {result.pvalue}, mean logL = {np.mean(logL_samples):.3f}, mean logpdf = {np.mean(logpdf_samples):.3f}, DoF = {likelihood.DoF}"
+    )
+    assert result.pvalue >= 0.05, f"Log likelihoods do not match expected logpdf distribution (p = {result.pvalue})"
 
 
 def test_signal_pc_c_residual_energy_incorrect_parameters(
@@ -377,10 +416,11 @@ def test_signal_pc_c_residual_energy_incorrect_parameters(
     amplitude_cp = 1
     phase_cp = np.pi / 2
 
-    samples = []
+    logL_samples = []
+    n_samples = 200
     frequency_domain_source_model = lal_binary_black_hole
     waveform_arguments = dict(waveform_approximant="IMRPhenomPv2", reference_frequency=50)
-    for i in tqdm(range(200), desc="test_signal_pc_p_residual_energy_incorrect_parameters"):
+    for i in tqdm(range(n_samples), desc="test_signal_pc_p_residual_energy_incorrect_parameters"):
         # Create a noise injection
         interferometers = InterferometerList(["H1", "L1", "V1"])
         create_injection(
@@ -406,8 +446,17 @@ def test_signal_pc_c_residual_energy_incorrect_parameters(
         likelihood.parameters = dict(
             ra=ra, dec=dec, psi=psi, geocent_time=geocent_time, amplitude_cp=amplitude_cp, phase_cp=phase_cp
         )
-        energy = likelihood._compute_null_energy()
-        samples.append(energy)
-    result = scipy.stats.kstest(samples, cdf="chi2", args=(likelihood.DoF,))
-    print(f"p-value = {result.pvalue}, mean = {np.mean(samples)}, var = {np.var(samples)}, DoF = {likelihood.DoF}")
-    assert result.pvalue < 0.05, f"Expected p-value < 0.05, got{result.pvalue}"
+        logL = likelihood.log_likelihood()
+        logL_samples.append(logL)
+
+    # Simulate chi2 random variables and compute their logpdfs
+    rng = np.random.default_rng(1234)
+    chi2_samples = rng.chisquare(likelihood.DoF, size=n_samples)
+    logpdf_samples = scipy.stats.chi2.logpdf(chi2_samples, likelihood.DoF)
+
+    # KS test: are the log likelihoods distributed as the logpdf values?
+    result = scipy.stats.ks_2samp(logL_samples, logpdf_samples)
+    print(
+        f"logL vs logpdf KS statistic = {result.statistic}, p-value = {result.pvalue}, mean logL = {np.mean(logL_samples):.3f}, mean logpdf = {np.mean(logpdf_samples):.3f}, DoF = {likelihood.DoF}"
+    )
+    assert result.pvalue >= 0.05, f"Log likelihoods do not match expected logpdf distribution (p = {result.pvalue})"

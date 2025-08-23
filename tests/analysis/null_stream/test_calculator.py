@@ -9,7 +9,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from nullpol.analysis.null_stream import NullStreamCalculator
+from nullpol.analysis.null_stream.calculator import NullStreamCalculator
 
 
 @pytest.fixture
@@ -51,7 +51,7 @@ class TestNullStreamCalculator:
 
     def test_compute_gw_projector(self, calculator_instance, sample_antenna_patterns, sample_frequency_mask):
         """Test GW projector computation."""
-        gw_projector = calculator_instance.compute_gw_projector(sample_antenna_patterns, sample_frequency_mask)
+        gw_projector = calculator_instance._compute_gw_projector(sample_antenna_patterns, sample_frequency_mask)
 
         # Check output shape
         n_frequencies, n_detectors, _ = sample_antenna_patterns.shape
@@ -66,8 +66,8 @@ class TestNullStreamCalculator:
 
     def test_compute_null_projector(self, calculator_instance, sample_antenna_patterns, sample_frequency_mask):
         """Test null projector computation."""
-        gw_projector = calculator_instance.compute_gw_projector(sample_antenna_patterns, sample_frequency_mask)
-        null_projector = calculator_instance.compute_null_projector(gw_projector)
+        gw_projector = calculator_instance._compute_gw_projector(sample_antenna_patterns, sample_frequency_mask)
+        null_projector = calculator_instance._compute_null_projector(gw_projector)
 
         # Check output shape
         assert null_projector.shape == gw_projector.shape

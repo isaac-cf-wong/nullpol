@@ -12,7 +12,7 @@ from numba import njit
 
 
 @njit
-def compute_gw_projector_masked(whitened_antenna_pattern_matrix, frequency_mask):
+def compute_gw_projector(whitened_antenna_pattern_matrix, frequency_mask):
     """Compute gravitational wave signal projector with frequency masking.
 
     Calculates the orthogonal projection operator that projects detector strain
@@ -31,18 +31,20 @@ def compute_gw_projector_masked(whitened_antenna_pattern_matrix, frequency_mask)
             For masked frequencies, contains P = F(F†F)⁻¹F† where F is the antenna pattern matrix.
             For unmasked frequencies, contains zeros.
     """
-    nfreq, ndet, nmode = whitened_antenna_pattern_matrix.shape
+    nfreq, ndet, _ = whitened_antenna_pattern_matrix.shape
     output = np.zeros((nfreq, ndet, ndet), dtype=whitened_antenna_pattern_matrix.dtype)
+
     for i in range(len(frequency_mask)):
         if frequency_mask[i]:
             F = np.ascontiguousarray(whitened_antenna_pattern_matrix[i, :, :])
             F_dagger = np.ascontiguousarray(np.conj(F).T)
             output[i, :, :] = F @ np.linalg.inv(F_dagger @ F) @ F_dagger
+
     return output
 
 
 @njit
-def compute_null_projector_from_gw_projector(gw_projector):
+def compute_null_projector(gw_projector):
     """Compute null stream projector from gravitational wave projector.
 
     The null projector is the orthogonal complement to the GW projector,
@@ -52,50 +54,47 @@ def compute_null_projector_from_gw_projector(gw_projector):
     Args:
         gw_projector (numpy.ndarray): GW projector matrix with shape
             (n_frequencies, n_detectors, n_detectors). Should be computed from
-            compute_gw_projector_masked().
+            _compute_gw_projector().
 
     Returns:
         numpy.ndarray: Null projector matrix with shape (n_frequencies, n_detectors, n_detectors).
             Contains N = I - P for each frequency bin.
     """
     nfreq, ndet, _ = gw_projector.shape
+
     output = -gw_projector.copy()
     for i in range(nfreq):
         for j in range(ndet):
             output[i, j, j] += 1.0
+
     return output
 
 
 @njit
-def compute_projection_squared(time_frequency_domain_strain_array, projector, time_frequency_filter):
-    """Compute squared magnitude of projected strain in time-frequency domain.
+def compute_null_stream(whitened_freq_strain, null_projector, frequency_mask):
+    """Project the whitened frequency-domain strain onto the null space.
 
-    Projects the detector strain data onto a subspace defined by the projector
-    and computes the squared magnitude of the projection for each time-frequency pixel.
+    For each frequency bin selected by the mask, applies the null projector to the
+    detector strain vector, yielding the null stream in frequency domain.
 
     Args:
-        time_frequency_domain_strain_array (numpy.ndarray): Time-frequency strain data
-            with shape (n_detectors, n_time, n_frequencies). Contains the strain data
-            for each detector in the time-frequency representation.
-        projector (numpy.ndarray): Projection operator with shape
-            (n_frequencies, n_detectors, n_detectors). Defines the subspace for projection.
-        time_frequency_filter (numpy.ndarray): Boolean filter with shape (n_time, n_frequencies)
-            indicating which time-frequency pixels to process.
+        whitened_freq_strain (np.ndarray): Whitened frequency-domain strain (n_det, n_freq).
+        null_projector (np.ndarray): Null projector matrices (n_freq, n_det, n_det).
+        frequency_mask (np.ndarray): Boolean mask for frequency bins (n_freq,).
 
     Returns:
-        numpy.ndarray: Squared projection magnitudes with shape (n_time, n_frequencies).
-            Contains |d†Pd|² for each time-frequency pixel where P is the projector
-            and d is the detector strain vector.
+        np.ndarray: Null-projected frequency-domain strain (n_det, n_freq).
     """
-    # Dimensions
-    ## time_frequency_domain_strain_array: (detector, time, frequency)
-    ## projector: (freq, detector, detector)
-    ## time_frequency_filter: (time, frequency)
-    ndet, ntime, nfreq = time_frequency_domain_strain_array.shape
-    output = np.zeros((ntime, nfreq), dtype=np.float64)
-    for i in range(ntime):
-        for j in range(nfreq):
-            if time_frequency_filter[i, j]:
-                d = np.ascontiguousarray(time_frequency_domain_strain_array[:, i, j].astype(projector.dtype))
-                output[i, j] = np.abs(np.conj(d) @ projector[j] @ d)
-    return output
+    n_det, n_freq = whitened_freq_strain.shape
+    null_projected_freq_strain = np.zeros_like(whitened_freq_strain, dtype=whitened_freq_strain.dtype)
+
+    for freq_idx in range(n_freq):
+        if frequency_mask[freq_idx]:
+            # Get detector data vector at this frequency
+            d = np.ascontiguousarray(whitened_freq_strain[:, freq_idx])  # Shape: (n_detectors,)
+            P_null = np.ascontiguousarray(null_projector[freq_idx])  # Shape: (n_detectors, n_detectors)
+
+            # Apply null projection: d_null = P_null @ d
+            null_projected_freq_strain[:, freq_idx] = P_null @ d
+
+    return null_projected_freq_strain

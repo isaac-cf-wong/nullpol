@@ -4,20 +4,12 @@ from __future__ import annotations
 
 import numpy as np
 
-from .projections import (
-    compute_gw_projector_masked,
-    compute_null_projector_from_gw_projector,
-    compute_projection_squared,
-)
+from ..tf_transforms import transform_wavelet_freq
+from .projections import compute_gw_projector, compute_null_projector, compute_null_stream
 
 
 class NullStreamCalculator:
     """Modern null stream calculation using direct projection approach.
-
-    This class implements the mathematically clean projection approach:
-    1. Compute GW projector: P_gw = F(F†F)^(-1)F†
-    2. Compute null projector: P_null = I - P_gw
-    3. Apply null projection: E_null = d† P_null d
 
     This is a pure computational class with no component dependencies, using
     dependency injection for all data inputs.
@@ -38,84 +30,70 @@ class NullStreamCalculator:
     def compute_null_energy(
         self,
         whitened_antenna_pattern_matrix,
-        whitened_time_frequency_strain_data,
+        whitened_frequency_strain_data,
         frequency_mask,
         time_frequency_filter,
+        sampling_frequency,
+        wavelet_frequency_resolution,
+        wavelet_nx,
     ):
-        """Compute null energy using direct projection approach.
+        """Compute the total null energy from whitened data and projectors.
 
-        This method implements the historical projection-based approach:
-        1. Compute GW projector from antenna patterns
-        2. Compute null projector as orthogonal complement
-        3. Apply null projection to compute energy directly
+        This method projects the whitened frequency-domain strain data onto the null space
+        (orthogonal to the GW signal subspace), transforms to the time-frequency domain,
+        applies a filter, and sums the squared magnitude to obtain the total null energy.
 
         Args:
-            whitened_antenna_pattern_matrix (numpy.ndarray): Whitened antenna patterns
-                with shape (n_frequencies, n_detectors, n_modes).
-            whitened_time_frequency_strain_data (numpy.ndarray): Whitened strain data
-                with shape (n_detectors, n_time, n_frequencies).
-            frequency_mask (numpy.ndarray): Boolean mask with shape (n_frequencies,).
-            time_frequency_filter (numpy.ndarray): Boolean filter with shape (n_time, n_frequencies).
+            whitened_antenna_pattern_matrix (np.ndarray): Whitened antenna pattern matrix (n_freq, n_det, n_modes).
+            whitened_frequency_strain_data (np.ndarray): Whitened frequency-domain strain data (n_det, n_freq).
+            frequency_mask (np.ndarray): Boolean mask for frequency bins (n_freq,).
+            time_frequency_filter (np.ndarray): Time-frequency filter to apply (shape matches output of transform).
+            sampling_frequency (float): Sampling frequency in Hz.
+            wavelet_frequency_resolution (float): Frequency resolution for wavelet transform.
+            wavelet_nx (int): Number of points for wavelet transform.
 
         Returns:
-            float: Null energy computed via direct projection.
+            float: The total null energy after projection and filtering.
         """
-        # Step 1: Compute GW projector P_gw = F(F†F)^(-1)F†
-        gw_projector = self.compute_gw_projector(whitened_antenna_pattern_matrix, frequency_mask)
+        # Step 1: Compute the GW signal projector for each frequency bin (masked)
+        gw_projector = self._compute_gw_projector(whitened_antenna_pattern_matrix, frequency_mask)
 
-        # Step 2: Compute null projector P_null = I - P_gw
-        null_projector = self.compute_null_projector(gw_projector)
+        # Step 2: Compute the null projector (orthogonal complement to GW projector)
+        null_projector = self._compute_null_projector(gw_projector)
 
-        # Step 3: Apply null projection and compute squared magnitude
-        null_energy_array = self.compute_projection_energy(
-            whitened_time_frequency_strain_data, null_projector, time_frequency_filter
+        # Step 3: Project the whitened frequency-domain strain onto the null space
+        null_stream_freq = self._compute_null_stream(whitened_frequency_strain_data, null_projector, frequency_mask)
+
+        # Step 4: Transform the null stream to the time-frequency domain
+        null_stream_time_freq = np.array(
+            [
+                transform_wavelet_freq(
+                    data=null_stream_freq[i],
+                    sampling_frequency=sampling_frequency,
+                    frequency_resolution=wavelet_frequency_resolution,
+                    nx=wavelet_nx,
+                )
+                for i in range(len(null_stream_freq))
+            ]
         )
 
-        # Sum over all time-frequency pixels to get total null energy
-        return np.sum(null_energy_array)
+        # Step 5: Apply the time-frequency filter to the null stream
+        filtered_null_strain = null_stream_time_freq * time_frequency_filter
+
+        # Step 6: Sum the squared magnitude to obtain the total null energy
+        null_energy = np.sum(np.abs(filtered_null_strain) ** 2)
+
+        return null_energy
 
     # =========================================================================
     # COMPONENT METHODS (BUILDING BLOCKS)
     # =========================================================================
 
-    def compute_gw_projector(self, whitened_antenna_pattern_matrix, frequency_mask):
-        """Compute gravitational wave projector matrix.
+    def _compute_gw_projector(self, whitened_antenna_pattern_matrix, frequency_mask):
+        return compute_gw_projector(whitened_antenna_pattern_matrix, frequency_mask)
 
-        Args:
-            whitened_antenna_pattern_matrix (numpy.ndarray): Whitened antenna patterns
-                with shape (n_frequencies, n_detectors, n_modes).
-            frequency_mask (numpy.ndarray): Boolean frequency mask with shape (n_frequencies,).
+    def _compute_null_projector(self, gw_projector):
+        return compute_null_projector(gw_projector)
 
-        Returns:
-            numpy.ndarray: GW projector matrix with shape (n_frequencies, n_detectors, n_detectors).
-        """
-        return compute_gw_projector_masked(whitened_antenna_pattern_matrix, frequency_mask)
-
-    def compute_null_projector(self, gw_projector):
-        """Compute null projector as orthogonal complement to GW projector.
-
-        Args:
-            gw_projector (numpy.ndarray): GW projector matrix with shape
-                (n_frequencies, n_detectors, n_detectors).
-
-        Returns:
-            numpy.ndarray: Null projector matrix P_null = I - P_gw.
-        """
-        return compute_null_projector_from_gw_projector(gw_projector)
-
-    def compute_projection_energy(self, time_frequency_strain_data, projector, time_frequency_filter):
-        """Compute energy of projected strain data.
-
-        Args:
-            time_frequency_strain_data (numpy.ndarray): Strain data in time-frequency domain
-                with shape (n_detectors, n_time, n_frequencies).
-            projector (numpy.ndarray): Projection operator with shape
-                (n_frequencies, n_detectors, n_detectors).
-            time_frequency_filter (numpy.ndarray): Time-frequency filter with shape
-                (n_time, n_frequencies).
-
-        Returns:
-            numpy.ndarray: Projection energies for each time-frequency pixel with shape
-                (n_time, n_frequencies).
-        """
-        return compute_projection_squared(time_frequency_strain_data, projector, time_frequency_filter)
+    def _compute_null_stream(self, whitened_freq_strain, null_projector, frequency_mask):
+        return compute_null_stream(whitened_freq_strain, null_projector, frequency_mask)
