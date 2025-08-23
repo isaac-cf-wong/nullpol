@@ -71,7 +71,9 @@ def compute_null_projector(gw_projector):
 
 
 @njit
-def compute_null_stream(whitened_freq_strain, null_projector, frequency_mask):
+def compute_null_stream(
+    whitened_freq_strain: np.ndarray, null_projector: np.ndarray, frequency_mask: np.ndarray
+) -> np.ndarray:
     """Project the whitened frequency-domain strain onto the null space.
 
     For each frequency bin selected by the mask, applies the null projector to the
@@ -90,11 +92,13 @@ def compute_null_stream(whitened_freq_strain, null_projector, frequency_mask):
 
     for freq_idx in range(n_freq):
         if frequency_mask[freq_idx]:
-            # Get detector data vector at this frequency
-            d = np.ascontiguousarray(whitened_freq_strain[:, freq_idx])  # Shape: (n_detectors,)
-            P_null = np.ascontiguousarray(null_projector[freq_idx])  # Shape: (n_detectors, n_detectors)
-
-            # Apply null projection: d_null = P_null @ d
-            null_projected_freq_strain[:, freq_idx] = P_null @ d
+            d = whitened_freq_strain[:, freq_idx]
+            projector = null_projector[freq_idx]
+            # Manual matrix-vector multiplication for small n_det
+            for i in range(n_det):
+                result = 0.0 + 0.0j  # Ensure complex type
+                for j in range(n_det):
+                    result += projector[i, j] * d[j]
+                null_projected_freq_strain[i, freq_idx] = result
 
     return null_projected_freq_strain
