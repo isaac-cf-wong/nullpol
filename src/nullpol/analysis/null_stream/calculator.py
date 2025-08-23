@@ -57,15 +57,15 @@ class NullStreamCalculator:
         """
         # Step 1: Compute the GW signal projector for each frequency bin (masked)
         # Make sure gw_projector and whitened_frequency_strain_data have the same data type
-        gw_projector = self._compute_gw_projector(whitened_antenna_pattern_matrix, frequency_mask).astype(
+        gw_projector = compute_gw_projector(whitened_antenna_pattern_matrix, frequency_mask).astype(
             whitened_frequency_strain_data.dtype
         )
 
         # Step 2: Compute the null projector (orthogonal complement to GW projector)
-        null_projector = self._compute_null_projector(gw_projector)
+        null_projector = compute_null_projector(gw_projector)
 
         # Step 3: Project the whitened frequency-domain strain onto the null space
-        null_stream_freq = self._compute_null_stream(whitened_frequency_strain_data, null_projector, frequency_mask)
+        null_stream_freq = compute_null_stream(whitened_frequency_strain_data, null_projector, frequency_mask)
 
         # Step 4: Transform the null stream to the time-frequency domain
         null_stream_time_freq = np.array(
@@ -87,16 +87,3 @@ class NullStreamCalculator:
         null_energy = np.sum(np.abs(filtered_null_strain) ** 2)
 
         return null_energy
-
-    # =========================================================================
-    # COMPONENT METHODS (BUILDING BLOCKS)
-    # =========================================================================
-
-    def _compute_gw_projector(self, whitened_antenna_pattern_matrix, frequency_mask):
-        return compute_gw_projector(whitened_antenna_pattern_matrix, frequency_mask)
-
-    def _compute_null_projector(self, gw_projector):
-        return compute_null_projector(gw_projector)
-
-    def _compute_null_stream(self, whitened_freq_strain, null_projector, frequency_mask):
-        return compute_null_stream(whitened_freq_strain, null_projector, frequency_mask)
