@@ -56,7 +56,10 @@ class NullStreamCalculator:
             float: The total null energy after projection and filtering.
         """
         # Step 1: Compute the GW signal projector for each frequency bin (masked)
-        gw_projector = self._compute_gw_projector(whitened_antenna_pattern_matrix, frequency_mask)
+        # Make sure gw_projector and whitened_frequency_strain_data have the same data type
+        gw_projector = self._compute_gw_projector(whitened_antenna_pattern_matrix, frequency_mask).astype(
+            whitened_frequency_strain_data.dtype
+        )
 
         # Step 2: Compute the null projector (orthogonal complement to GW projector)
         null_projector = self._compute_null_projector(gw_projector)
