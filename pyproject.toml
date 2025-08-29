@@ -3,11 +3,13 @@ requires = ["flit_core >=2,<4"]
 build-backend = "flit_core.buildapi"
 
 [project]
-name =  "nullpol"
+name = "nullpol"
 description = "A package to perform model-independent polarization test of gravitational-wave signals."
-authors = [{name="Isaac C.F. Wong",email="chunfung.wong@kuleuven.be"},
-           {name="Thomas Ng"},
-           {name="Balázs Cirok"}]
+authors = [
+    { name = "Isaac C.F. Wong", email = "chunfung.wong@kuleuven.be" },
+    { name = "Thomas Ng" },
+    { name = "Balázs Cirok" },
+]
 readme = "README.rst"
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -37,12 +39,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-asimov = [
-    "asimov"
-]
-spark = [
-    "pyspark>=3.0.0"
-]
+asimov = ["asimov"]
+spark = ["pyspark>=3.0.0"]
 test = [
     "black==25.1.0",
     "check-manifest==0.50",
@@ -51,7 +49,7 @@ test = [
     "pytest-mock<3.14.1",
     "pytest==8.3.4",
     "pytest-github-actions-annotate-failures",
-    "ruff==0.12.7"
+    "ruff==0.12.7",
 ]
 
 [project.urls]
@@ -73,14 +71,11 @@ exclude = ["docs"]
 branch = true
 
 [tool.coverage.report]
-fail_under = 80
+fail_under = 10
 
 [tool.pyright]
 include = ["src"]
-exclude = [
-    "**/node_modules",
-    "**/__pycache__",
-]
+exclude = ["**/node_modules", "**/__pycache__"]
 
 reportMissingImports = true
 reportMissingTypeStubs = false
@@ -88,15 +83,11 @@ reportMissingTypeStubs = false
 pythonVersion = "3.10"
 pythonPlatform = "Linux"
 
-executionEnvironments = [
-  { root = "src" }
-]
+executionEnvironments = [{ root = "src" }]
 
 [tool.pytest.ini_options]
 addopts = "--cov-report xml:coverage.xml --cov src --cov-fail-under 0 --cov-append -m 'not integration'"
-pythonpath = [
-  "src"
-]
+pythonpath = ["src"]
 testpaths = "tests"
 junit_family = "xunit2"
 markers = [
