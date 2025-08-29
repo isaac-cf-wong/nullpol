@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Union
-
 
 def convert_string_to_float(string: str | None) -> float | None:
     """Convert string to float.

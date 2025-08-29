@@ -1,4 +1,5 @@
 """helper functions for transform_time.py"""
+
 from __future__ import annotations
 
 import numpy as np
@@ -21,21 +22,21 @@ def transform_wavelet_time_helper(data: np.ndarray, Nf: int, Nt: int, phi: np.nd
         numpy.ndarray: 2D numpy array containing data in wavelet domain.
     """
     # the time domain data stream
-    ND = Nf*Nt
+    ND = Nf * Nt
 
     # mult, can cause bad leakage if it is too small but may be possible to
     # mitigate
     # Filter is mult times pixel with in time
 
-    K = mult*2*Nf
+    K = mult * 2 * Nf
 
     # windowed data packets
     wdata = np.zeros(K)
 
     wave = np.zeros((Nt, Nf))  # wavelet wavepacket transform of the signal
-    data_pad = np.zeros(ND+K)
+    data_pad = np.zeros(ND + K)
     data_pad[:ND] = data
-    data_pad[ND:ND+K] = data[:K]
+    data_pad[ND : ND + K] = data[:K]
 
     for i in range(0, Nt):
         assign_wdata(i, K, ND, Nf, wdata, data_pad, phi)
@@ -59,14 +60,14 @@ def assign_wdata(i: int, K: int, ND: int, Nf: int, wdata: np.ndarray, data_pad: 
         phi (numpy.ndarray): 1D numpy array representing the wavelet.
     """
     # half_K = np.int64(K/2)
-    jj = i*Nf-K//2
+    jj = i * Nf - K // 2
     if jj < 0:
         jj += ND  # periodically wrap the data
     if jj >= ND:
         jj -= ND  # periodically wrap the data
     for j in range(0, K):
         # jj = i*Nf-half_K+j
-        wdata[j] = data_pad[jj]*phi[j]  # apply the window
+        wdata[j] = data_pad[jj] * phi[j]  # apply the window
         jj += 1
         # if jj==ND:
         #    jj -= ND # periodically wrap the data
@@ -83,19 +84,19 @@ def pack_wave(i: int, mult: int, Nf: int, wdata_trans: np.ndarray, wave: np.ndar
         wdata_trans (numpy.ndarray): 1D complex numpy array of transformed windowed data.
         wave (numpy.ndarray): 2D numpy array to store the result.
     """
-    if i % 2 == 0 and i < wave.shape[0]-1:
+    if i % 2 == 0 and i < wave.shape[0] - 1:
         # m=0 value at even Nt and
-        wave[i, 0] = np.real(wdata_trans[0])/np.sqrt(2)
-        wave[i+1, 0] = np.real(wdata_trans[Nf*mult])/np.sqrt(2)
+        wave[i, 0] = np.real(wdata_trans[0]) / np.sqrt(2)
+        wave[i + 1, 0] = np.real(wdata_trans[Nf * mult]) / np.sqrt(2)
 
     for j in range(1, Nf):
-        if (i+j) % 2:
-            wave[i, j] = -np.imag(wdata_trans[j*mult])
+        if (i + j) % 2:
+            wave[i, j] = -np.imag(wdata_trans[j * mult])
         else:
-            wave[i, j] = np.real(wdata_trans[j*mult])
+            wave[i, j] = np.real(wdata_trans[j * mult])
 
 
-def phi_vec(Nf: int, nx: float=4., mult: int=16) -> np.ndarray:
+def phi_vec(Nf: int, nx: float = 4.0, mult: int = 16) -> np.ndarray:
     """Get time domain phi as Fourier transform of phitilde_vec.
 
     Args:
@@ -109,12 +110,12 @@ def phi_vec(Nf: int, nx: float=4., mult: int=16) -> np.ndarray:
     # TODO fix mult
 
     OM = np.pi
-    DOM = OM/Nf
-    insDOM = 1./np.sqrt(DOM)
-    K = mult*2*Nf
-    half_K = mult*Nf  # np.int64(K/2)
+    DOM = OM / Nf
+    insDOM = 1.0 / np.sqrt(DOM)
+    K = mult * 2 * Nf
+    half_K = mult * Nf  # np.int64(K/2)
 
-    dom = 2*np.pi/K  # max frequency is K/2*dom = pi/dt = OM
+    dom = 2 * np.pi / K  # max frequency is K/2*dom = pi/dt = OM
 
     DX = np.zeros(K, dtype=np.complex128)
 
@@ -123,17 +124,17 @@ def phi_vec(Nf: int, nx: float=4., mult: int=16) -> np.ndarray:
 
     DX = DX.copy()
     # positive frequencies
-    DX[1:half_K+1] = phitilde_vec(dom*np.arange(1, half_K+1), Nf, nx)
+    DX[1 : half_K + 1] = phitilde_vec(dom * np.arange(1, half_K + 1), Nf, nx)
     # negative frequencies
-    DX[half_K+1:] = phitilde_vec(-dom*np.arange(half_K-1, 0, -1), Nf, nx)
-    DX = K*np.fft.ifft(DX, K)
+    DX[half_K + 1 :] = phitilde_vec(-dom * np.arange(half_K - 1, 0, -1), Nf, nx)
+    DX = K * np.fft.ifft(DX, K)
 
     phi = np.zeros(K)
     phi[0:half_K] = np.real(DX[half_K:K])
     phi[half_K:] = np.real(DX[0:half_K])
 
-    nrm = np.sqrt(K/dom)  # *np.linalg.norm(phi)
+    nrm = np.sqrt(K / dom)  # *np.linalg.norm(phi)
 
-    fac = np.sqrt(2.0)/nrm
+    fac = np.sqrt(2.0) / nrm
     phi *= fac
     return phi

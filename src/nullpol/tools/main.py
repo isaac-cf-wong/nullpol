@@ -5,8 +5,7 @@ import importlib
 import bilby_pipe.utils
 from bilby_pipe.main import MainInput as BilbyMainInput
 from bilby_pipe.main import write_complete_config_file
-from bilby_pipe.utils import (get_command_line_arguments, get_outdir_name,
-                              parse_args, tcolors)
+from bilby_pipe.utils import get_command_line_arguments, get_outdir_name, parse_args, tcolors
 
 from .. import log_version_information
 from ..job_creation import generate_dag
@@ -123,9 +122,7 @@ class MainInput(BilbyMainInput, Input):
         self.injection_dict = args.injection_dict
         self.injection_waveform_arguments = args.injection_waveform_arguments
         self.injection_waveform_approximant = args.injection_waveform_approximant
-        self.injection_frequency_domain_source_model = (
-            args.injection_frequency_domain_source_model
-        )
+        self.injection_frequency_domain_source_model = args.injection_frequency_domain_source_model
         self.generation_seed = args.generation_seed
 
         self.request_disk = args.request_disk
@@ -242,7 +239,5 @@ def main():
     generate_dag(inputs)
 
     if len(unknown_args) > 0:
-        msg = [tcolors.WARNING,
-               f"Unrecognized arguments {unknown_args}",
-               tcolors.END]
+        msg = [tcolors.WARNING, f"Unrecognized arguments {unknown_args}", tcolors.END]
         logger.warning(" ".join(msg))

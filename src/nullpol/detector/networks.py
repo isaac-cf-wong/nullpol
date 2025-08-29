@@ -20,9 +20,10 @@ def time_domain_strain_array(self):
         self._time_domain_strain_array = np.zeros((nifo, nfreq), dtype=self[0].time_domain_strain[0].dtype)
 
         for i in range(nifo):
-            self._time_domain_strain_array[i,:] = self[i].time_domain_strain
+            self._time_domain_strain_array[i, :] = self[i].time_domain_strain
 
     return self._time_domain_strain_array
+
 
 @property
 def frequency_domain_strain_array(self):
@@ -37,9 +38,10 @@ def frequency_domain_strain_array(self):
         self._frequency_domain_strain_array = np.zeros((nifo, nfreq), dtype=self[0].frequency_domain_strain[0].dtype)
 
         for i in range(nifo):
-            self._frequency_domain_strain_array[i,:] = self[i].frequency_domain_strain
+            self._frequency_domain_strain_array[i, :] = self[i].frequency_domain_strain
 
     return self._frequency_domain_strain_array
+
 
 @property
 def time_frequency_domain_strain_array(self):
@@ -51,12 +53,15 @@ def time_frequency_domain_strain_array(self):
     if self._frequency_domain_strain_array is None:
         nifo = len(self)
         ntime, nfreq = self[0].time_frequency_domain_strain.shape
-        self._frequency_domain_strain_array = np.zeros((nifo, ntime, nfreq), dtype=self[0].time_frequency_domain_strain[0, 0].dtype)
+        self._frequency_domain_strain_array = np.zeros(
+            (nifo, ntime, nfreq), dtype=self[0].time_frequency_domain_strain[0, 0].dtype
+        )
 
         for i in range(nifo):
             self._time_frequency_domain_strain_array[i, :] = self[i].time_frequency_domain_strain
 
     return self._time_frequency_domain_strain_array
+
 
 @property
 def whitened_frequency_domain_strain_array(self):
@@ -68,14 +73,17 @@ def whitened_frequency_domain_strain_array(self):
     if self._whitened_frequency_domain_strain_array is None:
         nifo = len(self)
         nfreq = len(self[0].frequency_domain_strain)
-        self._whitened_frequency_domain_strain_array = np.zeros((nifo, nfreq), dtype=self[0].frequency_domain_strain[0].dtype)
+        self._whitened_frequency_domain_strain_array = np.zeros(
+            (nifo, nfreq), dtype=self[0].frequency_domain_strain[0].dtype
+        )
 
         for i in range(nifo):
             df = self[i].frequency_array[1] - self[i].frequency_array[0]
-            whitening_factor = 1/np.sqrt(self[i].power_spectral_density_array/(2*df))
-            self._whitened_frequency_domain_strain_array[i,:] = self[i].frequency_domain_strain*whitening_factor
+            whitening_factor = 1 / np.sqrt(self[i].power_spectral_density_array / (2 * df))
+            self._whitened_frequency_domain_strain_array[i, :] = self[i].frequency_domain_strain * whitening_factor
 
     return self._whitened_frequency_domain_strain_array
+
 
 def _check_interferometers(self):
     """Verify IFOs 'duration', 'sampling_frequency' are the same.
@@ -87,10 +95,7 @@ def _check_interferometers(self):
     """
     consistent_attributes = ["duration", "sampling_frequency"]
     for attribute in consistent_attributes:
-        x = [
-            getattr(interferometer.strain_data, attribute)
-            for interferometer in self
-        ]
+        x = [getattr(interferometer.strain_data, attribute) for interferometer in self]
         try:
             if not all(y == x[0] for y in x):
                 ifo_strs = [
@@ -102,15 +107,14 @@ def _check_interferometers(self):
                     for ifo in self
                 ]
                 raise ValueError(
-                    "The {} of all interferometers are not the same: {}".format(
-                        attribute, ", ".join(ifo_strs)
-                    )
+                    "The {} of all interferometers are not the same: {}".format(attribute, ", ".join(ifo_strs))
                 )
         except ValueError as e:
             if not all(math.isclose(y, x[0], abs_tol=1e-5) for y in x):
                 raise ValueError(e)
             else:
                 logger.warning(e)
+
 
 bilby.gw.detector.InterferometerList._time_domain_strain_array = None
 bilby.gw.detector.InterferometerList.time_domain_strain_array = time_domain_strain_array

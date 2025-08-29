@@ -35,6 +35,6 @@ def compute_whitened_frequency_domain_null_stream(
     s_est = estimate_frequency_domain_signal_at_geocenter(
         frequency_mask=frequency_mask,
         whitened_frequency_domain_strain_array_at_geocenter=d_ts,
-        whitened_antenna_pattern_matrix=whitened_antenna_pattern_matrix
+        whitened_antenna_pattern_matrix=whitened_antenna_pattern_matrix,
     )
     return d_ts - s_est

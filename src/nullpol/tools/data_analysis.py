@@ -12,8 +12,7 @@ from bilby_pipe.main import parse_args
 from bilby_pipe.utils import CHECKPOINT_EXIT_CODE
 
 from .. import log_version_information
-from ..null_stream import (encode_polarization,
-                           relative_amplification_factor_map)
+from ..null_stream import encode_polarization, relative_amplification_factor_map
 from ..result import PolarizationResult
 from ..utils import NullpolError, logger
 from .input import Input
@@ -32,9 +31,9 @@ def sighandler(signum, frame):
 
 
 class DataAnalysisInput(BInput, Input):
-    """Handles user-input for the data analysis script.
-    """
-    def __init__(self, args: Namespace, unknown_args: list, test: bool=False):
+    """Handles user-input for the data analysis script."""
+
+    def __init__(self, args: Namespace, unknown_args: list, test: bool = False):
         """Initializer.
 
         Args:
@@ -88,27 +87,21 @@ class DataAnalysisInput(BInput, Input):
         # Calibration
         self.calibration_model = args.calibration_model
         self.calibration_correction_type = args.calibration_correction_type
-        self.spline_calibration_envelope_dict = \
-            args.spline_calibration_envelope_dict
-        self.spline_calibration_amplitude_uncertainty_dict = (
-            args.spline_calibration_amplitude_uncertainty_dict
-        )
-        self.spline_calibration_phase_uncertainty_dict = (
-            args.spline_calibration_phase_uncertainty_dict
-        )
+        self.spline_calibration_envelope_dict = args.spline_calibration_envelope_dict
+        self.spline_calibration_amplitude_uncertainty_dict = args.spline_calibration_amplitude_uncertainty_dict
+        self.spline_calibration_phase_uncertainty_dict = args.spline_calibration_phase_uncertainty_dict
         self.spline_calibration_nodes = args.spline_calibration_nodes
         self.calibration_prior_boundary = args.calibration_prior_boundary
 
         # Injection arguments
-        self.injection_waveform_approximant = \
-            args.injection_waveform_approximant
+        self.injection_waveform_approximant = args.injection_waveform_approximant
 
         if test is False:
             self._load_data_dump()
 
     @property
     def polarization_modes(self):
-        return getattr(self, '_polarization_modes', None)
+        return getattr(self, "_polarization_modes", None)
 
     @polarization_modes.setter
     def polarization_modes(self, modes):
@@ -118,15 +111,13 @@ class DataAnalysisInput(BInput, Input):
             if len(modes) == 1:
                 self._polarization_modes = modes[0]
             else:
-                raise NullpolError('Unsupported polarization-modes input: '
-                                    f'{modes}')
+                raise NullpolError("Unsupported polarization-modes input: " f"{modes}")
         else:
-            raise NullpolError('Unsupported polarization-modes input: '
-                                f'{modes}')
+            raise NullpolError("Unsupported polarization-modes input: " f"{modes}")
 
     @property
     def polarization_basis(self):
-        return getattr(self, '_polarization_basis', None)
+        return getattr(self, "_polarization_basis", None)
 
     @polarization_basis.setter
     def polarization_basis(self, modes):
@@ -136,27 +127,25 @@ class DataAnalysisInput(BInput, Input):
             if len(modes) == 1:
                 self._polarization_basis = modes[0]
             else:
-                raise NullpolError('Unsupported polarization-basis input: '
-                                    f'{modes}')
+                raise NullpolError("Unsupported polarization-basis input: " f"{modes}")
         else:
-            raise NullpolError('Unsupported polarization-basis input: '
-                                f'{modes}')
+            raise NullpolError("Unsupported polarization-basis input: " f"{modes}")
 
     def _validate_polarization_model_setting(self):
-        supported_modes = ['b', 'c', 'b', 'l', 'x', 'y']
+        supported_modes = ["b", "c", "b", "l", "x", "y"]
         # Check whether the modes are supported.
         for mode in self.polarization_modes:
             if mode not in supported_modes:
-                raise NullpolError(f'Unsupported mode `{mode}` in '
-                                    'polarizaiton-modes = '
-                                    f'{self.polarization_modes}')
+                raise NullpolError(
+                    f"Unsupported mode `{mode}` in " "polarizaiton-modes = " f"{self.polarization_modes}"
+                )
         for mode in self.polarization_basis:
             if mode not in supported_modes:
-                raise NullpolError(f'Unsupported mode `{mode}` in polarizaiton-basis = {self.polarization_basis}')
+                raise NullpolError(f"Unsupported mode `{mode}` in polarizaiton-basis = {self.polarization_basis}")
         # Check whether the basis is part of the model.
         for mode in self.polarization_basis:
             if mode not in self.polarization_modes:
-                raise NullpolError(f'Basis mode `{mode}` is not in polarizaiton-modes = {self.polarization_basis}')
+                raise NullpolError(f"Basis mode `{mode}` is not in polarizaiton-modes = {self.polarization_basis}")
 
     @property
     def result_class(self):
@@ -184,56 +173,53 @@ class DataAnalysisInput(BInput, Input):
 
     def _add_default_relative_polarization_prior(self):
         # Encode the polarization modes
-        polarization_modes, polarization_basis, polarization_derived = \
-            encode_polarization(self.polarization_modes,
-                                self.polarization_basis)
+        polarization_modes, polarization_basis, polarization_derived = encode_polarization(
+            self.polarization_modes, self.polarization_basis
+        )
 
         # Obtain the keywords
         relative_polarization_parameters = relative_amplification_factor_map(
-            polarization_basis=polarization_basis,
-            polarization_derived=polarization_derived).flatten()
+            polarization_basis=polarization_basis, polarization_derived=polarization_derived
+        ).flatten()
         prior_remove_list = []
         for prior in self.priors:
-            if prior[:10] == 'amplitude_' and prior[10:] not in relative_polarization_parameters:
+            if prior[:10] == "amplitude_" and prior[10:] not in relative_polarization_parameters:
                 prior_remove_list.append(prior)
-            elif prior[:6] == 'phase_' and prior[6:] not in relative_polarization_parameters:
+            elif prior[:6] == "phase_" and prior[6:] not in relative_polarization_parameters:
                 prior_remove_list.append(prior)
 
         # Remove the redundant parameters
         for i in range(len(prior_remove_list)):
-            logger.info(f'Removed irrelevant prior: {self.priors[prior_remove_list[i]]}')
+            logger.info(f"Removed irrelevant prior: {self.priors[prior_remove_list[i]]}")
             self.priors.pop(prior_remove_list[i])
 
         # Add missing prior
         missing_priors = {}
         for label in relative_polarization_parameters:
-            amplitude_name = f'amplitude_{label}'
+            amplitude_name = f"amplitude_{label}"
             if amplitude_name not in self.priors:
                 missing_priors[amplitude_name] = bilby.core.prior.Uniform(
-                    name=amplitude_name,
-                    minimum=0.0,
-                    maximum=1.0,
-                    latex_label=f"$A_{{{label}}}$")
-                logger.info(f'Added missing relative polarization prior: {missing_priors[amplitude_name]}')
-            phase_name = f'phase_{label}'
+                    name=amplitude_name, minimum=0.0, maximum=1.0, latex_label=f"$A_{{{label}}}$"
+                )
+                logger.info(f"Added missing relative polarization prior: {missing_priors[amplitude_name]}")
+            phase_name = f"phase_{label}"
             if phase_name not in self.priors:
                 missing_priors[phase_name] = bilby.core.prior.Uniform(
                     name=phase_name,
                     minimum=0.0,
-                    maximum=2. * np.pi,
-                    latex_label=fr"$\phi_{{{label}}}$",
-                    boundary="periodic")
-                logger.info(f'Added missing relative polarization prior: {missing_priors[phase_name]}')
+                    maximum=2.0 * np.pi,
+                    latex_label=rf"$\phi_{{{label}}}$",
+                    boundary="periodic",
+                )
+                logger.info(f"Added missing relative polarization prior: {missing_priors[phase_name]}")
         self.priors.update(missing_priors)
 
     def _add_likelihood_specific_default_prior(self):
         if self.likelihood_type == "FractionalProjectionTimeFrequencyLikelihood":
             if "projection_fraction" not in self.priors:
-                self.priors['projection_fraction'] = bilby.core.prior.Uniform(
-                    name="projection_fraction",
-                    minimum=0.0,
-                    maximum=1.0,
-                    latex_label=r"$\zeta$")
+                self.priors["projection_fraction"] = bilby.core.prior.Uniform(
+                    name="projection_fraction", minimum=0.0, maximum=1.0, latex_label=r"$\zeta$"
+                )
                 logger.info("Missing prior for projection_fraction.")
                 logger.info(f"Added prior for projection_fraction: {self.priors['projection_fraction']}")
 
@@ -244,8 +230,8 @@ class DataAnalysisInput(BInput, Input):
 
         likelihood, priors = self.get_likelihood_and_priors()
 
-        logger.info(f'Analyzing with polarization modes: {self.polarization_modes}')
-        logger.info(f'Analyzing with polarization basis: {self.polarization_basis}')
+        logger.info(f"Analyzing with polarization modes: {self.polarization_modes}")
+        logger.info(f"Analyzing with polarization basis: {self.polarization_basis}")
 
         self.result = bilby.run_sampler(
             likelihood=likelihood,

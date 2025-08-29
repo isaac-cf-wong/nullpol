@@ -6,10 +6,10 @@ from numba import njit
 
 @njit
 def compute_whitened_frequency_domain_strain_array(
-        frequency_mask,
-        frequency_resolution,
-        frequency_domain_strain_array,
-        power_spectral_density_array,
+    frequency_mask,
+    frequency_resolution,
+    frequency_domain_strain_array,
+    power_spectral_density_array,
 ):
     """Compute the whitened frequency domain strain array.
 
@@ -23,14 +23,14 @@ def compute_whitened_frequency_domain_strain_array(
         numpy: Whitened frequency domain strain array.
     """
     output = np.zeros_like(frequency_domain_strain_array)
-    output[:, frequency_mask] = frequency_domain_strain_array[:, frequency_mask] \
-        / np.sqrt(power_spectral_density_array[:, frequency_mask]/(2*frequency_resolution))
+    output[:, frequency_mask] = frequency_domain_strain_array[:, frequency_mask] / np.sqrt(
+        power_spectral_density_array[:, frequency_mask] / (2 * frequency_resolution)
+    )
     return output
 
+
 @njit
-def compute_whitened_antenna_pattern_matrix_masked(antenna_pattern_matrix,
-                                                   psd_array,
-                                                   frequency_mask):
+def compute_whitened_antenna_pattern_matrix_masked(antenna_pattern_matrix, psd_array, frequency_mask):
     """Compute the whitened antenna pattern matrix with a frequency mask.
 
     Args:

@@ -6,9 +6,7 @@ import pickle
 
 import numpy as np
 from bilby.core.result import Result
-from bilby.core.utils import (check_directory_exists_and_if_not_mkdir, infft,
-                              latex_plot_format, safe_file_dump,
-                              safe_save_figure)
+from bilby.core.utils import check_directory_exists_and_if_not_mkdir, safe_file_dump, safe_save_figure
 
 from ..utils import logger
 
@@ -28,6 +26,7 @@ class PolarizationResult(Result):
         Inherits all attributes from bilby.core.result.Result plus
         polarization-specific metadata access methods.
     """
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -56,35 +55,30 @@ class PolarizationResult(Result):
                 dictionary = item
             return item
         except KeyError:
-            raise AttributeError(
-                "No information stored for {}".format('/'.join(keys)))
+            raise AttributeError("No information stored for {}".format("/".join(keys)))
 
     @property
     def sampling_frequency(self):
-        """ Sampling frequency in Hertz"""
-        return self.__get_from_nested_meta_data(
-            'likelihood', 'sampling_frequency')
+        """Sampling frequency in Hertz"""
+        return self.__get_from_nested_meta_data("likelihood", "sampling_frequency")
 
     @property
     def duration(self):
-        """ Duration in seconds """
-        return self.__get_from_nested_meta_data(
-            'likelihood', 'duration')
+        """Duration in seconds"""
+        return self.__get_from_nested_meta_data("likelihood", "duration")
 
     @property
     def start_time(self):
-        """ Start time in seconds """
-        return self.__get_from_nested_meta_data(
-            'likelihood', 'start_time')
+        """Start time in seconds"""
+        return self.__get_from_nested_meta_data("likelihood", "start_time")
 
     @property
     def interferometers(self):
-        """ List of interferometer names """
-        return [name for name in self.__get_from_nested_meta_data(
-            'likelihood', 'interferometers')]
+        """List of interferometer names"""
+        return [name for name in self.__get_from_nested_meta_data("likelihood", "interferometers")]
 
     def detector_injection_properties(self, detector):
-        """ Returns a dictionary of the injection properties for each detector
+        """Returns a dictionary of the injection properties for each detector
 
         The injection properties include the parameters injected, and
         information about the signal to noise ratio (SNR) given the noise
@@ -102,18 +96,29 @@ class PolarizationResult(Result):
 
         """
         try:
-            return self.__get_from_nested_meta_data(
-                'likelihood', 'interferometers', detector)
+            return self.__get_from_nested_meta_data("likelihood", "interferometers", detector)
         except AttributeError:
             logger.info(f"No injection for detector {detector}")
             return None
 
     def plot_skymap(
-            self, maxpts=None, trials=5, jobs=1, enable_multiresolution=True,
-            objid=None, instruments=None, geo=False, dpi=600,
-            transparent=False, colorbar=False, contour=[50, 90],
-            annotate=True, cmap='cylon', load_pickle=False):
-        """ Generate a fits file and sky map from a result
+        self,
+        maxpts=None,
+        trials=5,
+        jobs=1,
+        enable_multiresolution=True,
+        objid=None,
+        instruments=None,
+        geo=False,
+        dpi=600,
+        transparent=False,
+        colorbar=False,
+        contour=[50, 90],
+        annotate=True,
+        cmap="cylon",
+        load_pickle=False,
+    ):
+        """Generate a fits file and sky map from a result
 
         Code adapted from ligo.skymap.tool.ligo_skymap_from_samples and
         ligo.skymap.tool.plot_skymap. Note, the use of this additionally
@@ -157,30 +162,29 @@ class PolarizationResult(Result):
         try:
             import healpy as hp
             from astropy.time import Time
-            from ligo.skymap import (bayestar, io, kde, plot, postprocess,
-                                     version)
+            from ligo.skymap import bayestar, io, kde, plot, postprocess, version
         except ImportError as e:
             logger.info(f"Unable to generate skymap: error {e}")
             return
 
         check_directory_exists_and_if_not_mkdir(self.outdir)
 
-        logger.info('Reading samples for skymap')
+        logger.info("Reading samples for skymap")
         data = self.posterior
 
         if maxpts is not None and maxpts < len(data):
-            logger.info('Taking random subsample of chain')
+            logger.info("Taking random subsample of chain")
             data = data.sample(maxpts)
 
-        default_obj_filename = os.path.join(self.outdir, f'{self.label}_skypost.obj')
+        default_obj_filename = os.path.join(self.outdir, f"{self.label}_skypost.obj")
 
         if load_pickle is False:
-            pts = data[['ra', 'dec']].values
+            pts = data[["ra", "dec"]].values
             confidence_levels = kde.Clustered2DSkyKDE
 
-            logger.info('Initialising skymap class')
+            logger.info("Initialising skymap class")
             skypost = confidence_levels(pts, trials=trials, jobs=jobs)
-            logger.info(f'Pickling skymap to {default_obj_filename}')
+            logger.info(f"Pickling skymap to {default_obj_filename}")
             safe_file_dump(skypost, default_obj_filename, "pickle")
 
         else:
@@ -188,34 +192,34 @@ class PolarizationResult(Result):
                 obj_filename = load_pickle
             else:
                 obj_filename = default_obj_filename
-            logger.info(f'Reading from pickle {obj_filename}')
-            with open(obj_filename, 'rb') as file:
+            logger.info(f"Reading from pickle {obj_filename}")
+            with open(obj_filename, "rb") as file:
                 skypost = pickle.load(file)
             skypost.jobs = jobs
 
-        logger.info('Making skymap')
+        logger.info("Making skymap")
         hpmap = skypost.as_healpix()
         if not enable_multiresolution:
             hpmap = bayestar.rasterize(hpmap)
 
         hpmap.meta.update(io.fits.metadata_for_version_module(version))
-        hpmap.meta['creator'] = "nullpol"
-        hpmap.meta['origin'] = 'LIGO/Virgo'
-        hpmap.meta['gps_creation_time'] = Time.now().gps
-        hpmap.meta['history'] = ""
+        hpmap.meta["creator"] = "nullpol"
+        hpmap.meta["origin"] = "LIGO/Virgo"
+        hpmap.meta["gps_creation_time"] = Time.now().gps
+        hpmap.meta["history"] = ""
         if objid is not None:
-            hpmap.meta['objid'] = objid
+            hpmap.meta["objid"] = objid
         if instruments:
-            hpmap.meta['instruments'] = instruments
+            hpmap.meta["instruments"] = instruments
 
         try:
-            time = data['geocent_time']
-            hpmap.meta['gps_time'] = time.mean()
+            time = data["geocent_time"]
+            hpmap.meta["gps_time"] = time.mean()
         except KeyError:
-            logger.warning('Cannot determine the event time from geocent_time')
+            logger.warning("Cannot determine the event time from geocent_time")
 
         fits_filename = os.path.join(self.outdir, f"{self.label}_skymap.fits")
-        logger.info(f'Saving skymap fits-file to {fits_filename}')
+        logger.info(f"Saving skymap fits-file to {fits_filename}")
         io.write_sky_map(fits_filename, hpmap, nest=True)
 
         skymap, metadata = io.fits.read_sky_map(fits_filename, nest=None)
@@ -226,41 +230,36 @@ class PolarizationResult(Result):
         probperdeg2 = skymap / deg2perpix
 
         if geo:
-            obstime = Time(metadata['gps_time'], format='gps').utc.isot
-            ax = plt.axes(projection='geo degrees mollweide', obstime=obstime)
+            obstime = Time(metadata["gps_time"], format="gps").utc.isot
+            ax = plt.axes(projection="geo degrees mollweide", obstime=obstime)
         else:
-            ax = plt.axes(projection='astro hours mollweide')
+            ax = plt.axes(projection="astro hours mollweide")
         ax.grid()
 
         # Plot sky map.
         vmax = probperdeg2.max()
-        img = ax.imshow_hpx(
-            (probperdeg2, 'ICRS'), nested=metadata['nest'], vmin=0., vmax=vmax,
-            cmap=cmap)
+        img = ax.imshow_hpx((probperdeg2, "ICRS"), nested=metadata["nest"], vmin=0.0, vmax=vmax, cmap=cmap)
 
         # Add colorbar.
         if colorbar:
             cb = plot.colorbar(img)
-            cb.set_label(r'prob. per deg$^2$')
+            cb.set_label(r"prob. per deg$^2$")
 
         if contour is not None:
             confidence_levels = 100 * postprocess.find_greedy_credible_levels(skymap)
             contours = ax.contour_hpx(
-                (confidence_levels, 'ICRS'), nested=metadata['nest'],
-                colors='k', linewidths=0.5, levels=contour)
-            fmt = r'%g\%%' if rcParams['text.usetex'] else '%g%%'
+                (confidence_levels, "ICRS"), nested=metadata["nest"], colors="k", linewidths=0.5, levels=contour
+            )
+            fmt = r"%g\%%" if rcParams["text.usetex"] else "%g%%"
             plt.clabel(contours, fmt=fmt, fontsize=6, inline=True)
 
         # Add continents.
         if geo:
-            geojson_filename = os.path.join(
-                os.path.dirname(plot.__file__), 'ne_simplified_coastline.json')
+            geojson_filename = os.path.join(os.path.dirname(plot.__file__), "ne_simplified_coastline.json")
             with open(geojson_filename) as geojson_file:
-                geoms = json.load(geojson_file)['geometries']
-            verts = [coord for geom in geoms
-                     for coord in zip(*geom['coordinates'])]
-            plt.plot(*verts, color='0.5', linewidth=0.5,
-                     transform=ax.get_transform('world'))
+                geoms = json.load(geojson_file)["geometries"]
+            verts = [coord for geom in geoms for coord in zip(*geom["coordinates"])]
+            plt.plot(*verts, color="0.5", linewidth=0.5, transform=ax.get_transform("world"))
 
         # Add a white outline to all text to make it stand out from the background.
         plot.outline_text(ax)
@@ -268,19 +267,17 @@ class PolarizationResult(Result):
         if annotate:
             text = []
             try:
-                objid = metadata['objid']
+                objid = metadata["objid"]
             except KeyError:
                 pass
             else:
-                text.append(f'event ID: {objid}')
+                text.append(f"event ID: {objid}")
             if contour:
                 pp = np.round(contour).astype(int)
-                ii = np.round(np.searchsorted(np.sort(confidence_levels), contour) *
-                              deg2perpix).astype(int)
+                ii = np.round(np.searchsorted(np.sort(confidence_levels), contour) * deg2perpix).astype(int)
                 for i, p in zip(ii, pp):
-                    text.append(
-                        f'{p:d}% area: {i:d} deg$^2$')
-            ax.text(1, 1, '\n'.join(text), transform=ax.transAxes, ha='right')
+                    text.append(f"{p:d}% area: {i:d} deg$^2$")
+            ax.text(1, 1, "\n".join(text), transform=ax.transAxes, ha="right")
 
         filename = os.path.join(self.outdir, f"{self.label}_skymap.png")
         logger.info(f"Generating 2D projected skymap to {filename}")

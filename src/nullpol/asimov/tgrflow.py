@@ -11,8 +11,7 @@ from asimov import config
 from asimov.event import Event
 
 from ..utils import logger
-from .utility import (bilby_config_to_asimov, deep_update,
-                      fill_in_pol_specific_metadata)
+from .utility import bilby_config_to_asimov, deep_update, fill_in_pol_specific_metadata
 
 
 class Collector:
@@ -47,16 +46,15 @@ class Collector:
         "SMAAnalyses",
         "SSBAnalyses",
         "TIGERAnalyses",
-        "UnmodeledEchoesAnalyses"]
+        "UnmodeledEchoesAnalyses",
+    ]
 
     def __init__(self, ledger):
         """
         Collect data from the asimov ledger and write it to a CBCFlow library.
         """
         hook_data = ledger.data["hooks"]["postmonitor"]["tgrflow"]
-        self.library = cbcflow.core.database.LocalLibraryDatabase(
-            hook_data["library location"]
-        )
+        self.library = cbcflow.core.database.LocalLibraryDatabase(hook_data["library location"])
         self.library.git_pull_from_remote(automated=True)
         self.schema_section = "TestingGR"
         self.ledger = ledger
@@ -70,9 +68,7 @@ class Collector:
             # Do setup for the event
             output = {}
             output[self.schema_section] = {}
-            metadata = cbcflow.get_superevent(
-                event.meta["ligo"]["sname"], library=self.library
-            )
+            metadata = cbcflow.get_superevent(event.meta["ligo"]["sname"], library=self.library)
 
             for analysis in event.productions:
                 # logic for connecting subanalysis type to results already in cbcflow
@@ -92,8 +88,9 @@ class Collector:
                         ]
                     else:
                         corresponding_analysis_subtype = None
-                    output[self.schema_section][analysis_schema_section] = [self._fill_in_analysis_specific_metadata(
-                        analysis, corresponding_analysis_subtype)]
+                    output[self.schema_section][analysis_schema_section] = [
+                        self._fill_in_analysis_specific_metadata(analysis, corresponding_analysis_subtype)
+                    ]
                     output[self.schema_section][analysis_schema_section][0]["UID"] = analysis_subtype_uid
 
                     # if the pipeline is supported, grab result metadata
@@ -114,20 +111,14 @@ class Collector:
                                 corresponding_analysis = None
                         # analysis output is what goes into the Result part of the schema
                         analysis_output = self._get_pe_result_from_production(analysis, corresponding_analysis)
-                        output[self.schema_section][analysis_schema_section][0]['Results'] = [analysis_output]
+                        output[self.schema_section][analysis_schema_section][0]["Results"] = [analysis_output]
                         metadata.update(output)
                         # Note that Asimov *should* write to main, unlike most other processes
-                        metadata.write_to_library(
-                            message="Analysis run update by asimov", branch_name="main"
-                        )
+                        metadata.write_to_library(message="Analysis run update by asimov", branch_name="main")
 
                     else:
-                        logger.info(
-                            f"Pipeline {analysis.pipeline} is not supported by tgrflow"
-                        )
-                        logger.info(
-                            "If this is a mistake, please contact the cbcflow developers to add support."
-                        )
+                        logger.info(f"Pipeline {analysis.pipeline} is not supported by tgrflow")
+                        logger.info("If this is a mistake, please contact the cbcflow developers to add support.")
                 elif analysis_schema_section is None:
                     logger.info(
                         f"Production {analysis.name} has no information about the type of TGR analysis. Skipping."
@@ -156,14 +147,10 @@ class Collector:
 
         analysis_output["InferenceSoftware"] = str(analysis.pipeline)
         if analysis.status.lower() in self.status_map.keys():
-            analysis_output["RunStatus"] = self.status_map[
-                analysis.status.lower()
-            ]
+            analysis_output["RunStatus"] = self.status_map[analysis.status.lower()]
         if "waveform" in analysis.meta:
             if "approximant" in analysis.meta["waveform"]:
-                analysis_output["WaveformApproximant"] = str(
-                    analysis.meta["waveform"]["approximant"]
-                )
+                analysis_output["WaveformApproximant"] = str(analysis.meta["waveform"]["approximant"])
 
         try:
             ini = analysis.pipeline.production.event.repository.find_prods(
@@ -191,21 +178,12 @@ class Collector:
                 analysis_output["ReviewStatus"] = "fail"
             elif analysis.review.status.lower() == "deprecated":
                 analysis_output["Deprecated"] = True
-            messages = sorted(
-                analysis.review.messages, key=lambda k: k.timestamp
-            )
+            messages = sorted(analysis.review.messages, key=lambda k: k.timestamp)
             if len(messages) > 0:
                 if corresponding_analysis is None:
-                    analysis_output["Notes"].append(
-                        f"{messages[0].timestamp:%Y-%m-%d}: {messages[0].message}"
-                    )
-                elif (
-                    f"{messages[0].timestamp:%Y-%m-%d}: {messages[0].message}"
-                    in corresponding_analysis["Notes"]
-                ):
-                    analysis_output["Notes"].append(
-                        f"{messages[0].timestamp:%Y-%m-%d}: {messages[0].message}"
-                    )
+                    analysis_output["Notes"].append(f"{messages[0].timestamp:%Y-%m-%d}: {messages[0].message}")
+                elif f"{messages[0].timestamp:%Y-%m-%d}: {messages[0].message}" in corresponding_analysis["Notes"]:
+                    analysis_output["Notes"].append(f"{messages[0].timestamp:%Y-%m-%d}: {messages[0].message}")
 
         if analysis.finished:
             # Get the results
@@ -215,21 +193,13 @@ class Collector:
                 # If it's bilby, we need to parse out which of possibly multiple merge results we want
                 analysis_output["ResultFile"] = {}
                 if len(results["samples"]) == 0:
-                    logger.warning(
-                        "Could not get samples from Bilby analysis, even though run is nominally finished!"
-                    )
+                    logger.warning("Could not get samples from Bilby analysis, even though run is nominally finished!")
                 elif len(results["samples"]) == 1:
                     # If there's only one easy enough
-                    analysis_output["ResultFile"]["Path"] = results[
-                        "samples"
-                    ][0]
+                    analysis_output["ResultFile"]["Path"] = results["samples"][0]
                 else:
                     # If greater than one, we will try to prefer the hdf5 results
-                    hdf_results = [
-                        x
-                        for x in results["samples"]
-                        if "hdf5" in x or "h5" in x
-                    ]
+                    hdf_results = [x for x in results["samples"] if "hdf5" in x or "h5" in x]
                     if len(hdf_results) == 0:
                         # If there aren't any, this implies we have more than one result,
                         # and they are all jsons
@@ -267,21 +237,13 @@ class Collector:
                 # This *should* be true, and it should normally be called "posterior_samples.h5"
                 # But this may not be universal?
                 analysis_output["PESummaryResultFile"] = {}
-                analysis_output["PESummaryResultFile"]["Path"] = sample_h5s[
-                    0
-                ]
+                analysis_output["PESummaryResultFile"]["Path"] = sample_h5s[0]
             else:
-                logger.warning(
-                    "Could not uniquely determine location of PESummary result samples"
-                )
+                logger.warning("Could not uniquely determine location of PESummary result samples")
             if "public_html" in pesummary_pages_dir.split("/"):
                 # Currently, we do the bit of trying to guess the URL ourselves
                 # In the future there may be an asimov config value for this
-                pesummary_pages_url_dir = (
-                    cbcflow.core.utils.get_url_from_public_html_dir(
-                        pesummary_pages_dir
-                    )
-                )
+                pesummary_pages_url_dir = cbcflow.core.utils.get_url_from_public_html_dir(pesummary_pages_dir)
                 # If we've written a result file, infer its url
                 if "PESummaryResultFile" in analysis_output.keys():
                     # We want to get whatever the name we previously decided was
@@ -290,9 +252,7 @@ class Collector:
                         "PublicHTML"
                     ] = f"{pesummary_pages_url_dir}/samples/{sample_h5s[0].split('/')[-1]}"
                 # Infer the summary pages URL
-                analysis_output[
-                    "PESummaryPageURL"
-                ] = f"{pesummary_pages_url_dir}/home.html"
+                analysis_output["PESummaryPageURL"] = f"{pesummary_pages_url_dir}/home.html"
         return analysis_output
 
     def _sort_analysis_by_subtype(self, analysis):
@@ -307,7 +267,7 @@ class Collector:
         output:
         uid - string determining the analysis subcategory for given gr test
         """
-        uid = 'default'
+        uid = "default"
         return uid
 
     def _fill_in_analysis_specific_metadata(self, analysis, corresponding_analysis):
@@ -337,16 +297,14 @@ class Applicator:
     def __init__(self, ledger):
         hook_data = ledger.data["hooks"]["applicator"]["tgrflow"]
         self.ledger = ledger
-        self.library = cbcflow.core.database.LocalLibraryDatabase(
-            hook_data["library location"]
-        )
+        self.library = cbcflow.core.database.LocalLibraryDatabase(hook_data["library location"])
         self.library.git_pull_from_remote(automated=True)
         # in case of disparity between data product in cbcflow and config,
         # choose which one to prefer (config by default)
-        if 'data preference' in hook_data:
-            if hook_data['data preference'] == 'cbcflow':
+        if "data preference" in hook_data:
+            if hook_data["data preference"] == "cbcflow":
                 self.prefer_config = False
-            elif hook_data['data preference'] == 'config':
+            elif hook_data["data preference"] == "config":
                 self.prefer_config = True
             else:
                 logger.warning("Unrecognized data preference applicator option. Setting to config")
@@ -404,9 +362,7 @@ class Applicator:
             recommended_ifos_list = ifo_list
         else:
             recommended_ifos_list = participating_detectors
-            logger.info(
-                "No detchar recommended IFOs provided, falling back to participating detectors"
-            )
+            logger.info("No detchar recommended IFOs provided, falling back to participating detectors")
 
         # GraceDB Settings
         ligo = {}
@@ -418,13 +374,11 @@ class Applicator:
         ligo["sname"] = sid
 
         # also add the sampling rate to the output
-        quality['sample rate'] = metadata.data["ParameterEstimation"]["SafeSamplingRate"]
+        quality["sample rate"] = metadata.data["ParameterEstimation"]["SafeSamplingRate"]
 
         # delete?
         if "IllustrativeResult" in metadata.data["ParameterEstimation"]:
-            ligo["illustrative result"] = metadata.data["ParameterEstimation"][
-                "IllustrativeResult"
-            ]
+            ligo["illustrative result"] = metadata.data["ParameterEstimation"]["IllustrativeResult"]
 
         output = {
             "name": metadata.data["Sname"],
@@ -439,18 +393,18 @@ class Applicator:
         illustrative_prod = metadata.data["ParameterEstimation"]["IllustrativeResult"]
         gr_pe = {"available": False}
         for result in metadata_pe_results:
-            if result["UID"] == illustrative_prod and result['RunStatus'] == 'complete':
-                gr_pe = {"available": True,
-                         "UID GR PE": result["UID"],
-                         "result file path": "/" + result["ResultFile"]["Path"].split(':/')[-1],
-                         "config file path": "/" + result["ConfigFile"]["Path"].split(':/')[-1],
-                         "pesummary result path": "/" + result["PESummaryResultFile"]["Path"].split(':/')[-1]}
+            if result["UID"] == illustrative_prod and result["RunStatus"] == "complete":
+                gr_pe = {
+                    "available": True,
+                    "UID GR PE": result["UID"],
+                    "result file path": "/" + result["ResultFile"]["Path"].split(":/")[-1],
+                    "config file path": "/" + result["ConfigFile"]["Path"].split(":/")[-1],
+                    "pesummary result path": "/" + result["PESummaryResultFile"]["Path"].split(":/")[-1],
+                }
                 if "WaveformApproximant" in result.keys():
                     quality["waveform approximant"] = result["WaveformApproximant"]
-        if gr_pe['available'] is False:
-            raise AttributeError(
-                "IllustrativeResult not in the library or the PE run is incomplete."
-            )
+        if gr_pe["available"] is False:
+            raise AttributeError("IllustrativeResult not in the library or the PE run is incomplete.")
 
         # now, we need to read in the information from the config file
         # we need the reference frequency, the psd dict and the calibration dict
@@ -459,16 +413,16 @@ class Applicator:
 
         # read in the psd information if present
         if "psds" in config.keys():
-            gr_pe["psds"] = config.pop('psds')
+            gr_pe["psds"] = config.pop("psds")
         output["gr pe info"] = gr_pe.copy()
-        output["gr pe info"]['approximant'] = config['waveform']['approximant']
+        output["gr pe info"]["approximant"] = config["waveform"]["approximant"]
         # config file and cbcflow can disagree about which data to use (for example, preferred frame was updated)
         # logic below decides which version to use (should not matter when the analysis is finalized)
         if self.prefer_config:
-            output['data'] = {}  # it will now be fully overridden by config
+            output["data"] = {}  # it will now be fully overridden by config
         else:
             # it will now keep values from cbcflow
-            for item in ['channels', 'frame types', 'data files']:
+            for item in ["channels", "frame types", "data files"]:
                 if item in config:
                     config.pop(item)
 
@@ -476,15 +430,15 @@ class Applicator:
         event = Event.from_dict(output)
 
         self.ledger.add_event(event)
-        copied_data_folder = os.path.join(event.work_dir, 'PSDs')
+        copied_data_folder = os.path.join(event.work_dir, "PSDs")
 
         if not os.path.exists(copied_data_folder):
             os.makedirs(copied_data_folder)
-        if 'psds' in gr_pe:
-            output['psds'] = {}
-            for key, value in gr_pe['psds'].items():
-                filename = os.path.join(copied_data_folder, f'{key}_psd.dat')
+        if "psds" in gr_pe:
+            output["psds"] = {}
+            for key, value in gr_pe["psds"].items():
+                filename = os.path.join(copied_data_folder, f"{key}_psd.dat")
                 shutil.copy(value, filename)
-                output['psds'][key] = filename
+                output["psds"][key] = filename
         event = Event.from_dict(output)
         self.ledger.update_event(event)

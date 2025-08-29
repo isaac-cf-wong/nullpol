@@ -3,13 +3,16 @@ from __future__ import annotations
 import copy
 
 import bilby_pipe.utils
-from bilby_pipe.job_creation.bilby_pipe_dag_creator import (
-    get_parallel_list, get_trigger_time_list)
+from bilby_pipe.job_creation.bilby_pipe_dag_creator import get_parallel_list, get_trigger_time_list
 from bilby_pipe.job_creation.dag import Dag
-from bilby_pipe.job_creation.nodes import (FinalResultNode, MergeNode,
-                                           PESummaryNode, PlotNode,
-                                           PostProcessAllResultsNode,
-                                           PostProcessSingleResultsNode)
+from bilby_pipe.job_creation.nodes import (
+    FinalResultNode,
+    MergeNode,
+    PESummaryNode,
+    PlotNode,
+    PostProcessAllResultsNode,
+    PostProcessSingleResultsNode,
+)
 from bilby_pipe.job_creation.overview import create_overview
 from bilby_pipe.utils import get_colored_string
 
@@ -71,7 +74,9 @@ def generate_dag(inputs):
     polarization_basis_list = inputs.polarization_basis
     number_of_polarization_runs = len(polarization_modes_list)
     if number_of_polarization_runs != len(polarization_basis_list):
-        raise NullpolError(f'Lengths of polarization-modes = {polarization_modes_list} and polarization-basis = {polarization_basis_list} do not match.')
+        raise NullpolError(
+            f"Lengths of polarization-modes = {polarization_modes_list} and polarization-basis = {polarization_basis_list} do not match."
+        )
     # Iterate over all generation nodes and store them in a list
     generation_node_list = []
     for idx, trigger_time in enumerate(trigger_times):

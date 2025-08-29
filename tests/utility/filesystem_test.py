@@ -40,5 +40,6 @@ class TestFilesystem(unittest.TestCase):
             self.assertTrue(is_file(temp_file_name))
         self.assertFalse(is_file(temp_file_name))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

@@ -28,9 +28,11 @@ class TestEncoding(unittest.TestCase):
         boolean arrays distinguishing between basis modes, non-basis modes,
         and all available modes.
         """
-        polarization_modes = 'pcbxy'
-        polarization_basis = 'pc'
-        polarization_modes, polarization_basis, polarization_derived = encode_polarization(polarization_modes, polarization_basis)
+        polarization_modes = "pcbxy"
+        polarization_basis = "pc"
+        polarization_modes, polarization_basis, polarization_derived = encode_polarization(
+            polarization_modes, polarization_basis
+        )
         expected_polarization_modes = np.array([True, True, True, False, True, True])
         expected_polarization_basis = np.array([True, True, False, False, False, False])
         expected_polarization_derived = np.array([False, False, True, False, True, True])
@@ -45,10 +47,11 @@ class TestEncoding(unittest.TestCase):
         correctly expanded to their full descriptive names for improved
         readability in analysis outputs and documentation.
         """
-        tokens = 'xyblpc'
+        tokens = "xyblpc"
         output = get_long_names(tokens)
-        expected_output = ['vector_x', 'vector_y', 'breathing', 'longitudinal', 'plus', 'cross']
+        expected_output = ["vector_x", "vector_y", "breathing", "longitudinal", "plus", "cross"]
         self.assertTrue(np.array_equal(output, expected_output))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

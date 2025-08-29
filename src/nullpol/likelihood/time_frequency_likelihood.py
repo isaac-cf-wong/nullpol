@@ -5,17 +5,17 @@ import numpy as np
 from bilby.core.likelihood import Likelihood
 
 from ..calibration import compute_calibrated_whitened_antenna_pattern_matrix
-from ..detector import (compute_whitened_antenna_pattern_matrix_masked,
-                        compute_whitened_frequency_domain_strain_array)
-from ..null_stream import (compute_time_shifted_frequency_domain_strain_array,
-                           encode_polarization,
-                           estimate_frequency_domain_signal_at_geocenter,
-                           get_antenna_pattern_matrix,
-                           get_collapsed_antenna_pattern_matrix,
-                           relative_amplification_factor_helper,
-                           relative_amplification_factor_map)
-from ..time_frequency_transform import (get_shape_of_wavelet_transform,
-                                        transform_wavelet_freq)
+from ..detector import compute_whitened_antenna_pattern_matrix_masked, compute_whitened_frequency_domain_strain_array
+from ..null_stream import (
+    compute_time_shifted_frequency_domain_strain_array,
+    encode_polarization,
+    estimate_frequency_domain_signal_at_geocenter,
+    get_antenna_pattern_matrix,
+    get_collapsed_antenna_pattern_matrix,
+    relative_amplification_factor_helper,
+    relative_amplification_factor_map,
+)
+from ..time_frequency_transform import get_shape_of_wavelet_transform, transform_wavelet_freq
 from ..utils import NullpolError, logger
 
 
@@ -31,15 +31,19 @@ class TimeFrequencyLikelihood(Likelihood):
         time_frequency_filter (str): The time-frequency filter.
         priors (dict, optional): If given, used in the calibration marginalization.
     """
-    def __init__(self,
-                 interferometers,
-                 wavelet_frequency_resolution,
-                 wavelet_nx,
-                 polarization_modes,
-                 polarization_basis=None,
-                 time_frequency_filter=None,
-                 priors=None,
-                 *args, **kwargs):
+
+    def __init__(
+        self,
+        interferometers,
+        wavelet_frequency_resolution,
+        wavelet_nx,
+        polarization_modes,
+        polarization_basis=None,
+        time_frequency_filter=None,
+        priors=None,
+        *args,
+        **kwargs,
+    ):
         super().__init__(dict())
 
         # Load the interferometers.
@@ -61,28 +65,36 @@ class TimeFrequencyLikelihood(Likelihood):
         self._filtered_frequency_mask = None
         self._filtered_masked_frequency_array = None
         self._frequency_resolution = self._frequency_array[1] - self._frequency_array[0]
-        self._power_spectral_density_array = np.array([ifo.power_spectral_density_array for ifo in self.interferometers])
+        self._power_spectral_density_array = np.array(
+            [ifo.power_spectral_density_array for ifo in self.interferometers]
+        )
         self._wavelet_frequency_resolution = wavelet_frequency_resolution
         self._wavelet_nx = wavelet_nx
         self._tf_Nt, self._tf_Nf = get_shape_of_wavelet_transform(
-            self.duration,
-            self.sampling_frequency,
-            self.wavelet_frequency_resolution)
+            self.duration, self.sampling_frequency, self.wavelet_frequency_resolution
+        )
 
         # Encode the polarization labels
-        self._polarization_modes, self._polarization_basis, self._polarization_derived = \
-            encode_polarization(polarization_modes, polarization_basis)
+        self._polarization_modes, self._polarization_basis, self._polarization_derived = encode_polarization(
+            polarization_modes, polarization_basis
+        )
 
         # Check whether the number of detectors is greater than the number of polarization bases.
         if len(self._interferometers) <= np.sum(self._polarization_basis):
-            raise NullpolError(f'Number of detectors = {len(self._interferometers)} has to be greater than the number of polarization bases = {np.sum(self._polarization_basis)}.')
+            raise NullpolError(
+                f"Number of detectors = {len(self._interferometers)} has to be greater than the number of polarization bases = {np.sum(self._polarization_basis)}."
+            )
 
         # Collapse the polarization encoding
-        self._polarization_basis_collapsed = np.array([self.polarization_basis[i] for i in range(len(self.polarization_modes)) if self.polarization_modes[i]]).astype(bool)
-        self._polarization_derived_collapsed = np.array([self.polarization_derived[i] for i in range(len(self.polarization_modes)) if self.polarization_modes[i]]).astype(bool)
+        self._polarization_basis_collapsed = np.array(
+            [self.polarization_basis[i] for i in range(len(self.polarization_modes)) if self.polarization_modes[i]]
+        ).astype(bool)
+        self._polarization_derived_collapsed = np.array(
+            [self.polarization_derived[i] for i in range(len(self.polarization_modes)) if self.polarization_modes[i]]
+        ).astype(bool)
         self._relative_amplification_factor_map = relative_amplification_factor_map(
-            self.polarization_basis,
-            self.polarization_derived)
+            self.polarization_basis, self.polarization_derived
+        )
 
         # Load the time_frequency_filter
         self._time_frequency_filter = time_frequency_filter
@@ -183,7 +195,7 @@ class TimeFrequencyLikelihood(Likelihood):
             maximum_frequency = indices[-1] * self.wavelet_frequency_resolution
             k_low = int(minimum_frequency / self.frequency_resolution)
             k_high = int(maximum_frequency / self.frequency_resolution)
-            self._filtered_frequency_mask[k_low:k_high+1] = True
+            self._filtered_frequency_mask[k_low : k_high + 1] = True
         return self._filtered_frequency_mask
 
     @property
@@ -244,17 +256,18 @@ class TimeFrequencyLikelihood(Likelihood):
         Returns:
             numpy array: Whitened frequency domain strain array (detector, frequency).
         """
-        output = getattr(self, '_whitened_frequency_domain_strain_array', None)
-        if output is None and \
-                self.frequency_domain_strain_array is not None and \
-                self.power_spectral_density_array is not None:
-            self._whitened_frequency_domain_strain_array = \
-                compute_whitened_frequency_domain_strain_array(
-                    frequency_mask=self.frequency_mask,
-                    frequency_resolution=self.frequency_resolution,
-                    frequency_domain_strain_array=self.frequency_domain_strain_array,
-                    power_spectral_density_array=self.power_spectral_density_array,
-                )
+        output = getattr(self, "_whitened_frequency_domain_strain_array", None)
+        if (
+            output is None
+            and self.frequency_domain_strain_array is not None
+            and self.power_spectral_density_array is not None
+        ):
+            self._whitened_frequency_domain_strain_array = compute_whitened_frequency_domain_strain_array(
+                frequency_mask=self.frequency_mask,
+                frequency_resolution=self.frequency_resolution,
+                frequency_domain_strain_array=self.frequency_domain_strain_array,
+                power_spectral_density_array=self.power_spectral_density_array,
+            )
             output = self._whitened_frequency_domain_strain_array
         return output
 
@@ -349,16 +362,25 @@ class TimeFrequencyLikelihood(Likelihood):
         Raises:
             ValueError: Throw an error if the interferometers do not have the same frequency resolution.
         """
-        if not all([interferometer.frequency_array[1] - interferometer.frequency_array[0] == interferometers[0].frequency_array[1] - interferometers[0].frequency_array[0] for interferometer in interferometers[1:]]):
-            raise ValueError('All interferometers must have the same delta_f.')
+        if not all(
+            [
+                interferometer.frequency_array[1] - interferometer.frequency_array[0]
+                == interferometers[0].frequency_array[1] - interferometers[0].frequency_array[0]
+                for interferometer in interferometers[1:]
+            ]
+        ):
+            raise ValueError("All interferometers must have the same delta_f.")
 
     def _validate_time_frequency_filter(self):
-        """Validate the time frequency filter.
-        """
+        """Validate the time frequency filter."""
         # Get the shape of the time_frequency_filter
         ntime, nfreq = self.time_frequency_filter.shape
-        assert nfreq==self.tf_Nf, f"The length of frequency axis = {nfreq} in the wavelet domain does not match the time frequency filter = {self.tf_Nf}."
-        assert ntime==self.tf_Nt, f"The length of time axis = {ntime} in the wavelet domain does not match the time frequency filter = {self.tf_Nt}."
+        assert (
+            nfreq == self.tf_Nf
+        ), f"The length of frequency axis = {nfreq} in the wavelet domain does not match the time frequency filter = {self.tf_Nf}."
+        assert (
+            ntime == self.tf_Nt
+        ), f"The length of time axis = {ntime} in the wavelet domain does not match the time frequency filter = {self.tf_Nt}."
 
     @property
     def tf_Nt(self):
@@ -384,10 +406,14 @@ class TimeFrequencyLikelihood(Likelihood):
         Returns:
             numpy array: Time delay array.
         """
-        return np.array([ifo.time_delay_from_geocenter(
-            ra=self.parameters['ra'],
-            dec=self.parameters['dec'],
-            time=self.parameters['geocent_time']) for ifo in self.interferometers])
+        return np.array(
+            [
+                ifo.time_delay_from_geocenter(
+                    ra=self.parameters["ra"], dec=self.parameters["dec"], time=self.parameters["geocent_time"]
+                )
+                for ifo in self.interferometers
+            ]
+        )
 
     def compute_antenna_pattern_matrix(self):
         """Compute the antenna pattern matrix.
@@ -398,22 +424,24 @@ class TimeFrequencyLikelihood(Likelihood):
         # Evaluate the antenna pattern function
         F_matrix = get_antenna_pattern_matrix(
             self.interferometers,
-            right_ascension=self.parameters['ra'],
-            declination=self.parameters['dec'],
-            polarization_angle=self.parameters['psi'],
-            gps_time=self.parameters['geocent_time'],
-            polarization=self.polarization_modes)
+            right_ascension=self.parameters["ra"],
+            declination=self.parameters["dec"],
+            polarization_angle=self.parameters["psi"],
+            gps_time=self.parameters["geocent_time"],
+            polarization=self.polarization_modes,
+        )
         # Evaluate the collapsed antenna pattern function
         # Compute the relative amplification factor
         if self.relative_amplification_factor_map.size > 0:
             relative_amplification_factor = relative_amplification_factor_helper(
-                self.relative_amplification_factor_map,
-                self.parameters)
+                self.relative_amplification_factor_map, self.parameters
+            )
             F_matrix = get_collapsed_antenna_pattern_matrix(
                 F_matrix,
                 self.polarization_basis_collapsed,
                 self.polarization_derived_collapsed,
-                relative_amplification_factor)
+                relative_amplification_factor,
+            )
         return F_matrix
 
     def compute_calibration_factor(self):
@@ -427,8 +455,9 @@ class TimeFrequencyLikelihood(Likelihood):
         for i in range(len(self.interferometers)):
             calibration_errors = self.interferometers[i].calibration_model.get_calibration_factor(
                 frequency_array=self.masked_frequency_array,
-                prefix=f'recalib_{self.interferometers[i].name}_',
-                **self.parameters)
+                prefix=f"recalib_{self.interferometers[i].name}_",
+                **self.parameters,
+            )
             output[i, self.frequency_mask] = calibration_errors
         return output
 
@@ -443,7 +472,7 @@ class TimeFrequencyLikelihood(Likelihood):
             frequency_array=self.frequency_array,
             frequency_mask=self.frequency_mask,
             frequency_domain_strain_array=self.whitened_frequency_domain_strain_array,
-            time_delay_array=time_delay_array
+            time_delay_array=time_delay_array,
         )
         self._cached_whitened_frequency_domain_strain_array_at_geocenter = output
         return output
@@ -455,11 +484,16 @@ class TimeFrequencyLikelihood(Likelihood):
         Returns:
             numpy array: Wavelet domain strain array at geocenter (detector, time, frequency).
         """
-        return np.array([transform_wavelet_freq(
-            data=self._cached_whitened_frequency_domain_strain_array_at_geocenter[i],
-            sampling_frequency=self.sampling_frequency,
-            frequency_resolution=self.wavelet_frequency_resolution,
-            nx=self.wavelet_nx) for i in range(len(self.interferometers))]
+        return np.array(
+            [
+                transform_wavelet_freq(
+                    data=self._cached_whitened_frequency_domain_strain_array_at_geocenter[i],
+                    sampling_frequency=self.sampling_frequency,
+                    frequency_resolution=self.wavelet_frequency_resolution,
+                    nx=self.wavelet_nx,
+                )
+                for i in range(len(self.interferometers))
+            ]
         )
 
     def estimate_frequency_domain_signal_at_geocenter(self):
@@ -475,18 +509,22 @@ class TimeFrequencyLikelihood(Likelihood):
         whitened_antenna_patten_matrix = compute_whitened_antenna_pattern_matrix_masked(
             antenna_pattern_matrix=antenna_pattern_matrix,
             psd_array=self.power_spectral_density_array,
-            frequency_mask=self.frequency_mask)
+            frequency_mask=self.frequency_mask,
+        )
         calibration_factor = self.compute_calibration_factor()
         calibrated_whitened_antenna_pattern_matrix = compute_calibrated_whitened_antenna_pattern_matrix(
             frequency_mask=self.frequency_mask,
             whitened_antenna_pattern_matrix=whitened_antenna_patten_matrix,
-            calibration_error_matrix=calibration_factor
+            calibration_error_matrix=calibration_factor,
         )
-        whitened_frequency_domain_strain_array_at_geocenter = self.compute_whitened_frequency_domain_strain_array_at_geocenter()
+        whitened_frequency_domain_strain_array_at_geocenter = (
+            self.compute_whitened_frequency_domain_strain_array_at_geocenter()
+        )
         return estimate_frequency_domain_signal_at_geocenter(
             frequency_mask=self.frequency_mask,
             whitened_frequency_domain_strain_array_at_geocenter=whitened_frequency_domain_strain_array_at_geocenter,
-            whitened_antenna_pattern_matrix=calibrated_whitened_antenna_pattern_matrix)
+            whitened_antenna_pattern_matrix=calibrated_whitened_antenna_pattern_matrix,
+        )
 
     def estimate_wavelet_domain_signal_at_geocenter(self):
         """Estimate the wavelet domain signal at geocenter.
@@ -497,11 +535,16 @@ class TimeFrequencyLikelihood(Likelihood):
         frequency_domain_signal = self.estimate_frequency_domain_signal_at_geocenter()
 
         # Perform the wavelet transform
-        wavelet_domain_signal = np.array([transform_wavelet_freq(
-            data=frequency_domain_signal[i],
-            sampling_frequency=self.sampling_frequency,
-            frequency_resolution=self.wavelet_frequency_resolution,
-            nx=self.wavelet_nx) for i in range(len(self.interferometers))]
+        wavelet_domain_signal = np.array(
+            [
+                transform_wavelet_freq(
+                    data=frequency_domain_signal[i],
+                    sampling_frequency=self.sampling_frequency,
+                    frequency_resolution=self.wavelet_frequency_resolution,
+                    nx=self.wavelet_nx,
+                )
+                for i in range(len(self.interferometers))
+            ]
         )
         return wavelet_domain_signal
 
@@ -530,6 +573,5 @@ class TimeFrequencyLikelihood(Likelihood):
             float: The noise log likelihood.
         """
         if self._noise_log_likelihood_value is None:
-            self._noise_log_likelihood_value = \
-                self._calculate_noise_log_likelihood()
+            self._noise_log_likelihood_value = self._calculate_noise_log_likelihood()
         return self._noise_log_likelihood_value
