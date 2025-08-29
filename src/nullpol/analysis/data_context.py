@@ -25,7 +25,7 @@ import numpy as np
 from typing import Optional
 from numba import njit
 
-from .tf_transforms import get_shape_of_wavelet_transform, transform_wavelet_freq
+from .tf_transforms import get_shape_of_wavelet_transform
 from ..utils import logger
 
 
@@ -202,9 +202,6 @@ class TimeFrequencyDataContext:
 
         # Time-frequency filter
         self._time_frequency_filter = time_frequency_filter
-        self._time_frequency_filter_collapsed = None
-        self._filtered_frequency_mask = None
-        self._filtered_masked_frequency_array = None
 
         # Validate filter if provided as array
         if isinstance(self._time_frequency_filter, np.ndarray):
@@ -299,57 +296,6 @@ class TimeFrequencyDataContext:
         return self._time_frequency_filter
 
     @property
-    def time_frequency_filter_collapsed(self) -> Optional[np.ndarray]:
-        """A collapsed time frequency filter.
-
-        Returns:
-            Optional[numpy.ndarray]: A collapsed time frequency filter (frequency).
-        """
-        if self._time_frequency_filter_collapsed is None and self.time_frequency_filter is not None:
-            self._time_frequency_filter_collapsed = np.any(self.time_frequency_filter, axis=0)
-        return self._time_frequency_filter_collapsed
-
-    @property
-    def filtered_frequency_mask(self) -> np.ndarray:
-        """Frequency mask filtered by the time-frequency filter boundaries.
-
-        Determines which frequency bins are covered by the time-frequency filter
-        by finding the minimum and maximum frequencies spanned by the filter
-        and creating a mask for the corresponding frequency range.
-
-        Returns:
-            numpy.ndarray: Boolean array indicating which frequencies are within
-                the time-frequency filter bounds.
-        """
-        if self._filtered_frequency_mask is None:
-            self._filtered_frequency_mask = np.full_like(self.frequency_mask, False)
-            if self.time_frequency_filter_collapsed is not None:
-                # Check the minimum and maximum frequencies implied by the time frequency filter
-                indices = np.where(self.time_frequency_filter_collapsed)[0]
-                if len(indices) > 0:
-                    minimum_frequency = indices[0] * self.wavelet_frequency_resolution
-                    maximum_frequency = indices[-1] * self.wavelet_frequency_resolution
-                    k_low = int(minimum_frequency / self.frequency_resolution)
-                    k_high = int(maximum_frequency / self.frequency_resolution)
-                    self._filtered_frequency_mask[k_low : k_high + 1] = True
-        return self._filtered_frequency_mask
-
-    @property
-    def filtered_masked_frequency_array(self) -> np.ndarray:
-        """Frequency array filtered by both general and time-frequency filter masks.
-
-        Returns the frequency array values that pass both the interferometer
-        frequency mask and the time-frequency filter boundaries.
-
-        Returns:
-            numpy.ndarray: Array of frequency values that are both in the general
-                frequency mask and within the time-frequency filter bounds.
-        """
-        if self._filtered_masked_frequency_array is None:
-            self._filtered_masked_frequency_array = self.frequency_array[self.frequency_mask]
-        return self._filtered_masked_frequency_array
-
-    @property
     def whitened_frequency_domain_strain_array(self) -> Optional[np.ndarray]:
         """Whitened frequency domain strain array of the interferometers.
 
@@ -406,61 +352,61 @@ class TimeFrequencyDataContext:
         self._cached_whitened_frequency_domain_strain_array_at_geocenter = output
         return output
 
-    def transform_to_wavelet_domain(self, frequency_domain_data: np.ndarray) -> np.ndarray:
-        """Transform frequency domain data to wavelet domain.
+    # def transform_to_wavelet_domain(self, frequency_domain_data: np.ndarray) -> np.ndarray:
+    #     """Transform frequency domain data to wavelet domain.
 
-        Args:
-            frequency_domain_data (numpy.ndarray): Frequency domain data array (detector, frequency).
+    #     Args:
+    #         frequency_domain_data (numpy.ndarray): Frequency domain data array (detector, frequency).
 
-        Returns:
-            numpy.ndarray: Wavelet domain data array (detector, time, frequency).
-        """
-        return np.array(
-            [
-                transform_wavelet_freq(
-                    data=frequency_domain_data[i],
-                    sampling_frequency=self.sampling_frequency,
-                    frequency_resolution=self.wavelet_frequency_resolution,
-                    nx=self.wavelet_nx,
-                )
-                for i in range(len(self.interferometers))
-            ]
-        )
+    #     Returns:
+    #         numpy.ndarray: Wavelet domain data array (detector, time, frequency).
+    #     """
+    #     return np.array(
+    #         [
+    #             transform_wavelet_freq(
+    #                 data=frequency_domain_data[i],
+    #                 sampling_frequency=self.sampling_frequency,
+    #                 frequency_resolution=self.wavelet_frequency_resolution,
+    #                 nx=self.wavelet_nx,
+    #             )
+    #             for i in range(len(self.interferometers))
+    #         ]
+    #     )
 
-    def get_wavelet_domain_strain_at_geocenter(self, parameters: dict) -> np.ndarray:
-        """Compute the wavelet domain strain array at geocenter.
+    # def get_wavelet_domain_strain_at_geocenter(self, parameters: dict) -> np.ndarray:
+    #     """Compute the wavelet domain strain array at geocenter.
 
-        Args:
-            parameters (dict): Dictionary containing sky position and time parameters.
+    #     Args:
+    #         parameters (dict): Dictionary containing sky position and time parameters.
 
-        Returns:
-            numpy.ndarray: Wavelet domain strain array at geocenter (detector, time, frequency).
-        """
-        # Get whitened strain at geocenter (this will cache it)
-        whitened_strain_geocenter = self.compute_whitened_strain_at_geocenter(parameters)
+    #     Returns:
+    #         numpy.ndarray: Wavelet domain strain array at geocenter (detector, time, frequency).
+    #     """
+    #     # Get whitened strain at geocenter (this will cache it)
+    #     whitened_strain_geocenter = self.compute_whitened_strain_at_geocenter(parameters)
 
-        # Transform to wavelet domain
-        return self.transform_to_wavelet_domain(whitened_strain_geocenter)
+    #     # Transform to wavelet domain
+    #     return self.transform_to_wavelet_domain(whitened_strain_geocenter)
 
-    def apply_whitening_to_matrix(self, matrix: np.ndarray) -> np.ndarray:
-        """Apply whitening to a matrix using the stored PSDs.
+    # def apply_whitening_to_matrix(self, matrix: np.ndarray) -> np.ndarray:
+    #     """Apply whitening to a matrix using the stored PSDs.
 
-        This is used for whitening antenna pattern matrices and other detector-based matrices.
+    #     This is used for whitening antenna pattern matrices and other detector-based matrices.
 
-        Args:
-            matrix (numpy.ndarray): Matrix to whiten (detector, ...).
+    #     Args:
+    #         matrix (numpy.ndarray): Matrix to whiten (detector, ...).
 
-        Returns:
-            numpy.ndarray: Whitened matrix.
-        """
-        # This will be used by AntennaPatternProcessor for whitening antenna patterns
-        # For now, we'll implement basic whitening - this may need refinement
-        whitened_matrix = np.zeros_like(matrix)
-        for i, ifo in enumerate(self.interferometers):
-            psd = self.power_spectral_density_array[i]
-            # Apply whitening weights (simplified - may need more sophisticated approach)
-            whitened_matrix[i] = matrix[i] / np.sqrt(psd[self.frequency_mask])
-        return whitened_matrix
+    #     Returns:
+    #         numpy.ndarray: Whitened matrix.
+    #     """
+    #     # This will be used by AntennaPatternProcessor for whitening antenna patterns
+    #     # For now, we'll implement basic whitening - this may need refinement
+    #     whitened_matrix = np.zeros_like(matrix)
+    #     for i, ifo in enumerate(self.interferometers):
+    #         psd = self.power_spectral_density_array[i]
+    #         # Apply whitening weights (simplified - may need more sophisticated approach)
+    #         whitened_matrix[i] = matrix[i] / np.sqrt(psd[self.frequency_mask])
+    #     return whitened_matrix
 
     def _validate_interferometers(self, interferometers: bilby.gw.detector.networks.InterferometerList):
         """Validate interferometers.

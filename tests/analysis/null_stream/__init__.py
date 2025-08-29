@@ -1,11 +1,6 @@
 from __future__ import annotations
 
-from .test_calculator import (
-    TestNullStreamCalculator,
-    calculator_instance,
-    sample_antenna_patterns,
-    sample_frequency_mask,
-)
+from .test_calculator import TestNullStreamCalculator, calculator_instance
 from .test_projections import (
     setup_random_seed,
     test_compute_gw_projector_masked,
@@ -16,8 +11,6 @@ from .test_projections import (
 __all__ = [
     "TestNullStreamCalculator",
     "calculator_instance",
-    "sample_antenna_patterns",
-    "sample_frequency_mask",
     "setup_random_seed",
     "test_compute_gw_projector_masked",
     "test_projector_mathematical_properties",
