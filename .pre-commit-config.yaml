@@ -41,12 +41,25 @@ repos:
         args: ["--fix"]
         files: ^(src|tests)/
 
-  - repo: https://github.com/codespell-project/codespell
-    rev: v2.4.1
+  - repo: https://github.com/streetsidesoftware/cspell-cli
+    rev: v9.1.1 # Keep this version or update to the latest stable
     hooks:
-      - id: codespell
-        args: ["--ignore-words=.codespell-ignore.txt"]
-        files: "\\.py$"
+      - id: cspell
+        name: Check spelling in Python, reSt, and Markdown files.
+        args: ["--config", "cspell.json"]
+        files: ^.*\.(py|rst|md)$
+      - id: cspell
+        name: Check commit message spelling.
+        args:
+          - --config
+          - cspell.json
+          - --no-must-find-files
+          - --no-progress
+          - --no-summary
+          - --files
+          - .git/COMMIT_EDITMSG
+        stages: [commit-msg]
+        always_run: true
 
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0

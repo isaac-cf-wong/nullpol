@@ -1,0 +1,31 @@
+{
+    "$schema": "https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json",
+    "version": "0.2",
+    "language": "en",
+    "dictionaries": [
+        "en",
+        "ignore-words"
+    ],
+    "dictionaryDefinitions": [
+        {
+            "name": "ignore-words",
+            "path": ".ignore_words.txt",
+            "addWords": true
+        }
+    ],
+    "languageSettings": [
+        {
+            "languageId": "*",
+            "locale": "en",
+            "dictionaries": [
+                "en",
+                "ignore-words"
+            ]
+        }
+    ],
+    "ignorePaths": [
+        "node_modules/**",
+        ".ignore_words.txt",
+        "**/dist/**"
+    ]
+}

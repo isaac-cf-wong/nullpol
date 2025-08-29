@@ -189,3 +189,6 @@ debug.py
 config_local.ini
 *_local.ini
 local_config.*
+
+# Spellcheck files
+!.ignore_words.txt
