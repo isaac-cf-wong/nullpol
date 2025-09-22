@@ -1,6 +1,14 @@
 from __future__ import annotations
 
 
+# ======================================================================
+# UNUSED FUNCTIONS - LEGACY CODE
+# ======================================================================
+# The following functions are not currently used in the codebase but are
+# kept for potential future use or backwards compatibility. They are only
+# exported through the utils module but not actively utilized.
+
+
 def convert_string_to_float(string: str | None) -> float | None:
     """Convert string to float.
 

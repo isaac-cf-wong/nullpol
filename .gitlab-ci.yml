@@ -43,22 +43,39 @@ basic-3.11:
     - merge_requests
     - main
 
-basic-3.12:
-  <<: *test-python
-  image: python:3.12
-  only:
-    - merge_requests
-    - main
-
 # ------------- Code Quality Stage -------------
 
 .code-quality: &code-quality
   stage: code-quality
-  image: python:3.12
+  image: python:3.11
   script:
     - python -m pip install --upgrade pip setuptools wheel
     - python -m pip install .[test]
     - *list-env
+
+init-files-check:
+  <<: *code-quality
+  script:
+    - python -m pip install --upgrade pip setuptools wheel
+    - python -m pip install .[test]
+    - echo "Checking that auto-generated __init__.py files are up to date..."
+    - |
+      # Check if any files would be updated (use quiet mode for clean output)
+      DRY_RUN_OUTPUT=$(python scripts/auto_generate_init.py --dry-run --quiet)
+      if [ -n "$DRY_RUN_OUTPUT" ]; then
+        echo ""
+        echo "ERROR: Auto-generated __init__.py files are out of date!"
+        echo "Files that need updates:"
+        echo "$DRY_RUN_OUTPUT"
+        echo ""
+        echo "Please run 'python scripts/auto_generate_init.py' locally and commit the changes."
+        exit 1
+      else
+        echo "SUCCESS: All auto-generated __init__.py files are up to date"
+      fi
+  only:
+    - merge_requests
+    - main
 
 black-check:
   <<: *code-quality
@@ -114,19 +131,11 @@ python-3.11:
     - merge_requests
     - main
 
-python-3.12:
-  <<: *unit-test
-  needs: ["basic-3.12"]
-  image: python:3.12
-  only:
-    - merge_requests
-    - main
-
 # ------------- Coverage Report Summary -------------
 
 coverage-summary:
   stage: test
-  image: python:3.12
+  image: python:3.11
   script:
     - echo "Merging coverage reports"
     - python -m pip install --upgrade pip setuptools wheel
@@ -143,7 +152,6 @@ coverage-summary:
   needs:
     - job: python-3.10
     - job: python-3.11
-    - job: python-3.12
   only:
     - merge_requests
     - main

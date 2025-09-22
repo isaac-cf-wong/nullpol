@@ -114,10 +114,81 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-.DS_Store
 
-# Avoid output files from the package to be committed
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Ruff cache
+.ruff_cache/
+
+# PyPI configuration (contains sensitive tokens)
+.pypirc
+
+# Coverage configuration files (project-specific)
+.coveragerc
+
+# Development configuration and cache
+.pre-commit-cache/
+
+# VS Code settings (user-specific)
+.vscode/settings.json
+# But allow shared workspace config
+# .vscode/cspell.json - shared spelling config
+# .vscode/launch.json - shared debug config
+
+# Other IDEs
+.idea/
+
+# Temporary and backup files
+*.tmp
+*.bak
+*.old
+*.orig
+*.save
+*~
+
+# Development artifacts
+*.ipynb
+test.py
+scratch.py
+debug.py
+
+# Output/result files that shouldn't be committed
+# Allow example outputs but exclude development outputs
 *.png
 *.pdf
 *.jpg
 *.jpeg
+*.gif
+*.svg
+*.eps
+# But allow example outputs in specific directories
+!examples/**/outdir_*/**.png
+!examples/**/outdir_*/**.pdf
+!examples/**/outdir_*/**.jpg
+!examples/**/outdir_*/**.jpeg
+!examples/**/outdir_*/**.gif
+!examples/**/outdir_*/**.svg
+!examples/**/outdir_*/**.eps
+
+# Data files (often large and user-specific)
+*.h5
+*.hdf5
+*.dat
+*.txt
+*.csv
+!requirements*.txt
+!**/mock_*.txt
+!examples/**/*.txt
+
+# Log files
+*.log
+
+# Configuration files with sensitive data or user-specific paths
+config_local.ini
+*_local.ini
+local_config.*
+
+# Spellcheck files
+!.ignore_words.txt

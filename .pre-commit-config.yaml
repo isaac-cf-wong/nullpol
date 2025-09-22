@@ -17,25 +17,49 @@ repos:
       - id: requirements-txt-fixer
       - id: trailing-whitespace
 
+  - repo: local
+    hooks:
+      - id: auto-generate-init
+        name: Auto-generate __init__.py files
+        entry: python scripts/auto_generate_init.py
+        language: python
+        files: '^src/.*\.py$'
+        pass_filenames: false
+        description: "Auto-generate __init__.py files for leaf packages"
+        additional_dependencies: []
+
   - repo: https://github.com/psf/black-pre-commit-mirror
     rev: 25.1.0
     hooks:
       - id: black
-        files: ^src/
+        files: ^(src|tests)/
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.12.7
     hooks:
       - id: ruff
         args: ["--fix"]
-        files: ^src/
+        files: ^(src|tests)/
 
-  - repo: https://github.com/codespell-project/codespell
-    rev: v2.4.1
+  - repo: https://github.com/streetsidesoftware/cspell-cli
+    rev: v9.1.1 # Keep this version or update to the latest stable
     hooks:
-      - id: codespell
-        args: ["--ignore-words=.codespell-ignore.txt"]
-        files: "\\.py$"
+      - id: cspell
+        name: Check spelling in Python, reSt, and Markdown files.
+        args: ["--config", "cspell.json"]
+        files: ^.*\.(py|rst|md)$
+      - id: cspell
+        name: Check commit message spelling.
+        args:
+          - --config
+          - cspell.json
+          - --no-must-find-files
+          - --no-progress
+          - --no-summary
+          - --files
+          - .git/COMMIT_EDITMSG
+        stages: [commit-msg]
+        always_run: true
 
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
