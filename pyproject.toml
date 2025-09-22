@@ -33,13 +33,12 @@ dependencies = [
     "ConfigArgParse",
     "pycbc",
     "healpy",
-    "cbcflow",
     "h5py",
     "pandas",
 ]
 
 [project.optional-dependencies]
-asimov = ["asimov"]
+asimov = ["asimov", "cbcflow"]
 spark = ["pyspark>=3.0.0"]
 test = [
     "black==25.1.0",
