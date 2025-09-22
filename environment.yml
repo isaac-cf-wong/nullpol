@@ -1,5 +1,0 @@
-channels:
-    - conda-forge
-dependencies:
-    - python-nds2-client
-    - numpy=1.26.4
