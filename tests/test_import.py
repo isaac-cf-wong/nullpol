@@ -140,7 +140,7 @@ print('API design test passed')
         ],
         capture_output=True,
         text=True,
-        cwd="/Users/thomas.ng/Git/nullpol",
+        cwd=None,  # Use current working directory
     )
 
     if result.returncode != 0:
