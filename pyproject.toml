@@ -7,7 +7,7 @@ name = "nullpol"
 description = "A package to perform model-independent polarization test of gravitational-wave signals."
 authors = [
     { name = "Isaac C.F. Wong", email = "chunfung.wong@kuleuven.be" },
-    { name = "Thomas Ng" },
+    { name = "Thomas Ng", email = "thomas.ng@nikhef.nl" },
     { name = "Balázs Cirok" },
 ]
 readme = "README.rst"
