@@ -14,16 +14,6 @@
 `nullpol` is a Python package designed to facilitate model-agnostic tests of gravitational-wave polarizations.
 Built upon the robust parameter estimation capabilities of the [bilby](https://git.ligo.org/lscsoft/bilby) framework, nullpol seamlessly integrates with [bilby_pipe](https://git.ligo.org/lscsoft/bilby_pipe) to automate the workflow, enabling efficient and reproducible analyses.
 
-## Features
-
-- **Model-independent polarization tests** for gravitational-wave signals
-- **Seamless integration** with bilby and bilby_pipe frameworks
-- **Automated workflow** for parameter estimation and analysis
-- **Time-frequency filtering** capabilities
-- **Injection studies** for validation and testing
-- **Command-line interface** for easy usage
-- **Asimov integration** for HTCondor job management
-
 ## Installation
 
 ### From PyPI (recommended)
