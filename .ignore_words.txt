@@ -2,3 +2,6 @@ cbcflow
 codespell
 EDITMSG
 ND
+nullpol
+pypi
+rst
