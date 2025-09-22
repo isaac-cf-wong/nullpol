@@ -41,7 +41,7 @@ dependencies = [
 asimov = ["asimov", "cbcflow"]
 spark = ["pyspark>=3.0.0"]
 test = [
-    "black==25.1.0",
+    "black==25.9.0",
     "check-manifest==0.50",
     "pre-commit==4.1.0",
     "pytest-cov==6.0.0",
