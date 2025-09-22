@@ -10,7 +10,7 @@ authors = [
     { name = "Thomas Ng" },
     { name = "Balázs Cirok" },
 ]
-readme = "README.rst"
+readme = "README.md"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
