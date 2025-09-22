@@ -43,7 +43,7 @@ spark = ["pyspark>=3.0.0"]
 test = [
     "black==25.1.0",
     "check-manifest==0.50",
-    "pre-commit==4.1.0",
+    "pre-commit==4.3.0",
     "pytest-cov==6.0.0",
     "pytest-mock<3.15.2",
     "pytest==8.3.4",
