@@ -1,14 +1,7 @@
-# nullpol
+|pypi version| |license| |build status| |python version| |security| |documentation|
 
-[![PyPI version](https://badge.fury.io/py/nullpol.svg)](https://pypi.org/project/nullpol/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Build](https://git.ligo.org/bayesian-null-stream/nullpol/badges/main/pipeline.svg)](https://git.ligo.org/bayesian-null-stream/nullpol/-/pipelines)
-[![codecov](https://codecov.io/gh/username/package_name/branch/main/graph/badge.svg)](https://codecov.io/gh/username/package_name)
-[![Python Version](https://img.shields.io/pypi/pyversions/nullpol)](https://pypi.org/project/nullpol/)
-[![Security: bandit](https://img.shields.io/badge/security-bandit-yellow.svg)](https://github.com/PyCQA/bandit)
-[![Documentation Status](https://img.shields.io/badge/documentation-online-brightgreen)](https://groupname.gitlab.io/package_name/)
-[![DOI](https://zenodo.org/badge/ID.svg)](https://doi.org/DOI)
-
+nullpol
+=======
 
 .. |pipeline status| image:: https://git.ligo.org/bayesian-null-stream/nullpol/badges/main/pipeline.svg
    :target: https://git.ligo.org/bayesian-null-stream/nullpol/commits/main
