@@ -10,7 +10,7 @@ authors = [
     { name = "Thomas Ng", email = "thomas.ng@nikhef.nl" },
     { name = "Balázs Cirok" },
 ]
-readme = "README.rst"
+readme = "README.md"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -33,23 +33,22 @@ dependencies = [
     "ConfigArgParse",
     "pycbc",
     "healpy",
-    "cbcflow",
     "h5py",
     "pandas",
 ]
 
 [project.optional-dependencies]
-asimov = ["asimov"]
+asimov = ["asimov", "cbcflow"]
 spark = ["pyspark>=3.0.0"]
 test = [
-    "black==25.1.0",
+    "black==25.9.0",
     "check-manifest==0.50",
-    "pre-commit==4.1.0",
-    "pytest-cov==6.0.0",
-    "pytest-mock<3.14.1",
-    "pytest==8.3.4",
+    "pytest==8.4.2",
+    "pytest-cov==7.0.0",
+    "pre-commit==4.3.0",
+    "pytest-mock<3.15.2",
     "pytest-github-actions-annotate-failures",
-    "ruff==0.12.7",
+    "ruff==0.13.1",
 ]
 
 [project.urls]

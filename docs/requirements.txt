@@ -1,6 +1,6 @@
 autodoc
 graphviz
-html5lib==1.0b8  # Hack to ensure documentation generated
+html5lib==1.1  # Hack to ensure documentation generated
 nbsphinx
 numpydoc
 sphinx
