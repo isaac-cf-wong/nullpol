@@ -1,7 +1,15 @@
 from __future__ import annotations
 
-from .test_calculator import TestNullStreamCalculator, calculator_instance
+from .test_calculator import (
+    TestNullStreamCalculator,
+    calculator_instance,
+    simple_test_data,
+)
 from .test_projections import (
+    TestNullStreamProjection,
+    TestProjectorEdgeCases,
+    TestProjectorMasking,
+    TestProjectorSimpleExamples,
     setup_random_seed,
     test_compute_gw_projector_masked,
     test_projector_mathematical_properties,
@@ -10,8 +18,13 @@ from .test_projections import (
 
 __all__ = [
     "TestNullStreamCalculator",
+    "TestNullStreamProjection",
+    "TestProjectorEdgeCases",
+    "TestProjectorMasking",
+    "TestProjectorSimpleExamples",
     "calculator_instance",
     "setup_random_seed",
+    "simple_test_data",
     "test_compute_gw_projector_masked",
     "test_projector_mathematical_properties",
     "validate_projector_properties",
