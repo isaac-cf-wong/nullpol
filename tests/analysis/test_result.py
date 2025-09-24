@@ -31,36 +31,31 @@ def real_result_data():
     # Load real result and injection data
     real_result = bilby.core.result.read_in_result(result_file)
 
-    with open(injection_file, 'r') as f:
+    with open(injection_file, "r") as f:
         injection_data = json.load(f)
 
-    return {
-        'result': real_result,
-        'injection_data': injection_data
-    }
+    return {"result": real_result, "injection_data": injection_data}
 
 
 def test_result_module_import():
     """Test that result module can be imported."""
     assert result_module is not None
-    assert hasattr(result_module, 'PolarizationResult')
+    assert hasattr(result_module, "PolarizationResult")
 
 
 def test_polarization_result_initialization(real_result_data):
     """Test PolarizationResult initialization with real data."""
-    real_result = real_result_data['result']
+    real_result = real_result_data["result"]
 
     # Create PolarizationResult from real data using temporary directory
     with tempfile.TemporaryDirectory() as temp_dir:
         result = PolarizationResult(
-            label=real_result.label,
-            outdir=temp_dir,
-            samples=real_result.posterior,
-            meta_data=real_result.meta_data
+            label=real_result.label, outdir=temp_dir, samples=real_result.posterior, meta_data=real_result.meta_data
         )
 
         # Test inheritance
         from bilby.core.result import Result
+
         assert isinstance(result, Result)
         assert isinstance(result, PolarizationResult)
         assert result.label == real_result.label
@@ -69,14 +64,10 @@ def test_polarization_result_initialization(real_result_data):
 
 def test_real_injection_parameters(real_result_data):
     """Test access to real injection parameters."""
-    real_result = real_result_data['result']
-    injection_data = real_result_data['injection_data']
+    real_result = real_result_data["result"]
+    injection_data = real_result_data["injection_data"]
 
-    result = PolarizationResult(
-        label=real_result.label,
-        samples=real_result.posterior,
-        meta_data=real_result.meta_data
-    )
+    result = PolarizationResult(label=real_result.label, samples=real_result.posterior, meta_data=real_result.meta_data)
 
     # Test injection parameters from real data
     injection_params = result.meta_data["injection_parameters"]
@@ -90,13 +81,9 @@ def test_real_injection_parameters(real_result_data):
 
 def test_real_analysis_configuration(real_result_data):
     """Test access to real analysis configuration."""
-    real_result = real_result_data['result']
+    real_result = real_result_data["result"]
 
-    result = PolarizationResult(
-        label=real_result.label,
-        samples=real_result.posterior,
-        meta_data=real_result.meta_data
-    )
+    result = PolarizationResult(label=real_result.label, samples=real_result.posterior, meta_data=real_result.meta_data)
 
     # Real configuration is in command_line_args
     cmd_args = result.meta_data["command_line_args"]
@@ -110,12 +97,10 @@ def test_real_analysis_configuration(real_result_data):
 
 def test_properties_with_real_structure(real_result_data):
     """Test properties with real result structure (likelihood=None)."""
-    real_result = real_result_data['result']
+    real_result = real_result_data["result"]
 
     result = PolarizationResult(
-        label=real_result.label,
-        samples=real_result.posterior,
-        meta_data=real_result.meta_data  # Has likelihood=None
+        label=real_result.label, samples=real_result.posterior, meta_data=real_result.meta_data  # Has likelihood=None
     )
 
     # These should fail with TypeError since likelihood=None in real results
@@ -128,7 +113,7 @@ def test_properties_with_real_structure(real_result_data):
 
 def test_realistic_data_structure(real_result_data):
     """Test that example data has realistic GW analysis structure."""
-    real_result = real_result_data['result']
+    real_result = real_result_data["result"]
 
     # Verify posterior has expected parameters
     expected_params = ["dec", "geocent_time", "psi", "ra"]

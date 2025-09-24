@@ -16,7 +16,7 @@ __all__ = [
     "test_data_context",
     "test_result",
     "likelihood",
-    "null_stream", 
+    "null_stream",
     "clustering",
     "tf_transforms",
     "antenna_patterns",
