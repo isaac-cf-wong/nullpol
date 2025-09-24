@@ -6,7 +6,6 @@ of time-frequency transforms, using simple, hand-calculable examples.
 
 from __future__ import annotations
 
-import pytest
 
 from nullpol.analysis.tf_transforms.utils import get_shape_of_stft, get_shape_of_wavelet_transform
 
@@ -225,11 +224,11 @@ class TestParameterValidation:
         # Both should return valid positive integers
         assert wavelet_nt > 0 and wavelet_nf > 0
         assert stft_nt > 0 and stft_nf > 0
-        
+
         # Wavelet: Nf = 128/2/8 = 8, Nt = 1*128/8 = 16
         assert wavelet_nf == 8
         assert wavelet_nt == 16
-        
+
         # STFT: N = 128/8 = 16, segments = (128-16)//16 + 1 = 7+1 = 8, nf = 16//2+1 = 9
         assert stft_nt == 8
         assert stft_nf == 9
