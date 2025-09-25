@@ -71,6 +71,13 @@ line-length = 120
 max-line-length = 120
 exclude = ["docs"]
 
+[tool.pylint.messages_control]
+disable = [
+    "import-error",  # For optional dependencies like asimov, htcondor
+    "no-member",  # For scipy.special.betainc and dynamic attributes
+    "possibly-used-before-assignment"  # For variables that may be conditionally assigned
+]
+
 [tool.coverage.run]
 branch = true
 
