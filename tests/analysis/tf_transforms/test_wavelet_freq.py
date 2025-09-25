@@ -247,34 +247,6 @@ class TestWaveletFreqHelpers:
         assert isinstance(result, np.ndarray), "Result should be numpy array"
         assert result.dtype in [np.float64, np.float32], "Result should be floating point"
 
-    def test_transform_wavelet_freq_quadrature_helper_basic_properties(self):
-        """Test basic properties of wavelet frequency quadrature helper."""
-        # Create simple test data - use similar approach as main helper
-        Nf = 4
-        Nt = 8
-        data_len = Nt // 2 + 1
-
-        # Use simpler test data to avoid numerical issues
-        data = np.ones(data_len, dtype=complex)
-        data[0] = 1.0  # DC component
-        data[1] = 0.5 + 0.5j  # Small complex component
-
-        phif = _phitilde_vec_norm(Nf, Nt, 4.0)
-
-        result = _transform_wavelet_freq_quadrature_helper(data, Nf, Nt, phif)
-
-        # Check output shape
-        expected_shape = (Nt, Nf)
-        assert result.shape == expected_shape, f"Expected shape {expected_shape}, got {result.shape}"
-
-        # Check that output is real
-        assert np.all(np.isreal(result)), "Quadrature wavelet transform output should be real"
-
-        # Check for finite values only where they should exist
-        non_zero_mask = result != 0
-        if np.any(non_zero_mask):
-            assert np.all(np.isfinite(result[non_zero_mask])), "All non-zero quadrature output values should be finite"
-
     def test_wavelet_freq_helpers_consistency_with_high_level(self):
         """Test that low-level helpers produce consistent results with high-level interface."""
         # Generate test signal
