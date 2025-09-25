@@ -43,11 +43,11 @@ class TestClusteringAlgorithm:
         """Test neighbor extraction for an edge pixel with partial connectivity."""
         # Create 3x5 mask with all True values for testing edge pixel
         mask = np.ones((3, 5), dtype=bool)
-        
+
         # Top edge, middle position (0,2)
         neighbors = _get_neighbors(0, 2, mask)
         expected_neighbors = [(0, 1), (0, 3), (1, 1), (1, 2), (1, 3)]
-        
+
         assert len(neighbors) == 5, "Edge pixel should have 5 neighbors"
         assert set(neighbors) == set(expected_neighbors), "Should include only valid edge neighbors"
 
