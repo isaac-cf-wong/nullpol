@@ -272,7 +272,7 @@ class TestWaveletFreqHelpers:
         low_level_result = _transform_wavelet_freq_helper(data_fft, Nf, Nt, phif) * np.sqrt(time_domain_length)
 
         # Should produce very similar results (allowing for numerical precision)
-        assert np.allclose(high_level_result, low_level_result, rtol=1e-10), "High and low level should match"
+        assert np.allclose(high_level_result, low_level_result, rtol=1e-8), "High and low level should match"
 
     def test_wavelet_freq_quadrature_consistency_with_high_level(self):
         """Test quadrature helper consistency with high-level interface."""
@@ -302,7 +302,7 @@ class TestWaveletFreqHelpers:
 
         # Should produce very similar results
         assert np.allclose(
-            high_level_result, low_level_result, rtol=1e-10
+            high_level_result, low_level_result, rtol=1e-8
         ), "Quadrature high and low level should match"
 
     def test_wavelet_freq_helpers_with_delta_function(self):

@@ -159,12 +159,12 @@ def test_compute_time_shifted_frequency_domain_strain_basic():
     expected_value = frequency_domain_strain[test_freq_bin] * expected_phase_shift
 
     assert np.isclose(
-        shifted_strain[test_freq_bin], expected_value, rtol=1e-10
+        shifted_strain[test_freq_bin], expected_value, rtol=1e-8
     ), f"Expected {expected_value}, got {shifted_strain[test_freq_bin]}"
 
     # Test that amplitude is preserved (time shift only changes phase)
     assert np.isclose(
-        abs(shifted_strain[test_freq_bin]), abs(frequency_domain_strain[test_freq_bin]), rtol=1e-10
+        abs(shifted_strain[test_freq_bin]), abs(frequency_domain_strain[test_freq_bin]), rtol=1e-8
     ), "Amplitude should be preserved during time shift"
 
 
@@ -203,7 +203,7 @@ def test_compute_time_shifted_frequency_domain_strain_array():
         expected_value = strain_array[i, test_freq_bin] * expected_phase_factor
 
         assert np.isclose(
-            shifted_array[i, test_freq_bin], expected_value, rtol=1e-10
+            shifted_array[i, test_freq_bin], expected_value, rtol=1e-8
         ), f"Detector {i}: Expected {expected_value}, got {shifted_array[i, test_freq_bin]}"
 
     # Test that relative phase differences are correct

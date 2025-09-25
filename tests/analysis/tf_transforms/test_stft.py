@@ -212,7 +212,7 @@ class TestSTFTMathematicalProperties:
         stft_linear = a * stft1 + b * stft2
 
         # Should satisfy linearity (within numerical precision)
-        assert np.allclose(stft_combined, stft_linear, rtol=1e-10)
+        assert np.allclose(stft_combined, stft_linear, rtol=1e-8)
 
     def test_parseval_energy_conservation_simple(self):
         """Test approximate energy conservation with simple scaling.

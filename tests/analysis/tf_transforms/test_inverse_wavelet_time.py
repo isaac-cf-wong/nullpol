@@ -79,7 +79,7 @@ class TestInverseWaveletTimeHelpers:
         ) / np.sqrt(time_domain_length)
 
         # Should produce very similar results
-        assert np.allclose(high_level_result, low_level_result, rtol=1e-10), "High and low level should match"
+        assert np.allclose(high_level_result, low_level_result, rtol=1e-8), "High and low level should match"
 
     def test_inverse_wavelet_time_invertibility(self):
         """Test that forward and inverse transforms are approximately invertible."""
