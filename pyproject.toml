@@ -65,6 +65,7 @@ fast = true
 
 [tool.ruff]
 exclude = ["docs"]
+line-length = 120
 
 [tool.coverage.run]
 branch = true
