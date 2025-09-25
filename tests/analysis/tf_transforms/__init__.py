@@ -1,5 +1,13 @@
 from __future__ import annotations
 
+from .test_inverse_wavelet_freq import (
+    TestInverseWaveletFreqHelpers,
+    TestInverseWaveletFreqPackingHelpers,
+)
+from .test_inverse_wavelet_time import (
+    TestInverseWaveletTimeHelpers,
+    TestInverseWaveletTimePackingHelpers,
+)
 from .test_stft import (
     TestSTFTEdgeCases,
     TestSTFTMathematicalProperties,
@@ -11,6 +19,11 @@ from .test_utils import (
     TestSTFTShape,
     TestWaveletTransformShape,
 )
+from .test_wavelet_freq import (
+    TestPhitildeVecFunctions,
+    TestTukeyWindow,
+    TestWaveletFreqHelpers,
+)
 from .test_wavelet_time import (
     TestAssignWdata,
     TestPackWave,
@@ -18,30 +31,28 @@ from .test_wavelet_time import (
     TestTransformWaveletTimeHelper,
     TestWaveletTimeIntegration,
 )
-from .test_wavelet_transforms import (
-    setup_random_seeds,
-    test_inverse_wavelet_freq_time,
-    test_inverse_wavelet_time,
-    test_wavelet_transform_of_sine_wave,
-    test_whitened_wavelet_domain_data,
-)
+from .test_wavelet_transforms import TestWaveletTransformIntegration, setup_random_seeds
 
 __all__ = [
     "TestAssignWdata",
+    "TestInverseWaveletFreqHelpers",
+    "TestInverseWaveletFreqPackingHelpers",
+    "TestInverseWaveletTimeHelpers",
+    "TestInverseWaveletTimePackingHelpers",
     "TestPackWave",
     "TestParameterValidation",
     "TestPhiVec",
+    "TestPhitildeVecFunctions",
     "TestSTFTEdgeCases",
     "TestSTFTMathematicalProperties",
     "TestSTFTShape",
     "TestSTFTSimpleExamples",
     "TestSTFTWindowFunctions",
     "TestTransformWaveletTimeHelper",
+    "TestTukeyWindow",
+    "TestWaveletFreqHelpers",
     "TestWaveletTimeIntegration",
+    "TestWaveletTransformIntegration",
     "TestWaveletTransformShape",
     "setup_random_seeds",
-    "test_inverse_wavelet_freq_time",
-    "test_inverse_wavelet_time",
-    "test_wavelet_transform_of_sine_wave",
-    "test_whitened_wavelet_domain_data",
 ]
