@@ -10,6 +10,7 @@ import numpy as np
 import pytest
 import scipy.stats
 from tqdm import tqdm
+from unittest.mock import Mock
 
 import bilby
 from bilby.core.utils import logger
@@ -464,3 +465,56 @@ def test_signal_pc_c_residual_energy_incorrect_parameters(
     assert (
         result.pvalue < 0.05
     ), f"Log likelihoods should deviate from the expected logpdf distribution (p = {result.pvalue})"
+
+
+class TestChi2TimeFrequencyLikelihoodEdgeCases:
+    """Test edge cases and error conditions for Chi2TimeFrequencyLikelihood."""
+
+    def test_dof_error_when_filter_is_none(self):
+        """Test DoF property raises error when time_frequency_filter is None."""
+        # Create a mock likelihood instance to test the DoF property error case
+        likelihood = Chi2TimeFrequencyLikelihood.__new__(Chi2TimeFrequencyLikelihood)
+
+        # Mock the components to isolate the DoF property test
+        likelihood.antenna_pattern_processor = Mock()
+        likelihood.antenna_pattern_processor.polarization_basis = np.array([0, 1])  # Example basis
+
+        likelihood.data_context = Mock()
+        likelihood.data_context.time_frequency_filter = None  # This should trigger the error
+
+        # Mock interferometers through data_context since it's a property
+        mock_interferometers = Mock()
+        mock_interferometers.__len__ = Mock(return_value=2)
+        likelihood.data_context.interferometers = mock_interferometers
+
+        # Test that accessing DoF raises ValueError when filter is None
+        with pytest.raises(ValueError, match="Time frequency filter is not available"):
+            _ = likelihood.DoF
+
+    def test_calculate_noise_log_likelihood_missing_strain_array(self):
+        """Test _calculate_noise_log_likelihood raises error when strain array is None."""
+        # Create a mock likelihood instance to test error condition
+        likelihood = Chi2TimeFrequencyLikelihood.__new__(Chi2TimeFrequencyLikelihood)
+
+        # Mock data_context with missing strain array
+        likelihood.data_context = Mock()
+        likelihood.data_context.whitened_frequency_domain_strain_array = None  # Missing strain
+        likelihood.data_context.time_frequency_filter = np.ones((2, 2))  # Filter exists
+
+        # Test that _calculate_noise_log_likelihood raises ValueError
+        with pytest.raises(ValueError, match="Whitened frequency domain strain array is not available"):
+            likelihood._calculate_noise_log_likelihood()
+
+    def test_calculate_noise_log_likelihood_missing_filter(self):
+        """Test _calculate_noise_log_likelihood raises error when filter is None."""
+        # Create a mock likelihood instance to test error condition
+        likelihood = Chi2TimeFrequencyLikelihood.__new__(Chi2TimeFrequencyLikelihood)
+
+        # Mock data_context with missing filter
+        likelihood.data_context = Mock()
+        likelihood.data_context.whitened_frequency_domain_strain_array = np.array([[1 + 1j, 2 + 2j]])  # Strain exists
+        likelihood.data_context.time_frequency_filter = None  # Missing filter
+
+        # Test that _calculate_noise_log_likelihood raises ValueError
+        with pytest.raises(ValueError, match="Time frequency filter is not available"):
+            likelihood._calculate_noise_log_likelihood()
