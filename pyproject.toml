@@ -25,7 +25,7 @@ dependencies = [
     "matplotlib",
     "numpy",
     "bilby",
-    "bilby_pipe<=1.6.0",
+    "bilby_pipe<=1.7.0",
     "gwpy",
     "numba>=0.56",
     "rocket-fft",
