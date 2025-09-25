@@ -67,6 +67,10 @@ fast = true
 exclude = ["docs"]
 line-length = 120
 
+[tool.flake8]
+max-line-length = 120
+exclude = ["docs"]
+
 [tool.coverage.run]
 branch = true
 
