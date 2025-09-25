@@ -319,7 +319,6 @@ class TestInverseWaveletFreqPackingHelpers:
         """Test pack/unpack helpers with boundary frequency indices."""
         Nt = 8
         Nf = 4
-        ND = Nt * Nf
 
         # Create simple test data with some variation
         wave_in = np.random.normal(0, 0.1, (Nt, Nf))
