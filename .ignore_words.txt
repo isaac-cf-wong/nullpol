@@ -23,6 +23,7 @@ codespell
 colorbar
 configfile
 copybutton
+corrcoef
 cpus
 currentmodule
 cylon
@@ -41,6 +42,8 @@ genindex
 geocent
 geocenter
 gwpy
+Hann
+hann
 hanning
 healpy
 healpix
