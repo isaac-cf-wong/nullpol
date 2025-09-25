@@ -1,12 +1,22 @@
+# pylint: disable=duplicate-code  # Legitimate shared calibration configuration patterns
 from __future__ import annotations
 
 import signal
 import sys
 from argparse import Namespace
 
+import numpy as np
+
+# Configure matplotlib backend before importing libraries that use it
+# fmt: off
+import matplotlib  # isort:skip
+matplotlib.use("agg")
+# fmt: on
+
+# Imports below must be after matplotlib backend configuration
+# pylint: disable=wrong-import-position
 import bilby
 import bilby_pipe.utils
-import numpy as np
 from bilby_pipe.data_analysis import DataAnalysisInput as BInput
 from bilby_pipe.main import parse_args
 from bilby_pipe.utils import CHECKPOINT_EXIT_CODE
@@ -19,22 +29,22 @@ from ..utils import NullpolError, logger
 from .input import Input
 from .parser import create_nullpol_parser
 
-# fmt: off
-import matplotlib  # isort:skip
-matplotlib.use("agg")
-# fmt: on
+# pylint: enable=wrong-import-position
+
 bilby_pipe.utils.logger = logger
 
 
-def sighandler(signum, frame):
+def sighandler(signum, frame):  # pylint: disable=unused-argument
     logger.info("Performing periodic eviction")
     sys.exit(CHECKPOINT_EXIT_CODE)
 
 
+# pylint: disable=too-many-instance-attributes
 class DataAnalysisInput(BInput, Input):
     """Handles user-input for the data analysis script."""
 
     def __init__(self, args: Namespace, unknown_args: list, test: bool = False):
+        # pylint: disable=super-init-not-called  # Using Input.__init__ directly for clarity
         """Initializer.
 
         Args:
@@ -173,7 +183,7 @@ class DataAnalysisInput(BInput, Input):
 
     def _add_default_relative_polarization_prior(self):
         # Encode the polarization modes
-        polarization_modes, polarization_basis, polarization_derived = encode_polarization(
+        _polarization_modes, polarization_basis, polarization_derived = encode_polarization(
             self.polarization_modes, self.polarization_basis
         )
 
@@ -189,9 +199,9 @@ class DataAnalysisInput(BInput, Input):
                 prior_remove_list.append(prior)
 
         # Remove the redundant parameters
-        for i in range(len(prior_remove_list)):
-            logger.info(f"Removed irrelevant prior: {self.priors[prior_remove_list[i]]}")
-            self.priors.pop(prior_remove_list[i])
+        for prior_key in prior_remove_list:
+            logger.info(f"Removed irrelevant prior: {self.priors[prior_key]}")
+            self.priors.pop(prior_key)
 
         # Add missing prior
         missing_priors = {}
@@ -240,7 +250,7 @@ class DataAnalysisInput(BInput, Input):
         )
 
 
-def create_analysis_parser(usage=__doc__):
+def create_analysis_parser():
     """Data analysis parser creation"""
     return create_nullpol_parser(top_level=False)
 
@@ -249,7 +259,7 @@ def main():
     """Data analysis main logic"""
     args, unknown_args = parse_args(
         sys.argv[1:],
-        create_analysis_parser(usage=__doc__),
+        create_analysis_parser(),
     )
     log_version_information()
     analysis = DataAnalysisInput(args, unknown_args)

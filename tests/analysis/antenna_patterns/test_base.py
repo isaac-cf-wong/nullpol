@@ -107,7 +107,7 @@ def test_get_antenna_pattern_known_values():
     predicted based on detector geometry and source location.
     """
     # Create a simple test interferometer
-    from bilby.gw.detector import get_empty_interferometer
+    from bilby.gw.detector import get_empty_interferometer  # pylint: disable=import-outside-toplevel
 
     # Get H1 interferometer (we know its orientation and location)
     h1 = get_empty_interferometer("H1")
@@ -153,7 +153,7 @@ def test_get_antenna_pattern_matrix_symmetry():
     and polarization mode relationships.
     """
     # Create a two-detector network for simpler testing
-    from bilby.gw.detector import InterferometerList
+    from bilby.gw.detector import InterferometerList  # pylint: disable=import-outside-toplevel
 
     ifos = InterferometerList(["H1", "L1"])
 

@@ -19,11 +19,11 @@ import tempfile
 
 import pytest
 import numpy as np
+import bilby
 
 # Import result module and PolarizationResult class
 import nullpol.analysis.result as result_module
 from nullpol.analysis.result import PolarizationResult
-import bilby
 
 
 # =============================================================================
@@ -107,7 +107,7 @@ class TestBasicFunctionality:
         assert hasattr(result_module, "PolarizationResult")
 
         # Verify module is accessible through analysis package
-        import nullpol.analysis
+        import nullpol.analysis  # pylint: disable=import-outside-toplevel
 
         assert hasattr(nullpol.analysis, "result")
         assert getattr(nullpol.analysis, "result") is result_module
@@ -125,7 +125,7 @@ class TestBasicFunctionality:
             )
 
             # Test inheritance hierarchy
-            from bilby.core.result import Result
+            from bilby.core.result import Result  # pylint: disable=import-outside-toplevel
 
             assert isinstance(result, Result)
             assert isinstance(result, PolarizationResult)

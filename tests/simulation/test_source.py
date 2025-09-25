@@ -263,7 +263,7 @@ class TestSourceModuleStructure:
 
     def test_source_module_imports(self):
         """Test that the source module can be imported and has expected attributes."""
-        import nullpol.simulation.source as source_module
+        import nullpol.simulation.source as source_module  # pylint: disable=import-outside-toplevel
 
         assert source_module is not None
         assert hasattr(source_module, "lal_binary_black_hole_non_gr_simple_map")
@@ -282,7 +282,7 @@ class TestSourceModuleStructure:
 
     def test_function_signature(self):
         """Test that the function has the expected signature."""
-        import inspect
+        import inspect  # pylint: disable=import-outside-toplevel
 
         sig = inspect.signature(lal_binary_black_hole_non_gr_simple_map)
         params = list(sig.parameters.keys())

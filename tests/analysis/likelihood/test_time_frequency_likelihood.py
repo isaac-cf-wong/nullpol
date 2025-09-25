@@ -1,8 +1,8 @@
 """Tests for time_frequency_likelihood module."""
 
-import pytest
 from unittest.mock import patch
 
+import pytest
 
 from nullpol.analysis.likelihood.time_frequency_likelihood import TimeFrequencyLikelihood
 

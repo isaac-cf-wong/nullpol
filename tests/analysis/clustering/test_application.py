@@ -6,9 +6,10 @@ and mock data to ensure the pipeline works correctly.
 
 from __future__ import annotations
 
+from unittest.mock import Mock, patch
+
 import numpy as np
 import pytest
-from unittest.mock import Mock, patch
 
 from nullpol.analysis.clustering.application import run_time_frequency_clustering
 from nullpol.utils import NullpolError
@@ -410,7 +411,7 @@ class TestRunTimeFrequencyClustering:
             assert kwargs["padding_time"] == 0.15, "Time padding should be forwarded"
             assert kwargs["padding_freq"] == 2.5, "Frequency padding should be forwarded"
 
-    def test_edge_case_single_interferometer(self, simple_strain_data, simple_skypoints):
+    def test_edge_case_single_interferometer(self, simple_skypoints):
         """Test behavior with single interferometer."""
         # Single interferometer
         single_interferometer = Mock()

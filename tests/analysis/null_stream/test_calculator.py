@@ -6,9 +6,10 @@ for computing null projections and energies using simple examples.
 
 from __future__ import annotations
 
+from unittest.mock import patch
+
 import numpy as np
 import pytest
-from unittest.mock import patch
 
 from nullpol.analysis.null_stream.calculator import NullStreamCalculator
 
@@ -196,7 +197,7 @@ class TestNullStreamCalculator:
 
     def test_method_signature_completeness(self, calculator_instance):
         """Test that compute_null_energy has the expected signature."""
-        import inspect
+        import inspect  # pylint: disable=import-outside-toplevel
 
         sig = inspect.signature(calculator_instance.compute_null_energy)
         param_names = list(sig.parameters.keys())

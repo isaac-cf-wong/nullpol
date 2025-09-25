@@ -6,11 +6,12 @@ domain analysis.
 
 from __future__ import annotations
 
+from unittest.mock import Mock
+
 import numpy as np
 import pytest
 import scipy.stats
 from tqdm import tqdm
-from unittest.mock import Mock
 
 import bilby
 from bilby.core.utils import logger
@@ -159,7 +160,7 @@ def test_noise_residual_energy(configuration: dict, time_frequency_filter: np.nd
     logL_samples = []
     n_samples = 200
 
-    for i in tqdm(range(n_samples), desc="test_noise_residual_energy"):
+    for _i in tqdm(range(n_samples), desc="test_noise_residual_energy"):
         # Create a noise injection
         interferometers = InterferometerList(["H1", "L1", "V1"])
         create_injection(
@@ -222,7 +223,7 @@ def test_signal_residual_energy(configuration: dict, time_frequency_filter: np.n
     logL_samples = []
     n_samples = 200
 
-    for i in tqdm(range(n_samples), desc="test_signal_residual_energy"):
+    for _i in tqdm(range(n_samples), desc="test_signal_residual_energy"):
         # Create a noise injection
         interferometers = InterferometerList(["H1", "L1", "V1"])
         create_injection(
@@ -287,7 +288,7 @@ def test_signal_residual_energy_incorrect_parameters(configuration: dict, time_f
     logL_samples = []
     n_samples = 200
 
-    for i in tqdm(range(n_samples), desc="test_signal_residual_energy_incorrect_parameters"):
+    for _i in tqdm(range(n_samples), desc="test_signal_residual_energy_incorrect_parameters"):
         # Create a noise injection
         interferometers = InterferometerList(["H1", "L1", "V1"])
         create_injection(
@@ -355,7 +356,7 @@ def test_signal_pc_c_residual_energy(configuration: dict, time_frequency_filter:
     n_samples = 200
     frequency_domain_source_model = lal_binary_black_hole
     waveform_arguments = dict(waveform_approximant="IMRPhenomPv2", reference_frequency=50)
-    for i in tqdm(range(n_samples), desc="test_signal_pc_p_residual_energy"):
+    for _i in tqdm(range(n_samples), desc="test_signal_pc_p_residual_energy"):
         # Create a noise injection
         interferometers = InterferometerList(["H1", "L1", "V1"])
         create_injection(
@@ -428,7 +429,7 @@ def test_signal_pc_c_residual_energy_incorrect_parameters(
     n_samples = 200
     frequency_domain_source_model = lal_binary_black_hole
     waveform_arguments = dict(waveform_approximant="IMRPhenomPv2", reference_frequency=50)
-    for i in tqdm(range(n_samples), desc="test_signal_pc_p_residual_energy_incorrect_parameters"):
+    for _i in tqdm(range(n_samples), desc="test_signal_pc_p_residual_energy_incorrect_parameters"):
         # Create a noise injection
         interferometers = InterferometerList(["H1", "L1", "V1"])
         create_injection(

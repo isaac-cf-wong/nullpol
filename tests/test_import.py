@@ -4,6 +4,8 @@ This module validates that all core package modules can be imported correctly
 and that CLI command-line interfaces work as expected in the installed environment.
 """
 
+# pylint: disable=import-outside-toplevel  # Testing import functionality requires imports inside functions
+
 import subprocess
 
 import pytest
@@ -12,7 +14,7 @@ import pytest
 @pytest.mark.integration
 def test_nullpol_import():
     """Test that the main nullpol package can be imported without errors."""
-    import nullpol  # noqa: F401
+    import nullpol  # noqa: F401  # pylint: disable=unused-import
 
 
 def test_core_module_imports():
@@ -31,25 +33,25 @@ def test_core_module_imports():
 @pytest.mark.integration
 def test_simulation_import():
     """Test that simulation modules can be imported without errors."""
-    import nullpol.simulation  # noqa: F401
+    import nullpol.simulation  # noqa: F401  # pylint: disable=unused-import
 
 
 @pytest.mark.integration
 def test_analysis_import():
     """Test that analysis modules can be imported without errors."""
-    import nullpol.analysis  # noqa: F401
+    import nullpol.analysis  # noqa: F401  # pylint: disable=unused-import
 
 
 @pytest.mark.integration
 def test_utils_import():
     """Test that utility modules can be imported without errors."""
-    import nullpol.utils  # noqa: F401
+    import nullpol.utils  # noqa: F401  # pylint: disable=unused-import
 
 
 @pytest.mark.integration
 def test_cli_module_import():
     """Test that CLI modules can be imported without errors."""
-    import nullpol.cli  # noqa: F401
+    import nullpol.cli  # noqa: F401  # pylint: disable=unused-import
 
 
 @pytest.mark.integration

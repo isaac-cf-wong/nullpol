@@ -9,10 +9,10 @@ from __future__ import annotations
 import json
 import os
 import tempfile
+from importlib.resources import files
 from unittest import mock
 
 import pytest
-from importlib.resources import files
 
 from nullpol.cli.create_time_frequency_filter_from_sample import main
 

@@ -6,9 +6,10 @@ and mocked matplotlib to ensure plots are created correctly.
 
 from __future__ import annotations
 
+from unittest.mock import Mock, patch
+
 import numpy as np
 import pytest
-from unittest.mock import Mock, patch
 
 from nullpol.analysis.clustering.plotting import plot_spectrogram, plot_reverse_cumulative_distribution
 
@@ -32,7 +33,9 @@ class TestPlotSpectrogram:
     @patch("nullpol.analysis.clustering.plotting.get_shape_of_wavelet_transform")
     @patch("nullpol.analysis.clustering.plotting.Spectrogram")
     @patch("nullpol.analysis.clustering.plotting.plt")
-    def test_basic_spectrogram_plot(self, mock_plt, mock_spectrogram_class, mock_get_shape, simple_spectrogram_data):
+    def test_basic_spectrogram_plot(
+        self, mock_plt, mock_spectrogram_class, mock_get_shape, simple_spectrogram_data
+    ):  # pylint: disable=unused-argument
         """Test basic spectrogram plotting functionality."""
         # Mock the wavelet transform shape
         mock_get_shape.return_value = (4, 8)  # 4 time bins, 8 freq bins
@@ -80,7 +83,11 @@ class TestPlotSpectrogram:
     @patch("nullpol.analysis.clustering.plotting.Spectrogram")
     @patch("nullpol.analysis.clustering.plotting.plt")
     def test_spectrogram_with_frequency_range(
-        self, mock_plt, mock_spectrogram_class, mock_get_shape, simple_spectrogram_data
+        self,
+        mock_plt,
+        mock_spectrogram_class,
+        mock_get_shape,
+        simple_spectrogram_data,  # pylint: disable=unused-argument
     ):
         """Test spectrogram plotting with frequency range limits."""
         # Mock setup
@@ -110,7 +117,11 @@ class TestPlotSpectrogram:
     @patch("nullpol.analysis.clustering.plotting.Spectrogram")
     @patch("nullpol.analysis.clustering.plotting.plt")
     def test_spectrogram_without_frequency_range(
-        self, mock_plt, mock_spectrogram_class, mock_get_shape, simple_spectrogram_data
+        self,
+        mock_plt,
+        mock_spectrogram_class,
+        mock_get_shape,
+        simple_spectrogram_data,  # pylint: disable=unused-argument
     ):
         """Test spectrogram plotting without frequency range (should not call set_ylim)."""
         # Mock setup
@@ -198,7 +209,9 @@ class TestPlotSpectrogram:
     @patch("nullpol.analysis.clustering.plotting.get_shape_of_wavelet_transform")
     @patch("nullpol.analysis.clustering.plotting.Spectrogram")
     @patch("nullpol.analysis.clustering.plotting.plt")
-    def test_spectrogram_dt_calculation(self, mock_plt, mock_spectrogram_class, mock_get_shape):
+    def test_spectrogram_dt_calculation(
+        self, mock_plt, mock_spectrogram_class, mock_get_shape
+    ):  # pylint: disable=unused-argument
         """Test that dt (time resolution) is calculated correctly."""
         # Create specific test data
         test_data = np.ones((8, 4))  # 8 time bins, 4 freq bins

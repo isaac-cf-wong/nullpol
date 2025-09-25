@@ -25,9 +25,9 @@ class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
         wavelet_frequency_resolution,
         wavelet_nx,
         polarization_modes,
+        *args,
         polarization_basis=None,
         time_frequency_filter=None,
-        *args,
         **kwargs,
     ):
         super().__init__(

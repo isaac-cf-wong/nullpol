@@ -35,10 +35,10 @@ class TimeFrequencyLikelihood(Likelihood):
         wavelet_frequency_resolution,
         wavelet_nx,
         polarization_modes,
+        *args,  # pylint: disable=unused-argument
         polarization_basis=None,
         time_frequency_filter=None,
-        *args,
-        **kwargs,
+        **kwargs,  # pylint: disable=unused-argument
     ):
         super().__init__(dict())
 

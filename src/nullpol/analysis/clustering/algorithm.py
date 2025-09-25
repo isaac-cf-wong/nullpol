@@ -59,7 +59,7 @@ def _dfs(i, j, mask, visited):
     return cluster
 
 
-def clustering(filter, dt, df, padding_time=0.1, padding_freq=10, **kwargs):
+def clustering(tf_filter, dt, df, padding_time=0.1, padding_freq=10):
     """Find the largest connected cluster in a time-frequency filter and apply padding.
 
     This function identifies connected components in a time-frequency filter using
@@ -73,7 +73,7 @@ def clustering(filter, dt, df, padding_time=0.1, padding_freq=10, **kwargs):
     4. Returns a mask covering the padded region
 
     Args:
-        filter (numpy.ndarray): 2D mask of shape (n_time, n_freq) where True
+        tf_filter (numpy.ndarray): 2D mask of shape (n_time, n_freq) where True
             indicates pixels of interest (e.g., excess power regions).
         dt (float): Time resolution in seconds. Used to convert padding_time to pixel units.
         df (float): Frequency resolution in Hz. Used to convert padding_freq to pixel units.
@@ -95,16 +95,16 @@ def clustering(filter, dt, df, padding_time=0.1, padding_freq=10, **kwargs):
     """
 
     # find clusters
-    visited = np.zeros(filter.shape, dtype=np.uint8)
+    visited = np.zeros(tf_filter.shape, dtype=np.uint8)
     clusters = []
-    for i in range(filter.shape[0]):
-        for j in range(filter.shape[1]):
-            if filter[i, j] and not visited[i, j]:
-                clusters.append(_dfs(i, j, filter, visited))
+    for i in range(tf_filter.shape[0]):
+        for j in range(tf_filter.shape[1]):
+            if tf_filter[i, j] and not visited[i, j]:
+                clusters.append(_dfs(i, j, tf_filter, visited))
 
     # find the largest cluster
     largest_cluster = max(clusters, key=len)
-    mask = np.zeros(filter.shape, dtype=np.uint8)
+    mask = np.zeros(tf_filter.shape, dtype=np.uint8)
     for i, j in largest_cluster:
         mask[i, j] = 1
 

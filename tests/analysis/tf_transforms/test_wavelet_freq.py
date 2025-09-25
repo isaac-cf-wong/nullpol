@@ -4,6 +4,8 @@ This module tests the wavelet frequency transform implementation
 using simple, verifiable examples and mathematical validation.
 """
 
+# pylint: disable=import-outside-toplevel  # Testing functionality requires imports in test functions
+
 from __future__ import annotations
 
 import numpy as np

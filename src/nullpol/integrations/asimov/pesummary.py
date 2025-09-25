@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import os
 
-import htcondor
-from asimov import config, utils
-from asimov.pipeline import PostPipeline
+import htcondor  # pylint: disable=import-error
+from asimov import config, utils  # pylint: disable=import-error
+from asimov.pipeline import PostPipeline  # pylint: disable=import-error
 
 
+# pylint: disable=too-few-public-methods
 class PESummaryPipeline(PostPipeline):
     """
     A postprocessing pipeline add-in using PESummary.
@@ -158,13 +159,13 @@ class PESummaryPipeline(PostPipeline):
 
             with utils.set_directory(self.production.rundir):
                 with open("pesummary.sub", "w") as subfile:
-                    subfile.write(hostname_job.__str__())
+                    subfile.write(str(hostname_job))
 
             try:
                 # There should really be a specified submit node, and if there is, use it.
                 schedulers = htcondor.Collector().locate(htcondor.DaemonTypes.Schedd, config.get("condor", "scheduler"))
                 schedd = htcondor.Schedd(schedulers)
-            except Exception:
+            except Exception:  # pylint: disable=broad-exception-caught
                 # If you can't find a specified scheduler, use the first one you find
                 schedd = htcondor.Schedd()
             with schedd.transaction() as txn:

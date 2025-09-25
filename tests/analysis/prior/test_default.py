@@ -137,7 +137,7 @@ class TestPolarizationPriorDict:
 
     def test_inheritance_from_prior_dict(self):
         """Test that PolarizationPriorDict properly inherits from PriorDict."""
-        from bilby.core.prior.dict import PriorDict
+        from bilby.core.prior.dict import PriorDict  # pylint: disable=import-outside-toplevel
 
         priors = PolarizationPriorDict()
         assert isinstance(priors, PriorDict)
@@ -206,7 +206,7 @@ class TestPolarizationPriorDict:
 
     def test_mixed_prior_types(self):
         """Test initialization with different types of priors."""
-        from bilby.core.prior import DeltaFunction, LogUniform
+        from bilby.core.prior import DeltaFunction, LogUniform  # pylint: disable=import-outside-toplevel
 
         mixed_priors = {
             "uniform_param": Uniform(0, 1, name="uniform_param"),

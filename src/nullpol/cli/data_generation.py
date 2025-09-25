@@ -26,6 +26,7 @@ from .parser import create_nullpol_parser
 bilby_pipe.utils.logger = logger
 
 
+# pylint: disable=too-many-instance-attributes
 class DataGenerationInput(BilbyDataGenerationInput, Input):
     """Handles user-input for the data generation script.
 
@@ -36,6 +37,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
     """
 
     def __init__(self, args: Namespace, unknown_args: list, create_data: bool = True):
+        # pylint: disable=super-init-not-called  # Using Input.__init__ directly for clarity
         Input.__init__(self, args, unknown_args)
 
         # Generic initialization
@@ -192,12 +194,12 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
     def _get_interferometers_from_injection_in_gaussian_noise(self):
         # Copy the interferometers
         interferometers = bilby.gw.detector.InterferometerList([ifo.name for ifo in self.interferometers])
-        for i in range(len(interferometers)):
+        for i, interferometer in enumerate(interferometers):
             power_spectral_density = bilby.gw.detector.PowerSpectralDensity(
                 frequency_array=self.interferometers[i].frequency_array.copy(),
                 psd_array=self.interferometers[i].power_spectral_density_array.copy(),
             )
-            interferometers[i].power_spectral_density = power_spectral_density
+            interferometer.power_spectral_density = power_spectral_density
         injection_parameters = self.injection_df.iloc[self.idx].to_dict()
         # Set the strain data from zero noise.
         interferometers.set_strain_data_from_zero_noise(
@@ -220,6 +222,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
         return interferometers
 
     def run_time_frequency_clustering(self):
+        # pylint: disable=too-many-nested-blocks
         logger.info(f"Running time-frequency clustering with method: {self.time_frequency_clustering_method}")
         # Build the strain data for time-frequency clustering
         if self.time_frequency_clustering_method in [
@@ -264,7 +267,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
                         posterior = bilby.core.result.read_in_result(
                             self.time_frequency_clustering_pe_samples_filename
                         ).posterior
-                    except Exception:
+                    except Exception:  # pylint: disable=broad-exception-caught
                         logger.warning("Trying to read the posterior as a .h5 file.")
                         with h5py.File(self.time_frequency_clustering_pe_samples_filename, "r") as f:
                             posterior = pd.DataFrame(
@@ -315,8 +318,8 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
                 logger.info("Generating zero-noise injection data")
                 ifos = bilby.gw.detector.InterferometerList([ifo.name for ifo in self.interferometers])
                 # Copy the power spectral density
-                for i in range(len(ifos)):
-                    ifos[i].power_spectral_density = self.interferometers[i].power_spectral_density
+                for i, ifo in enumerate(ifos):
+                    ifo.power_spectral_density = self.interferometers[i].power_spectral_density
                 ifos.set_strain_data_from_zero_noise(
                     sampling_frequency=self.sampling_frequency, duration=self.duration, start_time=self.start_time
                 )

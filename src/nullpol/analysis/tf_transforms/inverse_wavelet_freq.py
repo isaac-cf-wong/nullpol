@@ -46,7 +46,7 @@ def _unpack_wave_inverse(
         fft_prefactor2s (numpy.ndarray): 1D numpy array prefactors of FFT.
         res (numpy.ndarray): 1D numpy array for results.
     """
-    if m == 0 or m == Nf:
+    if m in (0, Nf):
         for i_ind in range(0, Nt // 2):
             i = np.abs(m * Nt // 2 - i_ind)  # i_off+i_min2
             ind3 = (2 * i) % Nt

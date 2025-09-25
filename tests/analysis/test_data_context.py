@@ -6,12 +6,13 @@ functions including whitening, time-shifting, and data management.
 
 from __future__ import annotations
 
+import tempfile
+
 import bilby
 import numpy as np
 import pytest
 from bilby.gw.detector import InterferometerList
 from scipy.stats import kstest
-import tempfile
 
 from nullpol.analysis.data_context import (
     compute_whitened_frequency_domain_strain_array,
@@ -57,7 +58,7 @@ def test_compute_whitened_frequency_domain_strain_array_statistical_properties(d
     Uses a known statistical test: properly whitened Gaussian noise should
     pass the Kolmogorov-Smirnov test for normality with p-value >= 0.05.
     """
-    ifos, frequency_mask, sampling_frequency, duration, minimum_frequency = detector_setup
+    ifos, frequency_mask, _sampling_frequency, duration, minimum_frequency = detector_setup
 
     frequency_domain_strain_array = np.array([ifo.frequency_domain_strain for ifo in ifos])
     power_spectral_density_array = np.array([ifo.power_spectral_density_array for ifo in ifos])
@@ -86,7 +87,7 @@ def test_compute_whitened_frequency_domain_strain_array_basic_properties(detecto
     as input, and produce finite values. Also tests that zero PSD handling
     works correctly (should produce zeros in whitened output).
     """
-    ifos, frequency_mask, sampling_frequency, duration, minimum_frequency = detector_setup
+    ifos, frequency_mask, _sampling_frequency, duration, _minimum_frequency = detector_setup
 
     frequency_domain_strain_array = np.array([ifo.frequency_domain_strain for ifo in ifos])
     power_spectral_density_array = np.array([ifo.power_spectral_density_array for ifo in ifos])
@@ -239,7 +240,7 @@ class TestTimeFrequencyDataContext:
         Verifies that initialization sets expected properties correctly
         and that derived properties match known relationships.
         """
-        ifos, frequency_mask, sampling_frequency, duration, minimum_frequency = detector_setup
+        ifos, frequency_mask, sampling_frequency, duration, _minimum_frequency = detector_setup
 
         wavelet_frequency_resolution = 2.0
         wavelet_nx = 10
@@ -270,13 +271,15 @@ class TestTimeFrequencyDataContext:
 
     def test_initialization_with_time_frequency_filter_array(self, detector_setup):
         """Test initialization with time-frequency filter as numpy array."""
-        ifos, frequency_mask, sampling_frequency, duration, minimum_frequency = detector_setup
+        ifos, _frequency_mask, sampling_frequency, duration, _minimum_frequency = detector_setup
 
         wavelet_frequency_resolution = 2.0
         wavelet_nx = 10
 
         # Create a realistic filter shape based on wavelet transform dimensions
-        from nullpol.analysis.tf_transforms import get_shape_of_wavelet_transform
+        from nullpol.analysis.tf_transforms import (
+            get_shape_of_wavelet_transform,
+        )  # pylint: disable=import-outside-toplevel
 
         tf_Nt, tf_Nf = get_shape_of_wavelet_transform(duration, sampling_frequency, wavelet_frequency_resolution)
         time_frequency_filter = np.random.rand(tf_Nt, tf_Nf)
@@ -294,13 +297,15 @@ class TestTimeFrequencyDataContext:
 
     def test_initialization_with_time_frequency_filter_file(self, detector_setup):
         """Test initialization with time-frequency filter as file path."""
-        ifos, frequency_mask, sampling_frequency, duration, minimum_frequency = detector_setup
+        ifos, _frequency_mask, sampling_frequency, duration, _minimum_frequency = detector_setup
 
         wavelet_frequency_resolution = 2.0
         wavelet_nx = 10
 
         # Create a temporary filter file
-        from nullpol.analysis.tf_transforms import get_shape_of_wavelet_transform
+        from nullpol.analysis.tf_transforms import (
+            get_shape_of_wavelet_transform,
+        )  # pylint: disable=import-outside-toplevel
 
         tf_Nt, tf_Nf = get_shape_of_wavelet_transform(duration, sampling_frequency, wavelet_frequency_resolution)
         time_frequency_filter = np.random.rand(tf_Nt, tf_Nf)
@@ -322,13 +327,13 @@ class TestTimeFrequencyDataContext:
             np.testing.assert_array_equal(loaded_filter, time_frequency_filter)
 
         finally:
-            import os
+            import os  # pylint: disable=import-outside-toplevel
 
             os.unlink(tmp_file_path)
 
     def test_frequency_domain_strain_array_property(self, detector_setup):
         """Test frequency_domain_strain_array property."""
-        ifos, frequency_mask, sampling_frequency, duration, minimum_frequency = detector_setup
+        ifos, _frequency_mask, _sampling_frequency, _duration, _minimum_frequency = detector_setup
 
         context = TimeFrequencyDataContext(interferometers=ifos, wavelet_frequency_resolution=2.0, wavelet_nx=10)
 
@@ -341,7 +346,7 @@ class TestTimeFrequencyDataContext:
 
     def test_whitened_frequency_domain_strain_array_caching(self, detector_setup):
         """Test that whitened strain array is computed and cached properly."""
-        ifos, frequency_mask, sampling_frequency, duration, minimum_frequency = detector_setup
+        ifos, _frequency_mask, _sampling_frequency, _duration, _minimum_frequency = detector_setup
 
         context = TimeFrequencyDataContext(interferometers=ifos, wavelet_frequency_resolution=2.0, wavelet_nx=10)
 
@@ -361,7 +366,7 @@ class TestTimeFrequencyDataContext:
         - For sources directly overhead at a detector, time delay should be ~0
         - For sources at the horizon, time delays should be maximal (~0.02s)
         """
-        ifos, frequency_mask, sampling_frequency, duration, minimum_frequency = detector_setup
+        ifos, _frequency_mask, _sampling_frequency, _duration, _minimum_frequency = detector_setup
 
         context = TimeFrequencyDataContext(interferometers=ifos, wavelet_frequency_resolution=2.0, wavelet_nx=10)
 
@@ -408,7 +413,7 @@ class TestTimeFrequencyDataContext:
 
     def test_compute_whitened_strain_at_geocenter(self, detector_setup):
         """Test computation of whitened strain at geocenter with time shifts."""
-        ifos, frequency_mask, sampling_frequency, duration, minimum_frequency = detector_setup
+        ifos, _frequency_mask, _sampling_frequency, _duration, _minimum_frequency = detector_setup
 
         context = TimeFrequencyDataContext(interferometers=ifos, wavelet_frequency_resolution=2.0, wavelet_nx=10)
 
@@ -428,7 +433,7 @@ class TestTimeFrequencyDataContext:
 
     def test_masked_frequency_array_property(self, detector_setup):
         """Test masked_frequency_array property."""
-        ifos, frequency_mask, sampling_frequency, duration, minimum_frequency = detector_setup
+        ifos, _frequency_mask, _sampling_frequency, _duration, _minimum_frequency = detector_setup
 
         context = TimeFrequencyDataContext(interferometers=ifos, wavelet_frequency_resolution=2.0, wavelet_nx=10)
 
@@ -468,7 +473,7 @@ class TestTimeFrequencyDataContext:
 
     def test_time_frequency_filter_validation_wrong_shape(self, detector_setup):
         """Test validation of time-frequency filter with wrong dimensions."""
-        ifos, frequency_mask, sampling_frequency, duration, minimum_frequency = detector_setup
+        ifos, _frequency_mask, _sampling_frequency, _duration, _minimum_frequency = detector_setup
 
         # Create filter with wrong shape
         wrong_filter = np.random.rand(10, 20)  # Wrong dimensions
@@ -483,7 +488,7 @@ class TestTimeFrequencyDataContext:
 
     def test_wavelet_transform_properties(self, detector_setup):
         """Test that wavelet transform properties are set correctly."""
-        ifos, frequency_mask, sampling_frequency, duration, minimum_frequency = detector_setup
+        ifos, _frequency_mask, _sampling_frequency, _duration, _minimum_frequency = detector_setup
 
         wavelet_frequency_resolution = 1.5
         wavelet_nx = 12
