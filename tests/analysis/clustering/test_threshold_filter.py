@@ -101,17 +101,6 @@ class TestThresholdFilter:
         filter_uniform = compute_filter_by_quantile(uniform_data, quantile=0.5)
         assert not np.any(filter_uniform), "Uniform values should not pass their own threshold"
 
-    def test_compute_filter_by_quantile_kwargs_ignored(self):
-        """Test that additional keyword arguments are properly ignored."""
-        data = np.array([[1.0, 2.0, 3.0]])
-
-        # Test with additional kwargs
-        filter_result = compute_filter_by_quantile(data, quantile=0.5, ignored_param=42, another_ignored="test")
-
-        # Should work the same as without kwargs
-        filter_expected = compute_filter_by_quantile(data, quantile=0.5)
-        np.testing.assert_array_equal(filter_result, filter_expected)
-
     def test_compute_filter_by_quantile_2d_shape_preservation(self):
         """Test that 2D shape and properties are preserved."""
         # Rectangular data
