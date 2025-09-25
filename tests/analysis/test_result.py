@@ -3,7 +3,7 @@
 This module provides comprehensive testing for the PolarizationResult class,
 including:
 - Basic functionality and inheritance
-- Property access with various metadata configurations  
+- Property access with various metadata configurations
 - Detector injection properties
 - Skymap plotting functionality with dependency handling
 - Real fixture data integration and validation
@@ -30,10 +30,11 @@ import bilby
 # FIXTURES
 # =============================================================================
 
+
 @pytest.fixture(scope="session")
 def real_result_data():
     """Load real result data from fixtures for comprehensive testing.
-    
+
     Returns:
         dict: Contains 'result' (bilby Result object) and 'injection_data' (dict)
               from the scalar tensor injection example.
@@ -57,10 +58,10 @@ def real_result_data():
 @pytest.fixture
 def mock_likelihood_metadata():
     """Create mock likelihood metadata for testing properties that require structured data.
-    
+
     This fixture provides the likelihood metadata structure that would be present
     in a complete analysis result, allowing us to test property access methods.
-    
+
     Returns:
         dict: Mock likelihood metadata with sampling parameters and detector information.
     """
@@ -94,6 +95,7 @@ def mock_likelihood_metadata():
 # BASIC FUNCTIONALITY TESTS
 # =============================================================================
 
+
 class TestBasicFunctionality:
     """Test fundamental PolarizationResult functionality."""
 
@@ -101,9 +103,10 @@ class TestBasicFunctionality:
         """Test that result module can be imported and has expected attributes."""
         assert result_module is not None
         assert hasattr(result_module, "PolarizationResult")
-        
+
         # Verify module is accessible through analysis package
         import nullpol.analysis
+
         assert hasattr(nullpol.analysis, "result")
         assert getattr(nullpol.analysis, "result") is result_module
 
@@ -121,9 +124,10 @@ class TestBasicFunctionality:
 
             # Test inheritance hierarchy
             from bilby.core.result import Result
+
             assert isinstance(result, Result)
             assert isinstance(result, PolarizationResult)
-            
+
             # Test basic attributes
             assert result.label == real_result.label
             assert result.outdir == temp_dir
@@ -154,8 +158,9 @@ class TestBasicFunctionality:
 
 
 # =============================================================================
-# PROPERTY ACCESS TESTS  
+# PROPERTY ACCESS TESTS
 # =============================================================================
+
 
 class TestPropertyAccess:
     """Test PolarizationResult property access with various metadata configurations."""
@@ -218,7 +223,7 @@ class TestPropertyAccess:
 
         interferometers = result.interferometers
         expected_interferometers = ["H1", "L1", "V1"]
-        
+
         assert isinstance(interferometers, list)
         assert len(interferometers) == 3
         assert set(interferometers) == set(expected_interferometers)
@@ -249,6 +254,7 @@ class TestPropertyAccess:
 # =============================================================================
 # METADATA ACCESS TESTS
 # =============================================================================
+
 
 class TestMetadataAccess:
     """Test nested metadata access functionality."""
@@ -291,6 +297,7 @@ class TestMetadataAccess:
 # DETECTOR INJECTION PROPERTIES TESTS
 # =============================================================================
 
+
 class TestDetectorInjectionProperties:
     """Test detector injection properties functionality."""
 
@@ -319,7 +326,7 @@ class TestDetectorInjectionProperties:
         assert isinstance(l1_properties, dict)
         assert l1_properties["optimal_SNR"] == 18.7
 
-        # Test V1 detector  
+        # Test V1 detector
         v1_properties = result.detector_injection_properties("V1")
         assert v1_properties is not None
         assert isinstance(v1_properties, dict)
@@ -362,13 +369,14 @@ class TestDetectorInjectionProperties:
 # SKYMAP PLOTTING TESTS
 # =============================================================================
 
+
 class TestSkymapPlotting:
     """Test skymap plotting functionality with graceful dependency handling."""
 
     def test_plot_skymap_with_missing_dependencies(self, real_result_data):
         """Test that plot_skymap handles missing external dependencies gracefully."""
         real_result = real_result_data["result"]
-        
+
         # Create a result with required ra/dec columns
         posterior = real_result.posterior.copy()
         if "ra" not in posterior.columns:
@@ -430,7 +438,7 @@ class TestSkymapPlotting:
     def test_plot_skymap_parameter_forwarding(self, real_result_data):
         """Test that plot_skymap accepts and forwards parameters correctly."""
         real_result = real_result_data["result"]
-        
+
         # Ensure we have required columns
         posterior = real_result.posterior.copy()
         if "ra" not in posterior.columns:
@@ -468,9 +476,10 @@ class TestSkymapPlotting:
                     pass
 
 
-# =============================================================================  
+# =============================================================================
 # REAL DATA INTEGRATION TESTS
 # =============================================================================
+
 
 class TestRealDataIntegration:
     """Test integration and validation with real fixture data."""
@@ -493,7 +502,9 @@ class TestRealDataIntegration:
         # Test key gravitational wave parameters
         assert injection_params["mass_1"] == pytest.approx(expected_params["mass_1"][0], rel=1e-6)
         assert injection_params["mass_2"] == pytest.approx(expected_params["mass_2"][0], rel=1e-6)
-        assert injection_params["luminosity_distance"] == pytest.approx(expected_params["luminosity_distance"][0], rel=1e-6)
+        assert injection_params["luminosity_distance"] == pytest.approx(
+            expected_params["luminosity_distance"][0], rel=1e-6
+        )
 
     def test_real_analysis_configuration_validation(self, real_result_data):
         """Test that analysis configuration from real fixtures is as expected."""
@@ -521,9 +532,11 @@ class TestRealDataIntegration:
         # Verify posterior has expected gravitational wave parameters
         expected_gw_params = ["dec", "geocent_time", "psi", "ra"]
         available_params = set(real_result.posterior.columns)
-        
+
         for param in expected_gw_params:
-            assert param in available_params, f"Expected GW parameter '{param}' not found in posterior columns: {list(available_params)[:10]}"
+            assert (
+                param in available_params
+            ), f"Expected GW parameter '{param}' not found in posterior columns: {list(available_params)[:10]}"
 
         # Verify posterior has realistic number of samples
         assert len(real_result.posterior) > 0, "Posterior should have samples"
@@ -531,9 +544,11 @@ class TestRealDataIntegration:
         # Verify injection parameters are physically reasonable
         injection = real_result.meta_data["injection_parameters"]
         assert injection["mass_1"] > 0, "Mass 1 should be positive"
-        assert injection["mass_2"] > 0, "Mass 2 should be positive" 
+        assert injection["mass_2"] > 0, "Mass 2 should be positive"
         assert injection["luminosity_distance"] > 0, "Luminosity distance should be positive"
-        assert 0 <= injection["theta_jn"] <= np.pi, f"Inclination angle should be between 0 and π, got {injection['theta_jn']}"
+        assert (
+            0 <= injection["theta_jn"] <= np.pi
+        ), f"Inclination angle should be between 0 and π, got {injection['theta_jn']}"
 
     def test_metadata_structure_completeness(self, real_result_data):
         """Test that real fixture metadata has complete expected structure."""
@@ -548,19 +563,21 @@ class TestRealDataIntegration:
         # Verify essential top-level metadata keys exist
         essential_keys = [
             "command_line_args",
-            "injection_parameters", 
+            "injection_parameters",
             "likelihood",  # Should be present (but None in real fixtures)
             "nullpol_version",
             "run_statistics",
         ]
 
         for key in essential_keys:
-            assert key in result.meta_data, f"Essential metadata key '{key}' not found in: {list(result.meta_data.keys())}"
+            assert (
+                key in result.meta_data
+            ), f"Essential metadata key '{key}' not found in: {list(result.meta_data.keys())}"
 
         # Verify command_line_args substructure
         cmd_args = result.meta_data["command_line_args"]
         essential_cmd_keys = ["detectors", "duration", "sampling_frequency", "label", "outdir"]
-        
+
         for key in essential_cmd_keys:
             assert key in cmd_args, f"Essential command_line_args key '{key}' not found in: {list(cmd_args.keys())}"
 
