@@ -8,18 +8,152 @@ on:
     types: [created]
   workflow_dispatch:
 
+# Security: Use minimal permissions
+permissions:
+  contents: read
+
 jobs:
-  validation:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30  # Prevent hanging jobs
+    env:
+      # Environment variables to help with Numba memory issues
+      NUMBA_DISABLE_JIT: 0
+      NUMBA_CACHE_DIR: /tmp/numba_cache
+      NUMBA_NUM_THREADS: 2  # Limit threads to reduce memory pressure
+      OMP_NUM_THREADS: 2
+      MKL_NUM_THREADS: 2
+      OPENBLAS_NUM_THREADS: 2
     strategy:
+      fail-fast: false  # Continue testing other batches even if one fails
       matrix:
         python-version: ["3.10", "3.11"]
-    uses: microsoft/action-python/.github/workflows/validation.yml@0.7.3
-    with:
-      workdir: '.'
-      python-version: ${{ matrix.python-version }}
+        test-batch:
+          - name: "basic"
+            paths: "tests/test_version.py tests/analysis/test_*.py tests/analysis/prior/"
+          - name: "tf-transforms-inverse-freq"
+            paths: "tests/analysis/tf_transforms/test_inverse_wavelet_freq.py"
+          - name: "tf-transforms-inverse-time"
+            paths: "tests/analysis/tf_transforms/test_inverse_wavelet_time.py"
+          - name: "tf-transforms-wavelet-freq"
+            paths: "tests/analysis/tf_transforms/test_wavelet_freq.py"
+          - name: "tf-transforms-wavelet-time"
+            paths: "tests/analysis/tf_transforms/test_wavelet_time.py"
+          - name: "tf-transforms-others"
+            paths: "tests/analysis/tf_transforms/test_stft.py tests/analysis/tf_transforms/test_utils.py tests/analysis/tf_transforms/test_wavelet_transforms.py"
+          - name: "antenna-clustering"
+            paths: "tests/analysis/antenna_patterns/ tests/analysis/clustering/"
+          - name: "null-stream-likelihood"
+            paths: "tests/analysis/null_stream/ tests/analysis/likelihood/"
+          - name: "cli-utils"
+            paths: "tests/cli/ tests/simulation/ tests/utils/ tests/integrations/"
+    name: Test ${{ matrix.test-batch.name }} (Python ${{ matrix.python-version }})
 
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'  # Cache pip dependencies
+
+    - name: Cache pip packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-${{ matrix.python-version }}-
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip wheel
+        pip install -e ".[test]"
+
+    - name: Run tests for ${{ matrix.test-batch.name }}
+      run: |
+        python -m pytest ${{ matrix.test-batch.paths }} \
+          -m 'not integration and not gpu' \
+          --cov-report xml:coverage-${{ matrix.python-version }}-${{ matrix.test-batch.name }}.xml \
+          --cov src \
+          --cov-fail-under 0 \
+          --cov-append \
+          --junit-xml=junit-${{ matrix.python-version }}-${{ matrix.test-batch.name }}.xml \
+          -v \
+          --tb=short \
+          --maxfail=10
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()  # Upload even on test failure
+      with:
+        name: test-results-${{ matrix.python-version }}-${{ matrix.test-batch.name }}
+        path: |
+          coverage-${{ matrix.python-version }}-${{ matrix.test-batch.name }}.xml
+          junit-${{ matrix.python-version }}-${{ matrix.test-batch.name }}.xml
+        retention-days: 30
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      if: always()
+      with:
+        file: ./coverage-${{ matrix.python-version }}-${{ matrix.test-batch.name }}.xml
+        flags: unittests,${{ matrix.test-batch.name }}
+        name: codecov-${{ matrix.python-version }}-${{ matrix.test-batch.name }}
+        fail_ci_if_error: false  # Don't fail CI if codecov has issues
+
+  # Summary job to ensure all tests pass - this is what branch protection should check
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [test]
+    steps:
+      - name: Check test results
+        run: |
+          # Check if any test jobs failed
+          if [[ "${{ needs.test.result }}" != "success" ]]; then
+            echo "Some tests failed!"
+            exit 1
+          fi
+          echo "All tests passed!"
+
+  # Optional: Code quality checks
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip wheel
+          pip install -e ".[test]"
+
+      - name: Run pre-commit hooks
+        run: |
+          pre-commit run --all-files --show-diff-on-failure
+        continue-on-error: true  # Don't fail CI for formatting issues
+
+  # Publish job - uncomment and configure when ready to publish releases
   # publish:
-  #   uses: microsoft/action-python/.github/workflows/publish.yml@0.6.4
+  #   name: Publish to PyPI
+  #   if: github.event_name == 'release' && github.event.action == 'created'
+  #   needs: [test-summary]  # Wait for all tests to pass
+  #   uses: microsoft/action-python/.github/workflows/publish.yml@0.7.3
+  #   with:
+  #     workdir: '.'
   #   secrets:
   #     PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-  #     TEST_PYPI_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD  }}
+  #     TEST_PYPI_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
