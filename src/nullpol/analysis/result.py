@@ -141,7 +141,7 @@ class PolarizationResult(Result):
         geo: bool
             Plot in geographic coordinates (lat, lon) instead of RA, Dec
         dpi: int
-            Resolution of figure in fots per inch
+            Resolution of figure in dots per inch
         transparent: bool
             Save image with transparent background
         colorbar: bool
@@ -182,7 +182,7 @@ class PolarizationResult(Result):
             pts = data[["ra", "dec"]].values
             confidence_levels = kde.Clustered2DSkyKDE
 
-            logger.info("Initialising skymap class")
+            logger.info("Initializing skymap class")
             skypost = confidence_levels(pts, trials=trials, jobs=jobs)
             logger.info(f"Pickling skymap to {default_obj_filename}")
             safe_file_dump(skypost, default_obj_filename, "pickle")

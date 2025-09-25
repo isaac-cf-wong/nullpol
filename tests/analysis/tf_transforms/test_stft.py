@@ -222,7 +222,6 @@ class TestSTFTMathematicalProperties:
         """
         sampling_frequency = 32.0
         frequency_resolution = 8.0
-        duration = 1.0
 
         # Create simple test signal
         data = np.array([1.0, 2.0, 3.0, 4.0] * 8)  # 32 samples, repeated pattern

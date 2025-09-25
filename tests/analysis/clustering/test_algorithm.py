@@ -9,18 +9,17 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from nullpol.analysis.clustering.algorithm import clustering, _get_neighbours, _dfs
+from nullpol.analysis.clustering.algorithm import clustering, _get_neighbors, _dfs
 
 
 class TestClusteringAlgorithm:
     """Test class for clustering algorithm functions."""
 
-    def test_get_neighbours_center_pixel(self):
-        """Test neighbor finding for a center pixel with all 8 neighbors."""
-        # 5x5 mask with center pixel at (2,2)
+    def test_get_neighbors_center_pixel(self):
+        """Test neighbor extraction for a center pixel with full 8-connectivity."""
+        # Create 5x5 mask with all True values for testing center pixel
         mask = np.ones((5, 5), dtype=bool)
-
-        neighbors = _get_neighbours(2, 2, mask)
+        neighbors = _get_neighbors(2, 2, mask)
 
         # Should have all 8 neighbors
         expected_neighbors = [(1, 1), (1, 2), (1, 3), (2, 1), (2, 3), (3, 1), (3, 2), (3, 3)]  # (2,2) excluded
@@ -28,25 +27,27 @@ class TestClusteringAlgorithm:
         assert len(neighbors) == 8, "Center pixel should have 8 neighbors"
         assert set(neighbors) == set(expected_neighbors), "Should include all 8-connected neighbors"
 
-    def test_get_neighbours_corner_pixel(self):
-        """Test neighbor finding for corner pixel (fewer neighbors)."""
+    def test_get_neighbors_corner_pixel(self):
+        """Test neighbor extraction for a corner pixel with limited connectivity."""
+        # Create 3x3 mask with all True values for testing corner pixel
         mask = np.ones((3, 3), dtype=bool)
 
         # Top-left corner (0,0)
-        neighbors = _get_neighbours(0, 0, mask)
+        neighbors = _get_neighbors(0, 0, mask)
         expected_neighbors = [(0, 1), (1, 0), (1, 1)]
 
         assert len(neighbors) == 3, "Corner pixel should have 3 neighbors"
         assert set(neighbors) == set(expected_neighbors), "Should include only valid neighbors"
 
-    def test_get_neighbours_edge_pixel(self):
-        """Test neighbor finding for edge pixel."""
-        mask = np.ones((3, 4), dtype=bool)
-
-        # Top edge, middle (0,2)
-        neighbors = _get_neighbours(0, 2, mask)
+    def test_get_neighbors_edge_pixel(self):
+        """Test neighbor extraction for an edge pixel with partial connectivity."""
+        # Create 3x5 mask with all True values for testing edge pixel
+        mask = np.ones((3, 5), dtype=bool)
+        
+        # Top edge, middle position (0,2)
+        neighbors = _get_neighbors(0, 2, mask)
         expected_neighbors = [(0, 1), (0, 3), (1, 1), (1, 2), (1, 3)]
-
+        
         assert len(neighbors) == 5, "Edge pixel should have 5 neighbors"
         assert set(neighbors) == set(expected_neighbors), "Should include only valid edge neighbors"
 

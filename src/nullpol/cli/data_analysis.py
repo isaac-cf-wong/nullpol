@@ -44,7 +44,7 @@ class DataAnalysisInput(BInput, Input):
         """
         Input.__init__(self, args, unknown_args)
 
-        # Generic initialisation
+        # Generic initialization
         self.meta_data = dict()
         self.result = None
 
@@ -138,15 +138,15 @@ class DataAnalysisInput(BInput, Input):
         for mode in self.polarization_modes:
             if mode not in supported_modes:
                 raise NullpolError(
-                    f"Unsupported mode `{mode}` in " "polarizaiton-modes = " f"{self.polarization_modes}"
+                    f"Unsupported mode `{mode}` in " "polarization-modes = " f"{self.polarization_modes}"
                 )
         for mode in self.polarization_basis:
             if mode not in supported_modes:
-                raise NullpolError(f"Unsupported mode `{mode}` in polarizaiton-basis = {self.polarization_basis}")
+                raise NullpolError(f"Unsupported mode `{mode}` in polarization-basis = {self.polarization_basis}")
         # Check whether the basis is part of the model.
         for mode in self.polarization_basis:
             if mode not in self.polarization_modes:
-                raise NullpolError(f"Basis mode `{mode}` is not in polarizaiton-modes = {self.polarization_basis}")
+                raise NullpolError(f"Basis mode `{mode}` is not in polarization-modes = {self.polarization_basis}")
 
     @property
     def result_class(self):

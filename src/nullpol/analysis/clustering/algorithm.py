@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 
 
-def _get_neighbours(i, j, mask):
+def _get_neighbors(i, j, mask):
     """Get valid 8-connected neighboring coordinates for a given pixel in a 2D mask.
 
     Returns all neighboring coordinates within the mask boundaries using 8-connectivity
@@ -18,14 +18,14 @@ def _get_neighbours(i, j, mask):
         list[tuple[int, int]]: List of valid neighboring coordinate tuples (row, col).
             Maximum of 8 neighbors for interior pixels, fewer for edge/corner pixels.
     """
-    neighbours = []
+    neighbors = []
     for x in range(-1, 2):
         for y in range(-1, 2):
             if x == 0 and y == 0:
                 continue
             if 0 <= i + x < mask.shape[0] and 0 <= j + y < mask.shape[1]:
-                neighbours.append((i + x, j + y))
-    return neighbours
+                neighbors.append((i + x, j + y))
+    return neighbors
 
 
 # Depth-first search
@@ -53,9 +53,9 @@ def _dfs(i, j, mask, visited):
             continue
         visited[i, j] = 1
         cluster.append((i, j))
-        for neighbour in _get_neighbours(i, j, mask):
-            if mask[neighbour[0], neighbour[1]]:
-                stack.append(neighbour)
+        for neighbor in _get_neighbors(i, j, mask):
+            if mask[neighbor[0], neighbor[1]]:
+                stack.append(neighbor)
     return cluster
 
 

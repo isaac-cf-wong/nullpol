@@ -283,7 +283,7 @@ def test_get_collapsed_antenna_pattern_matrix_simple_example():
 # =============================================================================
 
 
-def test_relative_amplitification_factor_map():
+def test_relative_amplification_factor_map():
     """Test relative amplification factor parameter mapping.
 
     Validates the creation of parameter name maps that connect

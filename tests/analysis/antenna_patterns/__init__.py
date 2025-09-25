@@ -7,8 +7,8 @@ from .test_base import (
     test_get_antenna_pattern_matrix_symmetry,
     test_get_collapsed_antenna_pattern_matrix_simple_example,
     test_relative_amplification_factor_helper,
+    test_relative_amplification_factor_map,
     test_relative_amplification_factor_simple_case,
-    test_relative_amplitification_factor_map,
 )
 from .test_conditioning import TestAntennaPatternConditioning
 from .test_encoding import (
@@ -35,6 +35,6 @@ __all__ = [
     "test_get_long_names_comprehensive",
     "test_polarization_encoding_constants",
     "test_relative_amplification_factor_helper",
+    "test_relative_amplification_factor_map",
     "test_relative_amplification_factor_simple_case",
-    "test_relative_amplitification_factor_map",
 ]

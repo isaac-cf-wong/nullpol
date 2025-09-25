@@ -38,7 +38,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
     def __init__(self, args: Namespace, unknown_args: list, create_data: bool = True):
         Input.__init__(self, args, unknown_args)
 
-        # Generic initialisation
+        # Generic initialization
         self.meta_data = dict(
             command_line_args=args.__dict__,
             unknown_command_line_args=unknown_args,

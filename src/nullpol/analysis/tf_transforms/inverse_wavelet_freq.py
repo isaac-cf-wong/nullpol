@@ -96,7 +96,7 @@ def _unpack_wave_inverse(
 
 @njit
 def _pack_wave_inverse(m: int, Nt: int, Nf: int, prefactor2s: np.ndarray, wave_in: np.ndarray) -> None:
-    """Helper for fast frequency domain inverse transform to preare for Fourier transform.
+    """Helper for fast frequency domain inverse transform to prepare for Fourier transform.
 
     Args:
         m (int): Frequency index.
