@@ -7,6 +7,7 @@ package for file handling and validation.
 from __future__ import annotations
 
 import tempfile
+import pytest
 
 from nullpol.utils import get_file_extension, is_file
 
@@ -19,6 +20,7 @@ def test_get_file_extension():
     assert get_file_extension("README") == ""
 
 
+@pytest.mark.integration
 def test_is_file():
     """Test file existence validation functionality."""
     with tempfile.NamedTemporaryFile() as temp_file:

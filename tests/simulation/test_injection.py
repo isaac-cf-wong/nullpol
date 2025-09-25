@@ -49,6 +49,7 @@ def interferometers():
     return InterferometerList(["H1", "L1", "V1"])
 
 
+@pytest.mark.integration
 def test_create_injection_zero_noise(interferometers, basic_injection_parameters):
     """Test signal injection into noiseless detector data.
 
@@ -74,6 +75,7 @@ def test_create_injection_zero_noise(interferometers, basic_injection_parameters
     )
 
 
+@pytest.mark.integration
 def test_create_injection_gaussian(interferometers, basic_injection_parameters):
     """Test signal injection into Gaussian noise.
 
@@ -99,6 +101,7 @@ def test_create_injection_gaussian(interferometers, basic_injection_parameters):
     )
 
 
+@pytest.mark.integration
 def test_create_injection_noise(interferometers):
     """Test noise-only injection for background characterization.
 

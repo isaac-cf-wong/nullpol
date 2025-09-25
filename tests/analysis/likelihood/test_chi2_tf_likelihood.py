@@ -137,6 +137,7 @@ def time_frequency_filter(configuration: dict) -> np.ndarray:
     return time_frequency_filter
 
 
+@pytest.mark.integration
 def test_noise_residual_energy(configuration: dict, time_frequency_filter: np.ndarray) -> None:
     """Test noise-only residual energy follows chi-squared distribution.
 
@@ -195,6 +196,7 @@ def test_noise_residual_energy(configuration: dict, time_frequency_filter: np.nd
     assert result.pvalue >= 0.05, f"Log likelihoods do not match expected logpdf distribution (p = {result.pvalue})"
 
 
+@pytest.mark.integration
 def test_signal_residual_energy(configuration: dict, time_frequency_filter: np.ndarray) -> None:
     """Test signal residual energy with correct parameters follows chi-squared distribution.
 
@@ -258,6 +260,7 @@ def test_signal_residual_energy(configuration: dict, time_frequency_filter: np.n
     assert result.pvalue >= 0.05, f"Log likelihoods do not match expected logpdf distribution (p = {result.pvalue})"
 
 
+@pytest.mark.integration
 def test_signal_residual_energy_incorrect_parameters(configuration: dict, time_frequency_filter: np.ndarray) -> None:
     """Test signal residual energy with incorrect parameters deviates from chi-squared.
 
@@ -324,6 +327,7 @@ def test_signal_residual_energy_incorrect_parameters(configuration: dict, time_f
     ), f"Log likelihoods should deviate from the expected logpdf distribution (p = {result.pvalue})"
 
 
+@pytest.mark.integration
 def test_signal_pc_c_residual_energy(configuration: dict, time_frequency_filter: np.ndarray) -> None:
     """Test single-mode effective antenna pattern residual energy distribution.
 
@@ -393,6 +397,7 @@ def test_signal_pc_c_residual_energy(configuration: dict, time_frequency_filter:
     assert result.pvalue >= 0.05, f"Log likelihoods do not match expected logpdf distribution (p = {result.pvalue})"
 
 
+@pytest.mark.integration
 def test_signal_pc_c_residual_energy_incorrect_parameters(
     configuration: dict, time_frequency_filter: np.ndarray
 ) -> None:

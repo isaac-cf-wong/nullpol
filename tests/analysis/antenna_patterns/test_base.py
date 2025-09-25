@@ -99,6 +99,7 @@ def setup_random_seed():
 # =============================================================================
 
 
+@pytest.mark.integration
 def test_get_antenna_pattern_known_values():
     """Test antenna pattern computation with known expected values.
 
@@ -144,6 +145,7 @@ def test_get_antenna_pattern_known_values():
     assert not np.allclose(antenna_response, antenna_response_rotated), "Response should change with polarization angle"
 
 
+@pytest.mark.integration
 def test_get_antenna_pattern_matrix_symmetry():
     """Test antenna pattern matrix with known symmetry properties.
 

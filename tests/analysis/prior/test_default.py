@@ -11,6 +11,7 @@ from bilby.core.prior import Cosine, Uniform
 from nullpol.analysis.prior.default import DEFAULT_PRIOR_DIR, PolarizationPriorDict
 
 
+@pytest.mark.integration
 class TestDefaultPriorDir:
     """Test the DEFAULT_PRIOR_DIR constant."""
 
@@ -33,6 +34,7 @@ class TestDefaultPriorDir:
         assert os.path.isfile(polarization_prior_file)
 
 
+@pytest.mark.integration
 class TestPolarizationPriorDict:
     """Test the PolarizationPriorDict class."""
 

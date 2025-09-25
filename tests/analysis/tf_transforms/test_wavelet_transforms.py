@@ -34,6 +34,7 @@ def setup_random_seeds():
     bilby.core.utils.random.seed(seed)
 
 
+@pytest.mark.integration
 class TestWaveletTransformIntegration:
     """Integration tests for high-level wavelet transform functionality."""
 

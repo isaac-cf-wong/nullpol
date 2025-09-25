@@ -30,6 +30,7 @@ def sample_interferometers():
     return bilby.gw.detector.InterferometerList(interferometers)
 
 
+@pytest.mark.integration
 class TestAntennaPatternProcessor:
     """Test class for AntennaPatternProcessor."""
 

@@ -46,6 +46,7 @@ def detector_setup():
     return (ifos, frequency_mask, sampling_frequency, duration, minimum_frequency)
 
 
+@pytest.mark.integration
 def test_compute_whitened_frequency_domain_strain_array_statistical_properties(detector_setup):
     """Test whitened strain computation follows expected statistical properties.
 
@@ -77,6 +78,7 @@ def test_compute_whitened_frequency_domain_strain_array_statistical_properties(d
     assert res.pvalue >= 0.05, f"Whitened noise does not follow normal distribution (p-value: {res.pvalue})"
 
 
+@pytest.mark.integration
 def test_compute_whitened_frequency_domain_strain_array_basic_properties(detector_setup):
     """Test basic properties of whitened strain array computation.
 
@@ -227,6 +229,7 @@ def test_compute_time_shifted_frequency_domain_strain_array():
     ), f"Expected relative phase {expected_relative_phase:.3f}, got {actual_relative_phase:.3f}"
 
 
+@pytest.mark.integration
 class TestTimeFrequencyDataContext:
     """Test suite for TimeFrequencyDataContext class."""
 

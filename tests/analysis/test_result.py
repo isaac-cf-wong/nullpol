@@ -55,6 +55,7 @@ def real_result_data():
     return {"result": real_result, "injection_data": injection_data}
 
 
+@pytest.mark.integration
 @pytest.fixture
 def mock_likelihood_metadata():
     """Create mock likelihood metadata for testing properties that require structured data.
@@ -96,6 +97,7 @@ def mock_likelihood_metadata():
 # =============================================================================
 
 
+@pytest.mark.integration
 class TestBasicFunctionality:
     """Test fundamental PolarizationResult functionality."""
 
@@ -162,6 +164,7 @@ class TestBasicFunctionality:
 # =============================================================================
 
 
+@pytest.mark.integration
 class TestPropertyAccess:
     """Test PolarizationResult property access with various metadata configurations."""
 
@@ -256,6 +259,7 @@ class TestPropertyAccess:
 # =============================================================================
 
 
+@pytest.mark.integration
 class TestMetadataAccess:
     """Test nested metadata access functionality."""
 
@@ -298,6 +302,7 @@ class TestMetadataAccess:
 # =============================================================================
 
 
+@pytest.mark.integration
 class TestDetectorInjectionProperties:
     """Test detector injection properties functionality."""
 
@@ -370,6 +375,7 @@ class TestDetectorInjectionProperties:
 # =============================================================================
 
 
+@pytest.mark.integration
 class TestSkymapPlotting:
     """Test skymap plotting functionality with graceful dependency handling."""
 
@@ -481,6 +487,7 @@ class TestSkymapPlotting:
 # =============================================================================
 
 
+@pytest.mark.integration
 class TestRealDataIntegration:
     """Test integration and validation with real fixture data."""
 
