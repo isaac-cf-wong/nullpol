@@ -162,6 +162,7 @@ class PolarizationResult(Result):
         try:
             import healpy as hp  # pylint: disable=import-outside-toplevel
             from astropy.time import Time  # pylint: disable=import-outside-toplevel
+
             # pylint: disable=import-outside-toplevel  # Optional dependency for sky localization
             from ligo.skymap import (
                 bayestar,
