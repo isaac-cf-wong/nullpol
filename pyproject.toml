@@ -71,11 +71,14 @@ line-length = 120
 max-line-length = 120
 exclude = ["docs"]
 
+[tool.pylint.format]
+max-line-length = 120
+
 [tool.pylint.messages_control]
 disable = [
-    "import-error",  # For optional dependencies like asimov, htcondor
-    "no-member",  # For scipy.special.betainc and dynamic attributes
-    "possibly-used-before-assignment"  # For variables that may be conditionally assigned
+    # Essential for codebase functionality - these prevent CI failures
+    "import-error",  # Allow imports of optional dependencies (asimov, htcondor)
+    "no-member",     # Allow dynamic attributes (bilby_pipe.Input parent class, scipy.special functions)
 ]
 
 [tool.coverage.run]
