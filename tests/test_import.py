@@ -5,7 +5,6 @@ and that CLI command-line interfaces work as expected in the installed environme
 """
 
 import subprocess
-from pathlib import Path
 
 import pytest
 
@@ -80,7 +79,6 @@ def test_integrations_module_import():
 def test_package_api_design():
     """Test the package API design - core modules auto-imported, advanced modules on-demand."""
     # Start a fresh Python process to test clean imports
-    import subprocess
     import sys
 
     # Test core modules are auto-imported
