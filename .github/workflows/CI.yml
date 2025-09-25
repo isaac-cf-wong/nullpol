@@ -13,7 +13,27 @@ permissions:
   contents: read
 
 jobs:
+  validate-test-coverage:
+    name: Validate Test Coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies for validation script
+        run: pip install PyYAML
+
+      - name: Validate that all tests are covered by CI
+        run: python scripts/validate_ci_test_coverage.py
+
   test:
+    needs: [validate-test-coverage]  # Ensure test coverage validation passes first
     runs-on: ubuntu-latest
     timeout-minutes: 30  # Prevent hanging jobs
     env:
@@ -30,15 +50,29 @@ jobs:
         python-version: ["3.10", "3.11"]
         test-batch:
           - name: "basic"
-            paths: "tests/test_version.py tests/analysis/test_*.py tests/analysis/prior/"
+            paths: "tests/test_version.py tests/test_import.py tests/analysis/test_result.py tests/analysis/test_data_context.py tests/analysis/prior/"
           - name: "tf-transforms-inverse-freq"
             paths: "tests/analysis/tf_transforms/test_inverse_wavelet_freq.py"
-          - name: "tf-transforms-inverse-time"
-            paths: "tests/analysis/tf_transforms/test_inverse_wavelet_time.py"
-          - name: "tf-transforms-wavelet-freq"
-            paths: "tests/analysis/tf_transforms/test_wavelet_freq.py"
-          - name: "tf-transforms-wavelet-time"
-            paths: "tests/analysis/tf_transforms/test_wavelet_time.py"
+          - name: "tf-transforms-inverse-time-helpers"
+            paths: "tests/analysis/tf_transforms/test_inverse_wavelet_time.py::TestInverseWaveletTimeHelpers"
+          - name: "tf-transforms-inverse-time-packing"
+            paths: "tests/analysis/tf_transforms/test_inverse_wavelet_time.py::TestInverseWaveletTimePackingHelpers"
+          - name: "tf-transforms-wavelet-freq-phitilde"
+            paths: "tests/analysis/tf_transforms/test_wavelet_freq.py::TestPhitildeVecFunctions"
+          - name: "tf-transforms-wavelet-freq-tukey"
+            paths: "tests/analysis/tf_transforms/test_wavelet_freq.py::TestTukeyWindow"
+          - name: "tf-transforms-wavelet-freq-helpers"
+            paths: "tests/analysis/tf_transforms/test_wavelet_freq.py::TestWaveletFreqHelpers"
+          - name: "tf-transforms-wavelet-time-phi"
+            paths: "tests/analysis/tf_transforms/test_wavelet_time.py::TestPhiVec"
+          - name: "tf-transforms-wavelet-time-assign"
+            paths: "tests/analysis/tf_transforms/test_wavelet_time.py::TestAssignWdata"
+          - name: "tf-transforms-wavelet-time-pack"
+            paths: "tests/analysis/tf_transforms/test_wavelet_time.py::TestPackWave"
+          - name: "tf-transforms-wavelet-time-transform"
+            paths: "tests/analysis/tf_transforms/test_wavelet_time.py::TestTransformWaveletTimeHelper"
+          - name: "tf-transforms-wavelet-time-integration"
+            paths: "tests/analysis/tf_transforms/test_wavelet_time.py::TestWaveletTimeIntegration"
           - name: "tf-transforms-others"
             paths: "tests/analysis/tf_transforms/test_stft.py tests/analysis/tf_transforms/test_utils.py tests/analysis/tf_transforms/test_wavelet_transforms.py"
           - name: "antenna-clustering"
