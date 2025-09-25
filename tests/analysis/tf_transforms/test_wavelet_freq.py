@@ -301,9 +301,7 @@ class TestWaveletFreqHelpers:
         )
 
         # Should produce very similar results
-        assert np.allclose(
-            high_level_result, low_level_result, rtol=1e-8
-        ), "Quadrature high and low level should match"
+        assert np.allclose(high_level_result, low_level_result, rtol=1e-8), "Quadrature high and low level should match"
 
     def test_wavelet_freq_helpers_with_delta_function(self):
         """Test wavelet frequency helpers with a delta function input."""
