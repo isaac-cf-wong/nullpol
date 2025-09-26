@@ -6,8 +6,9 @@ computations, polarization encoding, and calibration corrections.
 
 from __future__ import annotations
 
-import numpy as np
 from typing import Dict, Any
+
+import numpy as np
 
 from .base import (
     get_antenna_pattern_matrix,
@@ -193,10 +194,10 @@ class AntennaPatternProcessor:
         """
         output = np.zeros_like(frequency_domain_strain_array)
 
-        for i in range(len(interferometers)):
-            calibration_errors = interferometers[i].calibration_model.get_calibration_factor(
+        for i, interferometer in enumerate(interferometers):
+            calibration_errors = interferometer.calibration_model.get_calibration_factor(
                 frequency_array=masked_frequency_array,
-                prefix=f"recalib_{interferometers[i].name}_",
+                prefix=f"recalib_{interferometer.name}_",
                 **parameters,
             )
             output[i, frequency_mask] = calibration_errors

@@ -16,6 +16,7 @@ from .parser import create_nullpol_parser
 bilby_pipe.utils.logger = logger
 
 
+# pylint: disable=too-many-instance-attributes
 class MainInput(BilbyMainInput, Input):
     """Configuration manager for main nullpol polarization analysis pipeline.
 
@@ -38,6 +39,7 @@ class MainInput(BilbyMainInput, Input):
     """
 
     def __init__(self, args, unknown_args, perform_checks=True):
+        # pylint: disable=super-init-not-called  # Using Input.__init__ directly for clarity
         Input.__init__(self, args, unknown_args, print_msg=False)
 
         self.known_args = args

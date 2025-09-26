@@ -6,6 +6,7 @@ from bilby_pipe.job_creation.node import Node
 from bilby_pipe.job_creation.nodes.analysis_node import touch_checkpoint_files
 
 
+# pylint: disable=too-many-instance-attributes
 class AnalysisNode(Node):
     """HTCondor job node for polarization-aware parameter estimation analysis.
 
@@ -120,10 +121,9 @@ class AnalysisNode(Node):
     def executable(self):
         if self.inputs.use_mpi:
             return self._get_executable_path("mpiexec")
-        elif self.inputs.analysis_executable:
+        if self.inputs.analysis_executable:
             return self._get_executable_path(self.inputs.analysis_executable)
-        else:
-            return self._get_executable_path("nullpol_pipe_analysis")
+        return self._get_executable_path("nullpol_pipe_analysis")
 
     @property
     def request_memory(self):

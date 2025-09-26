@@ -23,6 +23,8 @@ def write_to_file(
     exclude_default=False,
     comment=None,
 ):
+    # This function needs to access argparse internals to write config files
+    # pylint: disable=protected-access
     if os.path.isfile(filename) and not overwrite:
         logger.warning(f"File {filename} already exists, not writing to file.")
     with open(filename, "w") as ff:
@@ -76,6 +78,8 @@ def create_nullpol_parser(top_level: bool = True) -> BilbyArgParser:
     """
 
     def _remove_argument(parser, arg):
+        # Need to access argparse internals to remove arguments
+        # pylint: disable=protected-access
         action_to_remove = None
         for action in parser._actions:
             opts = action.option_strings
@@ -96,6 +100,8 @@ def create_nullpol_parser(top_level: bool = True) -> BilbyArgParser:
                     return
 
     def _add_argument_to_group(parser, group_name, *args, **kwargs):
+        # Need to access argparse internals to add arguments to specific groups
+        # pylint: disable=protected-access
         # Locate the group by name
         for grp in parser._action_groups:
             if grp.title == group_name:

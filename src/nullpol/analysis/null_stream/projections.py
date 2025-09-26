@@ -34,8 +34,8 @@ def compute_gw_projector(whitened_antenna_pattern_matrix, frequency_mask):
     nfreq, ndet, _ = whitened_antenna_pattern_matrix.shape
     output = np.zeros((nfreq, ndet, ndet), dtype=whitened_antenna_pattern_matrix.dtype)
 
-    for i in range(len(frequency_mask)):
-        if frequency_mask[i]:
+    for i, mask_value in enumerate(frequency_mask):
+        if mask_value:
             F = np.ascontiguousarray(whitened_antenna_pattern_matrix[i, :, :])
             F_dagger = np.ascontiguousarray(np.conj(F).T)
             output[i, :, :] = F @ np.linalg.inv(F_dagger @ F) @ F_dagger

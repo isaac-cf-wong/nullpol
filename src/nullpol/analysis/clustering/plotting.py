@@ -35,7 +35,7 @@ def plot_spectrogram(
         savefig (str, optional): Filename to save the plot. If None, plot is not saved.
         dpi (int, optional): DPI for saved figure. Defaults to 100.
     """
-    Nt, Nf = get_shape_of_wavelet_transform(
+    Nt, _Nf = get_shape_of_wavelet_transform(
         duration=duration,
         sampling_frequency=sampling_frequency,
         wavelet_frequency_resolution=wavelet_frequency_resolution,

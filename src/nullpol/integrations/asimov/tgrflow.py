@@ -7,13 +7,14 @@ import os
 import shutil
 
 import cbcflow
-from asimov import config
-from asimov.event import Event
+from asimov import config  # pylint: disable=import-error
+from asimov.event import Event  # pylint: disable=import-error
 
 from ...utils import logger
 from .utility import bilby_config_to_asimov, deep_update, fill_in_pol_specific_metadata
 
 
+# pylint: disable=too-few-public-methods
 class Collector:
     status_map = {
         "ready": "unstarted",
@@ -60,6 +61,7 @@ class Collector:
         self.ledger = ledger
 
     def run(self):
+        # pylint: disable=too-many-nested-blocks
         """
         Run the hook.
         """
@@ -146,7 +148,7 @@ class Collector:
         analysis_output["UID"] = analysis.name
 
         analysis_output["InferenceSoftware"] = str(analysis.pipeline)
-        if analysis.status.lower() in self.status_map.keys():
+        if analysis.status.lower() in self.status_map:
             analysis_output["RunStatus"] = self.status_map[analysis.status.lower()]
         if "waveform" in analysis.meta:
             if "approximant" in analysis.meta["waveform"]:
@@ -245,7 +247,7 @@ class Collector:
                 # In the future there may be an asimov config value for this
                 pesummary_pages_url_dir = cbcflow.core.utils.get_url_from_public_html_dir(pesummary_pages_dir)
                 # If we've written a result file, infer its url
-                if "PESummaryResultFile" in analysis_output.keys():
+                if "PESummaryResultFile" in analysis_output:
                     # We want to get whatever the name we previously decided was
                     # This will only run if we did make that decision before, so we can use similar logic
                     analysis_output["PESummaryResultFile"][
@@ -255,7 +257,7 @@ class Collector:
                 analysis_output["PESummaryPageURL"] = f"{pesummary_pages_url_dir}/home.html"
         return analysis_output
 
-    def _sort_analysis_by_subtype(self, analysis):
+    def _sort_analysis_by_subtype(self, analysis):  # pylint: disable=unused-argument
         """
         TestingGR schema differs from PE in that each entry is list of the analyses.
         It is to be associated with different kinds of test each analysis does (like coefficients in TIGER).
@@ -284,13 +286,11 @@ class Collector:
 
         if analysis.meta["tgr schema section"] == "POLAnalyses":
             return fill_in_pol_specific_metadata(analysis, corresponding_analysis)
-        else:
-            return dict()
+        return dict()
 
 
-"""Functionality for information which flows from cbcflow into Asimov"""
-
-
+# Functionality for information which flows from cbcflow into Asimov
+# pylint: disable=too-few-public-methods
 class Applicator:
     """Apply information from CBCFlow to an asimov event"""
 
@@ -357,8 +357,8 @@ class Applicator:
                 logger.warning("It seems like all the detectors do not have frame files.")
                 data["data files"] = frame_file_dict
 
-        recommended_ifos_list = list()
-        if ifo_list != []:
+        recommended_ifos_list = []
+        if ifo_list:
             recommended_ifos_list = ifo_list
         else:
             recommended_ifos_list = participating_detectors
@@ -366,6 +366,7 @@ class Applicator:
 
         # GraceDB Settings
         ligo = {}
+        event_time = None  # Initialize to avoid unbound variable
         for event in grace["Events"]:
             if event["State"] == "preferred":
                 ligo["preferred event"] = event["UID"]
@@ -409,13 +410,13 @@ class Applicator:
         # now, we need to read in the information from the config file
         # we need the reference frequency, the psd dict and the calibration dict
         config_file = gr_pe["config file path"]
-        config = bilby_config_to_asimov(config_file)
+        bilby_config = bilby_config_to_asimov(config_file)
 
         # read in the psd information if present
-        if "psds" in config.keys():
-            gr_pe["psds"] = config.pop("psds")
+        if "psds" in bilby_config:
+            gr_pe["psds"] = bilby_config.pop("psds")
         output["gr pe info"] = gr_pe.copy()
-        output["gr pe info"]["approximant"] = config["waveform"]["approximant"]
+        output["gr pe info"]["approximant"] = bilby_config["waveform"]["approximant"]
         # config file and cbcflow can disagree about which data to use (for example, preferred frame was updated)
         # logic below decides which version to use (should not matter when the analysis is finalized)
         if self.prefer_config:
@@ -423,10 +424,10 @@ class Applicator:
         else:
             # it will now keep values from cbcflow
             for item in ["channels", "frame types", "data files"]:
-                if item in config:
-                    config.pop(item)
+                if item in bilby_config:
+                    bilby_config.pop(item)
 
-        output = deep_update(output, config)
+        output = deep_update(output, bilby_config)
         event = Event.from_dict(output)
 
         self.ledger.add_event(event)

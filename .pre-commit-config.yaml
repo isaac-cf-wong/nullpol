@@ -19,13 +19,21 @@ repos:
 
   - repo: local
     hooks:
-      - id: auto-generate-init
-        name: Auto-generate __init__.py files
+      - id: auto-generate-init-src
+        name: Auto-generate __init__.py files for src
         entry: python scripts/auto_generate_init.py
         language: python
         files: '^src/.*\.py$'
         pass_filenames: false
-        description: "Auto-generate __init__.py files for leaf packages"
+        description: "Auto-generate __init__.py files for leaf packages in src"
+        additional_dependencies: []
+      - id: auto-generate-init-tests
+        name: Auto-generate __init__.py files for tests
+        entry: python scripts/auto_generate_init.py --root-dir tests
+        language: python
+        files: '^tests/.*\.py$'
+        pass_filenames: false
+        description: "Auto-generate __init__.py files for leaf packages in tests"
         additional_dependencies: []
 
   - repo: https://github.com/psf/black-pre-commit-mirror

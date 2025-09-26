@@ -19,6 +19,7 @@ from ..utils import NullpolError, logger
 bilby_pipe.utils.logger = logger
 
 
+# pylint: disable=too-many-instance-attributes
 class Input(BilbyInput):
     """Input configuration class for nullpol analysis.
 
@@ -69,6 +70,9 @@ class Input(BilbyInput):
         self.trigger_time = args.trigger_time
         self.post_trigger_duration = args.post_trigger_duration
 
+        # Initialize search_priors to avoid setting it in property getter
+        self.search_priors = None
+
     @property
     def priors(self):
         """Read in and compose the prior at run-time"""
@@ -94,14 +98,15 @@ class Input(BilbyInput):
 
     @property
     def likelihood(self):
-        self.search_priors = self.priors.copy()
+        if self.search_priors is None:
+            self.search_priors = self.priors.copy()
         likelihood_kwargs = dict(
-            interferometers=self.interferometers,
+            interferometers=self.interferometers,  # pylint: disable=no-member
             wavelet_frequency_resolution=self.wavelet_frequency_resolution,
             wavelet_nx=self.wavelet_nx,
             polarization_modes=self.polarization_modes,
             polarization_basis=self.polarization_basis,
-            time_frequency_filter=self.meta_data["time_frequency_filter"],
+            time_frequency_filter=self.meta_data["time_frequency_filter"],  # pylint: disable=no-member
             priors=self.search_priors,
         )
         if self.likelihood_type == "Chi2TimeFrequencyLikelihood":
@@ -117,8 +122,8 @@ class Input(BilbyInput):
             raise ValueError(f"Unknown Likelihood class {self.likelihood_type}")
 
         likelihood_kwargs = {
-            key: likelihood_kwargs[key]
-            for key in likelihood_kwargs
+            key: value
+            for key, value in likelihood_kwargs.items()
             if key in inspect.getfullargspec(Likelihood.__init__).args
         }
 
@@ -232,4 +237,4 @@ class Input(BilbyInput):
                         injection_parameters[key] = self.calibration_prior[key].peak
                     else:
                         injection_parameters[key] = 0
-        self.meta_data["injection_parameters"] = injection_parameters
+        self.meta_data["injection_parameters"] = injection_parameters  # pylint: disable=no-member

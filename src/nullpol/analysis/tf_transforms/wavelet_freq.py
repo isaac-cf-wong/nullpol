@@ -28,7 +28,7 @@ def _phitilde_vec(om: np.ndarray, Nf: int, nx: float = 4.0) -> np.ndarray:
     mask = (np.abs(om) >= A) & (np.abs(om) < A + B)
 
     x = (np.abs(om[mask]) - A) / B
-    y = scipy.special.betainc(nx, nx, x)
+    y = scipy.special.betainc(nx, nx, x)  # pylint: disable=no-member
     z[mask] = insDOM * np.cos(np.pi / 2.0 * y)
 
     z[np.abs(om) < A] = insDOM
@@ -137,7 +137,7 @@ def _DX_assign_loop(m: int, Nt: int, Nf: int, DX: np.ndarray, data: np.ndarray, 
     i_base = Nt // 2
     jj_base = m * Nt // 2
 
-    if m == 0 or m == Nf:
+    if m in (0, Nf):
         # NOTE this term appears to be needed to recover correct constant (at least for m=0), but was previously missing
         DX[Nt // 2] = phif[0] * data[m * Nt // 2] / 2.0
         DX[Nt // 2] = phif[0] * data[m * Nt // 2] / 2.0

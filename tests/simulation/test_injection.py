@@ -49,6 +49,7 @@ def interferometers():
     return InterferometerList(["H1", "L1", "V1"])
 
 
+@pytest.mark.integration
 def test_create_injection_zero_noise(interferometers, basic_injection_parameters):
     """Test signal injection into noiseless detector data.
 
@@ -60,7 +61,7 @@ def test_create_injection_zero_noise(interferometers, basic_injection_parameters
     sampling_frequency = 4096
     start_time = basic_injection_parameters["geocent_time"] - 4
     noise_type = "zero_noise"
-    freuency_domain_source_model = lal_binary_black_hole
+    frequency_domain_source_model = lal_binary_black_hole
     waveform_arguments = dict(waveform_approximant="IMRPhenomPv2", reference_frequency=50)
     create_injection(
         interferometers=interferometers,
@@ -69,11 +70,12 @@ def test_create_injection_zero_noise(interferometers, basic_injection_parameters
         sampling_frequency=sampling_frequency,
         start_time=start_time,
         noise_type=noise_type,
-        frequency_domain_source_model=freuency_domain_source_model,
+        frequency_domain_source_model=frequency_domain_source_model,
         waveform_arguments=waveform_arguments,
     )
 
 
+@pytest.mark.integration
 def test_create_injection_gaussian(interferometers, basic_injection_parameters):
     """Test signal injection into Gaussian noise.
 
@@ -85,7 +87,7 @@ def test_create_injection_gaussian(interferometers, basic_injection_parameters):
     sampling_frequency = 4096
     start_time = basic_injection_parameters["geocent_time"] - 4
     noise_type = "gaussian"
-    freuency_domain_source_model = lal_binary_black_hole
+    frequency_domain_source_model = lal_binary_black_hole
     waveform_arguments = dict(waveform_approximant="IMRPhenomPv2", reference_frequency=50)
     create_injection(
         interferometers=interferometers,
@@ -94,11 +96,12 @@ def test_create_injection_gaussian(interferometers, basic_injection_parameters):
         sampling_frequency=sampling_frequency,
         start_time=start_time,
         noise_type=noise_type,
-        frequency_domain_source_model=freuency_domain_source_model,
+        frequency_domain_source_model=frequency_domain_source_model,
         waveform_arguments=waveform_arguments,
     )
 
 
+@pytest.mark.integration
 def test_create_injection_noise(interferometers):
     """Test noise-only injection for background characterization.
 

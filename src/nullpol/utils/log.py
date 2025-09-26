@@ -6,7 +6,7 @@ from pathlib import Path
 logger = logging.getLogger("nullpol")
 
 
-def setup_logger(outdir=".", label=None, log_level="INFO", print_version=False):
+def setup_logger(outdir=".", label=None, log_level="INFO"):
     """Setup logging output: call at the start of the script to use
 
     Parameters
@@ -17,23 +17,21 @@ def setup_logger(outdir=".", label=None, log_level="INFO", print_version=False):
         ['debug', 'info', 'warning']
         Either a string from the list above, or an integer as specified
         in https://docs.python.org/2/library/logging.html#logging-levels
-    print_version: bool
-        If true, print version information
     """
 
     if isinstance(log_level, str):
         try:
             level = getattr(logging, log_level.upper())
-        except AttributeError:
-            raise ValueError(f"log_level {log_level} not understood")
+        except AttributeError as exc:
+            raise ValueError(f"log_level {log_level} not understood") from exc
     else:
         level = int(log_level)
 
-    logger = logging.getLogger("nullpol")
+    # Use the global logger instance
     logger.propagate = False
     logger.setLevel(level)
 
-    if not any([isinstance(h, logging.StreamHandler) for h in logger.handlers]):
+    if not any(isinstance(h, logging.StreamHandler) for h in logger.handlers):
         stream_handler = logging.StreamHandler()
         stream_handler.setFormatter(
             logging.Formatter("%(asctime)s %(name)s %(levelname)-8s: %(message)s", datefmt="%H:%M")
@@ -41,7 +39,7 @@ def setup_logger(outdir=".", label=None, log_level="INFO", print_version=False):
         stream_handler.setLevel(level)
         logger.addHandler(stream_handler)
 
-    if not any([isinstance(h, logging.FileHandler) for h in logger.handlers]):
+    if not any(isinstance(h, logging.FileHandler) for h in logger.handlers):
         if label:
             Path(outdir).mkdir(parents=True, exist_ok=True)
             log_file = f"{outdir}/{label}.log"
@@ -53,7 +51,3 @@ def setup_logger(outdir=".", label=None, log_level="INFO", print_version=False):
 
     for handler in logger.handlers:
         handler.setLevel(level)
-
-    # if print_version:
-    #     version = get_version_information()
-    #     logger.info('Running bilby version: {}'.format(version))

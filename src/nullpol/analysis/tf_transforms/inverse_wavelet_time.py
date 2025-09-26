@@ -186,7 +186,7 @@ def _pack_wave_time_helper(n: int, Nf: int, Nt: int, wave_in: np.ndarray, afins:
 
 @njit
 def _pack_wave_time_helper_compact(n: int, Nf: int, Nt: int, wave_in: np.ndarray, afins: np.ndarray) -> None:
-    """Helper for time domain transform to pack wavelet domain coefficiets
+    """Helper for time domain transform to pack wavelet domain coefficients
     in packed representation with odd and even coefficients in real and imaginary parts.
 
     Args:

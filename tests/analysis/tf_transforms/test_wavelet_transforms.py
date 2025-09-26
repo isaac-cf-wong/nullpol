@@ -1,7 +1,7 @@
 """Test module for wavelet-based time-frequency transform functionality.
 
-This module tests the wavelet transform implementation used for time-frequency
-analysis.
+This module tests the high-level wavelet transform implementation used for time-frequency
+analysis, focusing on integration tests and end-to-end functionality.
 """
 
 from __future__ import annotations
@@ -34,102 +34,175 @@ def setup_random_seeds():
     bilby.core.utils.random.seed(seed)
 
 
-def test_wavelet_transform_of_sine_wave():
-    """Test wavelet transform correctly localizes sinusoidal signals.
+@pytest.mark.integration
+class TestWaveletTransformIntegration:
+    """Integration tests for high-level wavelet transform functionality."""
 
-    Validates that a pure sinusoidal signal at 32Hz is correctly localized
-    in the frequency domain across all time bins.
-    """
-    srate = 128
-    inj_freq = 32
-    seglen = 4
-    sample_times = np.arange(seglen * srate) / srate
-    data = np.sin(2 * np.pi * inj_freq * sample_times)
-    df = 4
-    nx = 4.0
-    data_w = transform_wavelet_freq_time(data, srate, df, nx)
-    data_q = transform_wavelet_freq_time_quadrature(data, srate, df, nx)
-    data2 = np.abs(data_w) ** 2 + np.abs(data_q) ** 2
-    inj_freq_idx = int(inj_freq / df)
-    # Check whether the output peaks at 32Hz for every time bin
-    for i in range(data2.shape[0]):
-        assert np.argmax(np.abs(data2[i])) == inj_freq_idx
+    def test_wavelet_transform_of_sine_wave(self):
+        """Test wavelet transform correctly localizes sinusoidal signals.
 
+        Validates that a pure sinusoidal signal at 32Hz is correctly localized
+        in the frequency domain across all time bins.
+        """
+        srate = 128
+        inj_freq = 32
+        seglen = 4
+        sample_times = np.arange(seglen * srate) / srate
+        data = np.sin(2 * np.pi * inj_freq * sample_times)
+        df = 4
+        nx = 4.0
+        data_w = transform_wavelet_freq_time(data, srate, df, nx)
+        data_q = transform_wavelet_freq_time_quadrature(data, srate, df, nx)
+        data2 = np.abs(data_w) ** 2 + np.abs(data_q) ** 2
+        inj_freq_idx = int(inj_freq / df)
+        # Check whether the output peaks at 32Hz for every time bin
+        for i in range(data2.shape[0]):
+            assert np.argmax(np.abs(data2[i])) == inj_freq_idx
 
-def test_inverse_wavelet_time():
-    """Test time-domain wavelet transform invertibility.
+    def test_inverse_wavelet_time(self):
+        """Test time-domain wavelet transform invertibility.
 
-    Validates that the inverse wavelet transform correctly reconstructs
-    the original time-domain signal.
-    """
-    srate = 128
-    inj_freq = 32
-    seglen = 4
-    sample_times = np.arange(seglen * srate) / srate
-    data = np.sin(2 * np.pi * inj_freq * sample_times)
-    df = 4
-    nx = 4.0
-    mult = 32
-    data_w = transform_wavelet_time(data, srate, df, nx, mult)
-    data_rec = inverse_wavelet_time(data_w, nx, mult)
-    assert np.allclose(data, data_rec)
+        Validates that the inverse wavelet transform correctly reconstructs
+        the original time-domain signal.
+        """
+        srate = 128
+        inj_freq = 32
+        seglen = 4
+        sample_times = np.arange(seglen * srate) / srate
+        data = np.sin(2 * np.pi * inj_freq * sample_times)
+        df = 4
+        nx = 4.0
+        mult = 32
+        data_w = transform_wavelet_time(data, srate, df, nx, mult)
+        data_rec = inverse_wavelet_time(data_w, nx, mult)
+        assert np.allclose(data, data_rec)
 
+    def test_inverse_wavelet_freq_time(self):
+        """Test frequency-time wavelet transform invertibility.
 
-def test_inverse_wavelet_freq_time():
-    """Test frequency-time wavelet transform invertibility.
+        Validates that the inverse frequency-time wavelet transform correctly
+        reconstructs the original signal.
+        """
+        srate = 128
+        inj_freq = 32
+        seglen = 4
+        sample_times = np.arange(seglen * srate) / srate
+        data = np.sin(2 * np.pi * inj_freq * sample_times)
+        df = 4
+        nx = 4.0
+        data_w = transform_wavelet_freq_time(data, srate, df, nx)
+        data_rec = inverse_wavelet_freq_time(data_w, nx)
+        assert np.allclose(data, data_rec)
 
-    Validates that the inverse frequency-time wavelet transform correctly
-    reconstructs the original signal.
-    """
-    srate = 128
-    inj_freq = 32
-    seglen = 4
-    sample_times = np.arange(seglen * srate) / srate
-    data = np.sin(2 * np.pi * inj_freq * sample_times)
-    df = 4
-    nx = 4.0
-    data_w = transform_wavelet_freq_time(data, srate, df, nx)
-    data_rec = inverse_wavelet_freq_time(data_w, nx)
-    assert np.allclose(data, data_rec)
+    def test_whitened_wavelet_domain_data(self):
+        """Test wavelet-domain whitened data follows expected noise statistics.
 
+        Validates that whitened strain data transformed to the wavelet domain
+        maintains proper Gaussian noise statistics.
+        """
+        sampling_frequency = 2048
+        duration = 16
+        minimum_frequency = 20
+        wavelet_frequency_resolution = 16.0
+        wavelet_nx = 4.0
+        ifo = bilby.gw.detector.InterferometerList(["H1"])[0]
+        ifo.minimum_frequency = minimum_frequency
+        ifo.set_strain_data_from_power_spectral_density(
+            sampling_frequency=sampling_frequency,
+            duration=duration,
+        )
 
-def test_whitened_wavelet_domain_data():
-    """Test wavelet-domain whitened data follows expected noise statistics.
+        # Whiten the data
+        whitened_frequency_domain_strain = compute_whitened_frequency_domain_strain_array(
+            frequency_mask=ifo.frequency_mask,
+            frequency_resolution=1.0 / ifo.duration,
+            frequency_domain_strain_array=ifo.frequency_domain_strain[np.newaxis, :],
+            power_spectral_density_array=ifo.power_spectral_density_array[np.newaxis, :],
+        )
+        # k_freq_low = int(minimum_frequency*duration)
 
-    Validates that whitened strain data transformed to the wavelet domain
-    maintains proper Gaussian noise statistics.
-    """
-    sampling_frequency = 2048
-    duration = 16
-    minimum_frequency = 20
-    wavelet_frequency_resolution = 16.0
-    wavelet_nx = 4.0
-    ifo = bilby.gw.detector.InterferometerList(["H1"])[0]
-    ifo.minimum_frequency = minimum_frequency
-    ifo.set_strain_data_from_power_spectral_density(
-        sampling_frequency=sampling_frequency,
-        duration=duration,
-    )
+        # Transform the data to wavelet domain
+        whitened_wavelet_domain_strain = transform_wavelet_freq(
+            data=whitened_frequency_domain_strain[0],
+            sampling_frequency=sampling_frequency,
+            frequency_resolution=wavelet_frequency_resolution,
+            nx=wavelet_nx,
+        )
+        k_wavelet_low = int(np.ceil(minimum_frequency / wavelet_frequency_resolution))
 
-    # Whiten the data
-    whitened_frequency_domain_strain = compute_whitened_frequency_domain_strain_array(
-        frequency_mask=ifo.frequency_mask,
-        frequency_resolution=1.0 / ifo.duration,
-        frequency_domain_strain_array=ifo.frequency_domain_strain[np.newaxis, :],
-        power_spectral_density_array=ifo.power_spectral_density_array[np.newaxis, :],
-    )
-    # k_freq_low = int(minimum_frequency*duration)
+        # Perform KS test
+        samples = whitened_wavelet_domain_strain[:, k_wavelet_low:-1].flatten()
+        res = scipy.stats.kstest(samples, cdf="norm")
+        assert res.pvalue >= 0.05
 
-    # Transform the data to wavelet domain
-    whitened_wavelet_domain_strain = transform_wavelet_freq(
-        data=whitened_frequency_domain_strain[0],
-        sampling_frequency=sampling_frequency,
-        frequency_resolution=wavelet_frequency_resolution,
-        nx=wavelet_nx,
-    )
-    k_wavelet_low = int(np.ceil(minimum_frequency / wavelet_frequency_resolution))
+    def test_transform_consistency_across_methods(self):
+        """Test that different transform methods produce consistent results."""
+        # Generate test signal
+        sampling_frequency = 256
+        duration = 2
+        frequency_resolution = 8.0
+        nx = 4.0
 
-    # Perform KS test
-    samples = whitened_wavelet_domain_strain[:, k_wavelet_low:-1].flatten()
-    res = scipy.stats.kstest(samples, cdf="norm")
-    assert res.pvalue >= 0.05
+        t = np.linspace(0, duration, int(sampling_frequency * duration), endpoint=False)
+        signal = np.sin(2 * np.pi * 64 * t) + 0.5 * np.cos(2 * np.pi * 32 * t)
+
+        # Test frequency domain transform
+        freq_result = transform_wavelet_freq_time(signal, sampling_frequency, frequency_resolution, nx)
+        freq_quad_result = transform_wavelet_freq_time_quadrature(signal, sampling_frequency, frequency_resolution, nx)
+
+        # Test time domain transform (with reasonable mult parameter)
+        mult = 32
+        time_result = transform_wavelet_time(signal, sampling_frequency, frequency_resolution, nx, mult)
+
+        # All methods should produce results with the same shape
+        assert freq_result.shape == freq_quad_result.shape, "Frequency transforms should have same shape"
+        assert freq_result.shape == time_result.shape, "Time and frequency transforms should have same shape"
+
+        # Results should be finite
+        assert np.all(np.isfinite(freq_result)), "Frequency transform should be finite"
+        assert np.all(np.isfinite(freq_quad_result)), "Frequency quadrature transform should be finite"
+        assert np.all(np.isfinite(time_result)), "Time transform should be finite"
+
+    def test_transform_edge_cases(self):
+        """Test transform behavior with edge cases."""
+        sampling_frequency = 128
+        duration = 0.5  # Short duration
+        frequency_resolution = 4.0
+        nx = 4.0
+
+        # Very small signal
+        t = np.linspace(0, duration, int(sampling_frequency * duration), endpoint=False)
+        small_signal = np.ones_like(t) * 1e-10
+
+        result = transform_wavelet_freq_time(small_signal, sampling_frequency, frequency_resolution, nx)
+
+        # Should handle small signals without error
+        assert np.all(np.isfinite(result)), "Small signal transform should be finite"
+        assert result.shape[0] > 0 and result.shape[1] > 0, "Should produce non-empty result"
+
+        # Zero signal
+        zero_signal = np.zeros_like(t)
+        zero_result = transform_wavelet_freq_time(zero_signal, sampling_frequency, frequency_resolution, nx)
+
+        # Should handle zero signal
+        assert np.all(np.isfinite(zero_result)), "Zero signal transform should be finite"
+        assert np.allclose(zero_result, 0), "Zero signal should produce zero transform"
+
+    def test_parameter_robustness(self):
+        """Test transform robustness to parameter variations."""
+        sampling_frequency = 128
+        duration = 1
+        t = np.linspace(0, duration, int(sampling_frequency * duration), endpoint=False)
+        signal = np.sin(2 * np.pi * 16 * t)
+
+        # Test different frequency resolutions
+        for freq_res in [2.0, 4.0, 8.0, 16.0]:
+            result = transform_wavelet_freq_time(signal, sampling_frequency, freq_res, 4.0)
+            assert np.all(np.isfinite(result)), f"Transform should be finite for freq_res={freq_res}"
+            assert result.size > 0, f"Transform should be non-empty for freq_res={freq_res}"
+
+        # Test different nx values
+        for nx in [2.0, 4.0, 6.0, 8.0]:
+            result = transform_wavelet_freq_time(signal, sampling_frequency, 4.0, nx)
+            assert np.all(np.isfinite(result)), f"Transform should be finite for nx={nx}"
+            assert result.size > 0, f"Transform should be non-empty for nx={nx}"

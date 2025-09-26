@@ -65,7 +65,7 @@ git push origin feature/your-feature-name
 - Approval: Once approved, your changes will be merged into the release branch.
 
 ## Code of Conduct
-Pleaes adhere to our [Code of Conduct](CODE_OF_CONDUCT.md) to maintain a welcoming and respectful environment for all contributors.
+Please adhere to our [Code of Conduct](CODE_OF_CONDUCT.md) to maintain a welcoming and respectful environment for all contributors.
 
 ## Reporting Issues
 If you encounter any issues or bugs, please [report them](https://git.ligo.org/bayesian-null-stream/nullpol/-/issues) on our Git Issues page. Include relevant details and steps to reproduce the issue.

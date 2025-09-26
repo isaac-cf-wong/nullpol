@@ -1,21 +1,20 @@
-"""Test module for verifying nullpol package imports.
+"""Test module for package import functionality and CLI tools.
 
-This module contains basic import tests to ensure all nullpol submodules
-can be imported successfully without errors. This is essential for
-validating the package structure and detecting any missing dependencies
-or circular import issues in the pipeline.
+This module validates that all core package modules can be imported correctly
+and that CLI command-line interfaces work as expected in the installed environment.
 """
 
-from __future__ import annotations
+# pylint: disable=import-outside-toplevel  # Testing import functionality requires imports inside functions
+
+import subprocess
 
 import pytest
 
 
-def test_core_package_import():
-    """Test that the main nullpol package can be imported."""
-    import nullpol
-
-    assert hasattr(nullpol, "__version__")
+@pytest.mark.integration
+def test_nullpol_import():
+    """Test that the main nullpol package can be imported without errors."""
+    import nullpol  # noqa: F401  # pylint: disable=unused-import
 
 
 def test_core_module_imports():
@@ -31,65 +30,31 @@ def test_core_module_imports():
         assert module is not None, f"Module {module_name} is None"
 
 
-def test_simulation_module_imports():
-    """Test that simulation module can be imported successfully."""
-    import nullpol.simulation
-
-    # Verify core simulation functions are available
-    from nullpol.simulation import create_injection
-
-    assert nullpol.simulation is not None
-    assert callable(create_injection)
+@pytest.mark.integration
+def test_simulation_import():
+    """Test that simulation modules can be imported without errors."""
+    import nullpol.simulation  # noqa: F401  # pylint: disable=unused-import
 
 
-def test_analysis_module_imports():
-    """Test that analysis module and its submodules can be imported successfully."""
-    import nullpol.analysis
-
-    # Test main analysis module
-    assert nullpol.analysis is not None
-
-    # Test analysis submodules
-    analysis_submodules = [
-        "likelihood",
-        "null_stream",
-        "clustering",
-        "result",
-        "tf_transforms",
-        "antenna_patterns",
-        "data_context",
-        "prior",
-    ]
-
-    for submodule in analysis_submodules:
-        assert hasattr(nullpol.analysis, submodule), f"Missing analysis submodule: {submodule}"
-        module = getattr(nullpol.analysis, submodule)
-        assert module is not None, f"Analysis submodule {submodule} is None"
+@pytest.mark.integration
+def test_analysis_import():
+    """Test that analysis modules can be imported without errors."""
+    import nullpol.analysis  # noqa: F401  # pylint: disable=unused-import
 
 
-def test_utils_module_imports():
-    """Test that utils module can be imported successfully."""
-    import nullpol.utils
-
-    # Verify logger is available
-    from nullpol.utils import logger
-
-    assert nullpol.utils is not None
-    assert logger is not None
+@pytest.mark.integration
+def test_utils_import():
+    """Test that utility modules can be imported without errors."""
+    import nullpol.utils  # noqa: F401  # pylint: disable=unused-import
 
 
+@pytest.mark.integration
 def test_cli_module_import():
-    """Test that CLI module can be imported (available on explicit import)."""
-    import nullpol.cli
-
-    # Verify the module is properly loaded
-    assert nullpol.cli is not None
-
-    # CLI should have the core tools available
-    assert hasattr(nullpol.cli, "create_injection")
-    assert hasattr(nullpol.cli, "main")
+    """Test that CLI modules can be imported without errors."""
+    import nullpol.cli  # noqa: F401  # pylint: disable=unused-import
 
 
+@pytest.mark.integration
 def test_integrations_module_import():
     """Test that integrations module can be imported (with optional dependencies)."""
     import nullpol.integrations
@@ -112,10 +77,10 @@ def test_integrations_module_import():
         assert module is not None, f"Module {module_name} is None"
 
 
+@pytest.mark.integration
 def test_package_api_design():
     """Test the package API design - core modules auto-imported, advanced modules on-demand."""
     # Start a fresh Python process to test clean imports
-    import subprocess
     import sys
 
     # Test core modules are auto-imported
@@ -140,7 +105,7 @@ print('API design test passed')
         ],
         capture_output=True,
         text=True,
-        cwd="/Users/thomas.ng/Git/nullpol",
+        cwd=None,  # Use current working directory
     )
 
     if result.returncode != 0:

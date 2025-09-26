@@ -88,12 +88,12 @@ def relative_amplification_factor_map(polarization_basis, polarization_derived):
     output = []
     i_counter = 0
     j_counter = 0
-    for i in range(len(polarization_derived)):
-        if not polarization_derived[i]:
+    for i, p_derived in enumerate(polarization_derived):
+        if not p_derived:
             continue
         row = []
-        for j in range(len(polarization_basis)):
-            if polarization_basis[j]:
+        for j, p_basis in enumerate(polarization_basis):
+            if p_basis:
                 row.append(f"{POLARIZATION_DECODING[i]}{POLARIZATION_DECODING[j]}")
             j_counter += 1
         output.append(row)

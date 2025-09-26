@@ -9,13 +9,15 @@ from __future__ import annotations
 import json
 import os
 import tempfile
+from importlib.resources import files
 from unittest import mock
 
-from importlib.resources import files
+import pytest
 
 from nullpol.cli.create_time_frequency_filter_from_sample import main
 
 
+@pytest.mark.integration
 def test_generate_filter_config():
     """Test configuration file generation for filter creation.
 
@@ -55,6 +57,7 @@ def test_generate_filter_config():
     assert generated_content.strip() == default_generated_content.strip()
 
 
+@pytest.mark.integration
 def test_create_time_frequency_filter():
     """Test time-frequency filter creation from signal parameters.
 

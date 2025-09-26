@@ -8,6 +8,7 @@ from ..tf_transforms import transform_wavelet_freq
 from .projections import compute_gw_projector, compute_null_projector, compute_null_stream
 
 
+# pylint: disable=too-few-public-methods
 class NullStreamCalculator:
     """Modern null stream calculation using direct projection approach.
 
@@ -21,7 +22,6 @@ class NullStreamCalculator:
         No dependencies - this is a pure computational class that receives
         all required data via method parameters (dependency injection pattern).
         """
-        pass
 
     # =========================================================================
     # PRIMARY INTERFACE METHODS

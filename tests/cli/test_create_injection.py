@@ -17,6 +17,7 @@ import pytest
 from nullpol.cli.create_injection import main
 
 
+@pytest.mark.integration
 @pytest.fixture(scope="module")
 def test_frame_paths():
     """Create temporary directory and define output file paths for testing.
@@ -51,6 +52,7 @@ def test_frame_paths():
             os.remove(path_value)
 
 
+@pytest.mark.integration
 def test_generate_injection_config():
     """Test configuration file generation functionality.
 
@@ -87,6 +89,7 @@ def test_generate_injection_config():
     assert generated_content.strip() == default_generated_content.strip()
 
 
+@pytest.mark.integration
 def test_create_injection(test_frame_paths):
     """Test basic signal injection creation.
 
@@ -143,6 +146,7 @@ def test_create_injection(test_frame_paths):
     assert os.path.exists(test_frame_paths["V1_TEST_frame_path"]), "V1 output file was not created."
 
 
+@pytest.mark.integration
 def test_create_injection_with_signal_frame(test_frame_paths):
     """Test injection creation using existing signal frame files.
 
@@ -205,6 +209,7 @@ def test_create_injection_with_signal_frame(test_frame_paths):
     assert os.path.exists(test_frame_paths["V1_TEST_WITH_SIGNAL_FRAME_frame_path"]), "V1 output file was not created."
 
 
+@pytest.mark.integration
 def test_create_injection_with_custom_psds(test_frame_paths):
     """Test injection creation using custom power spectral densities.
 

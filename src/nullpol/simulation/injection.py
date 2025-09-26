@@ -18,7 +18,7 @@ def create_injection(
     parameters: dict | None = None,
     noise_type: str = "zero_noise",
     frequency_domain_source_model: Callable = lal_binary_black_hole,
-    waveform_arguments: dict = _DEFAULT_BBH_WAVEFORM_ARGUMENTS,
+    waveform_arguments: dict | None = None,
 ) -> None:
     """A helper function to inject a mock signal into interferometers.
 
@@ -35,6 +35,10 @@ def create_injection(
         waveform_arguments (dict, optional): A dictionary of additional waveform arguments.
             Defaults to {"waveform_approximant": "IMRPhenomPv2", "reference_frequency": 50}.
     """
+    # Set default waveform arguments if None provided
+    if waveform_arguments is None:
+        waveform_arguments = _DEFAULT_BBH_WAVEFORM_ARGUMENTS.copy()
+
     if noise_type == "gaussian":
         interferometers.set_strain_data_from_power_spectral_densities(
             sampling_frequency=sampling_frequency, duration=duration, start_time=start_time

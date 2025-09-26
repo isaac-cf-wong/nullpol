@@ -12,7 +12,7 @@ from . import data_generation  # nullpol_pipe_generation
 from . import create_injection  # nullpol_create_injection
 from . import create_time_frequency_filter_from_sample  # nullpol_create_time_frequency_filter_from_sample
 from . import parser  # nullpol_pipe_write_default_ini
-from . import input  # Input handling shared across CLI tools
+from . import input as cli_input  # Input handling shared across CLI tools
 
 # Conditional asimov-dependent imports
 try:
@@ -30,7 +30,7 @@ __all__ = [
     "create_injection",
     "create_time_frequency_filter_from_sample",
     "parser",
-    "input",
+    "cli_input",
 ]
 
 # Only export asimov tools if available
