@@ -156,7 +156,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Authors
 
 - **Isaac C.F. Wong** - chunfung.wong@kuleuven.be
-- **Thomas Ng**
+- **Thomas Ng** - thomas.ng@nikhef.nl
 - **Balázs Cirok**
 
 ## Citation
