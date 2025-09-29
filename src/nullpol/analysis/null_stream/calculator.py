@@ -87,3 +87,46 @@ class NullStreamCalculator:
         null_energy = np.sum(np.abs(filtered_null_strain) ** 2)
 
         return null_energy
+    
+    def compute_principal_null_components(
+        self,
+        whitened_antenna_pattern_matrix,
+        whitened_frequency_strain_data,
+        frequency_mask,
+        time_frequency_filter,
+        sampling_frequency,
+        wavelet_frequency_resolution,
+        wavelet_nx,
+    ):
+        
+        # Step 1: Compute the GW signal projector for each frequency bin (masked)
+        # Make sure gw_projector and whitened_frequency_strain_data have the same data type
+        gw_projector = compute_gw_projector(whitened_antenna_pattern_matrix, frequency_mask).astype(
+            whitened_frequency_strain_data.dtype
+        )
+
+        # Step 2: Compute the null projector (orthogonal complement to GW projector)
+        null_projector = compute_null_projector(gw_projector)
+
+        # Step 3: Project the whitened frequency-domain strain onto the null space
+        null_stream_freq = compute_null_stream(whitened_frequency_strain_data, null_projector, frequency_mask)
+
+        # Step 4: Transform the null stream to the time-frequency domain
+        null_stream_time_freq = np.array(
+            [
+                transform_wavelet_freq(
+                    data=null_stream_freq[i],
+                    sampling_frequency=sampling_frequency,
+                    frequency_resolution=wavelet_frequency_resolution,
+                    nx=wavelet_nx,
+                )
+                for i in range(len(null_stream_freq))
+            ]
+        )
+
+        # Step 5: Apply the time-frequency filter to the null stream
+        filtered_null_strain = null_stream_time_freq * time_frequency_filter
+
+        # Step 6: Compute the principal null components
+        U, _S, _Vh = np.linalg.svd(whitened_antenna_pattern_matrix)
+        return np.einsum('ijk, ji -> ki', np.conj(U), filtered_null_strain)[2:]
