@@ -3,6 +3,7 @@ from __future__ import annotations
 from .test_calculator import (
     TestNullStreamCalculator,
     calculator_instance,
+    setup_antenna_pattern_processor_mock,
     setup_calculator_mocks,
     simple_test_data,
 )
@@ -24,6 +25,7 @@ __all__ = [
     "TestProjectorMasking",
     "TestProjectorSimpleExamples",
     "calculator_instance",
+    "setup_antenna_pattern_processor_mock",
     "setup_calculator_mocks",
     "setup_random_seed",
     "simple_test_data",

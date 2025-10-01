@@ -61,22 +61,22 @@ class NullStreamCalculator:
         )
 
     # =========================================================================
-    # PRIMARY INTERFACE METHODS
+    # INTERNAL HELPER METHODS
     # =========================================================================
 
-    def compute_null_energy(self, parameters):
-        """Compute the total null energy from parameters.
+    def _compute_filtered_null_stream(self, parameters):
+        """Compute the filtered null stream in time-frequency domain.
 
-        This method computes the whitened antenna patterns and strain data from the parameters,
-        projects the whitened frequency-domain strain data onto the null space
-        (orthogonal to the GW signal subspace), transforms to the time-frequency domain,
-        applies a filter, and sums the squared magnitude to obtain the total null energy.
+        This internal method performs the common computation steps shared by both
+        compute_null_energy and compute_principal_null_components methods.
 
         Args:
             parameters (dict): Dictionary of parameters containing sky location, polarization, etc.
 
         Returns:
-            float: The total null energy after projection and filtering.
+            tuple: A tuple containing:
+                - filtered_null_strain (np.ndarray): Filtered null stream in time-frequency domain.
+                - whitened_antenna_pattern_matrix (np.ndarray): Whitened antenna pattern matrix.
         """
         # Step 1: Get whitened strain data at geocenter in FREQUENCY domain
         # Shape: (n_detectors, n_frequencies)
@@ -120,6 +120,29 @@ class NullStreamCalculator:
 
         # Step 7: Apply the time-frequency filter to the null stream
         filtered_null_strain = null_stream_time_freq * self.data_context.time_frequency_filter
+
+        return filtered_null_strain, whitened_antenna_pattern_matrix
+
+    # =========================================================================
+    # PRIMARY INTERFACE METHODS
+    # =========================================================================
+
+    def compute_null_energy(self, parameters):
+        """Compute the total null energy from parameters.
+
+        This method computes the whitened antenna patterns and strain data from the parameters,
+        projects the whitened frequency-domain strain data onto the null space
+        (orthogonal to the GW signal subspace), transforms to the time-frequency domain,
+        applies a filter, and sums the squared magnitude to obtain the total null energy.
+
+        Args:
+            parameters (dict): Dictionary of parameters containing sky location, polarization, etc.
+
+        Returns:
+            float: The total null energy after projection and filtering.
+        """
+        # Compute the filtered null stream (Steps 1-7)
+        filtered_null_strain, _ = self._compute_filtered_null_stream(parameters)
 
         # Step 8: Sum the squared magnitude to obtain the total null energy
         null_energy = np.sum(np.abs(filtered_null_strain) ** 2)
@@ -140,48 +163,22 @@ class NullStreamCalculator:
         Returns:
             np.ndarray: The principal null components.
         """
-        # Step 1: Get whitened strain data at geocenter in FREQUENCY domain
-        # Shape: (n_detectors, n_frequencies)
-        whitened_frequency_strain_data = self.data_context.compute_whitened_strain_at_geocenter(parameters)
-
-        # Step 2: Compute whitened antenna patterns in frequency domain
-        # Shape: (n_frequencies, n_detectors, n_modes)
-        whitened_antenna_pattern_matrix = self.antenna_pattern_processor.compute_whitened_antenna_pattern_matrix(
-            self.data_context.interferometers,
-            self.data_context.power_spectral_density_array,
-            self.data_context.frequency_mask,
-            parameters,
+        # Validate assumptions for this computation
+        n_basis_modes = np.sum(self.antenna_pattern_processor.polarization_basis)
+        assert n_basis_modes == 2, (
+            f"Principal null component computation assumes exactly 2 polarization basis modes, "
+            f"but got {n_basis_modes}. The current implementation uses [2:] slicing which is only "
+            f"valid for 2 basis modes (typically 'plus' and 'cross')."
+        )
+        n_modes = np.sum(self.antenna_pattern_processor.polarization_modes)
+        assert n_modes == n_basis_modes, (
+            f"Principal null component computation assumes all polarization modes are basis modes, "
+            f"but got {n_modes} modes and {n_basis_modes} basis modes. "
+            f"Derived polarization modes are not supported in the current implementation."
         )
 
-        # Step 3: Compute the GW signal projector for each frequency bin (masked)
-        # Make sure gw_projector and whitened_frequency_strain_data have the same data type
-        gw_projector = compute_gw_projector(whitened_antenna_pattern_matrix, self.data_context.frequency_mask).astype(
-            whitened_frequency_strain_data.dtype
-        )
-
-        # Step 4: Compute the null projector (orthogonal complement to GW projector)
-        null_projector = compute_null_projector(gw_projector)
-
-        # Step 5: Project the whitened frequency-domain strain onto the null space
-        null_stream_freq = compute_null_stream(
-            whitened_frequency_strain_data, null_projector, self.data_context.frequency_mask
-        )
-
-        # Step 6: Transform the null stream to the time-frequency domain
-        null_stream_time_freq = np.array(
-            [
-                transform_wavelet_freq(
-                    data=null_stream_freq[i],
-                    sampling_frequency=self.data_context.sampling_frequency,
-                    frequency_resolution=self.data_context.wavelet_frequency_resolution,
-                    nx=self.data_context.wavelet_nx,
-                )
-                for i in range(len(null_stream_freq))
-            ]
-        )
-
-        # Step 7: Apply the time-frequency filter to the null stream
-        filtered_null_strain = null_stream_time_freq * self.data_context.time_frequency_filter
+        # Compute the filtered null stream (Steps 1-7)
+        filtered_null_strain, whitened_antenna_pattern_matrix = self._compute_filtered_null_stream(parameters)
 
         # Step 8: Compute the principal null components
         U, _S, _Vh = np.linalg.svd(whitened_antenna_pattern_matrix)

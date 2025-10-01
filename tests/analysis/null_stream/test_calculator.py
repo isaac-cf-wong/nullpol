@@ -14,6 +14,25 @@ import pytest
 from nullpol.analysis.null_stream.calculator import NullStreamCalculator
 
 
+def setup_antenna_pattern_processor_mock(mock_antenna_class):
+    """Helper function to setup AntennaPatternProcessor mocks with proper polarization properties.
+
+    Args:
+        mock_antenna_class: The mocked AntennaPatternProcessor class.
+    """
+    from unittest.mock import PropertyMock
+
+    mock_antenna_instance = mock_antenna_class.return_value
+    # Mock polarization_basis: 2 basis modes (plus and cross)
+    type(mock_antenna_instance).polarization_basis = PropertyMock(
+        return_value=np.array([True, True, False, False, False, False])
+    )
+    # Mock polarization_modes: 2 modes (plus and cross, same as basis)
+    type(mock_antenna_instance).polarization_modes = PropertyMock(
+        return_value=np.array([True, True, False, False, False, False])
+    )
+
+
 def setup_calculator_mocks(
     calculator,
     frequency_mask=None,
@@ -50,14 +69,23 @@ def setup_calculator_mocks(
 @pytest.fixture
 def calculator_instance():
     """Create a calculator instance for testing."""
-    from unittest.mock import Mock
+    from unittest.mock import Mock, PropertyMock
 
     with (
         patch("nullpol.analysis.null_stream.calculator.TimeFrequencyDataContext"),
-        patch("nullpol.analysis.null_stream.calculator.AntennaPatternProcessor"),
+        patch("nullpol.analysis.null_stream.calculator.AntennaPatternProcessor") as mock_antenna_class,
     ):
         # Create mock interferometers
         mock_ifos = Mock()
+
+        # Mock the polarization_basis and polarization_modes properties to return proper values
+        mock_antenna_instance = mock_antenna_class.return_value
+        type(mock_antenna_instance).polarization_basis = PropertyMock(
+            return_value=np.array([True, True, False, False, False, False])  # 2 basis modes: plus and cross
+        )
+        type(mock_antenna_instance).polarization_modes = PropertyMock(
+            return_value=np.array([True, True, False, False, False, False])  # 2 modes: plus and cross
+        )
 
         return NullStreamCalculator(
             interferometers=mock_ifos,
@@ -110,6 +138,7 @@ class TestNullStreamCalculator:
         """Test calculator initialization."""
         from unittest.mock import Mock
 
+        setup_antenna_pattern_processor_mock(mock_antenna_class)
         mock_ifos = Mock()
         calculator = NullStreamCalculator(
             interferometers=mock_ifos,
@@ -131,6 +160,7 @@ class TestNullStreamCalculator:
         """Test that calculator has required components."""
         from unittest.mock import Mock
 
+        setup_antenna_pattern_processor_mock(mock_antenna_class)
         mock_ifos = Mock()
         calculator = NullStreamCalculator(
             interferometers=mock_ifos,
@@ -196,6 +226,7 @@ class TestNullStreamCalculator:
         """Test null energy computation with zero filter (should give zero energy)."""
         from unittest.mock import Mock
 
+        setup_antenna_pattern_processor_mock(mock_antenna_class)
         mock_ifos = Mock()
         # Use zero filter
         zero_filter = np.zeros((2, 64), dtype=complex)
@@ -234,6 +265,7 @@ class TestNullStreamCalculator:
         """Test null energy computation when all frequencies are masked."""
         from unittest.mock import Mock
 
+        setup_antenna_pattern_processor_mock(mock_antenna_class)
         mock_ifos = Mock()
         tf_filter = np.ones((2, 64), dtype=complex)
 
@@ -275,6 +307,7 @@ class TestNullStreamCalculator:
         """Test that data types are handled consistently."""
         from unittest.mock import Mock
 
+        setup_antenna_pattern_processor_mock(mock_antenna_class)
         mock_ifos = Mock()
         # Use complex64 input data
         tf_filter = np.ones((1, 64), dtype=np.complex64)
@@ -321,6 +354,7 @@ class TestNullStreamCalculator:
         """Test that parameters are correctly passed to the transform function."""
         from unittest.mock import Mock
 
+        setup_antenna_pattern_processor_mock(mock_antenna_class)
         mock_ifos = Mock()
         # Call with specific parameters
         sampling_freq = 8192.0
@@ -382,6 +416,7 @@ class TestNullStreamCalculator:
         """Test with single detector (minimal case)."""
         from unittest.mock import Mock
 
+        setup_antenna_pattern_processor_mock(mock_antenna_class)
         mock_ifos = Mock()
         tf_filter = np.ones((1, 32), dtype=complex)
 
@@ -428,6 +463,7 @@ class TestNullStreamCalculator:
         """Test that all computation steps are properly integrated."""
         from unittest.mock import Mock
 
+        setup_antenna_pattern_processor_mock(mock_antenna_class)
         mock_ifos = Mock()
         tf_filter = np.ones((2, 16), dtype=complex) * 2.0  # Amplify by factor 2
 
