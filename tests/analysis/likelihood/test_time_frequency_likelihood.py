@@ -12,19 +12,12 @@ class TestTimeFrequencyLikelihoodSimple:
 
     def test_log_likelihood_not_implemented_error(self):
         """Test that log_likelihood raises NotImplementedError in base class."""
-        # Create minimal mock to avoid complex setup
-        with (
-            patch("nullpol.analysis.likelihood.time_frequency_likelihood.TimeFrequencyDataContext"),
-            patch("nullpol.analysis.likelihood.time_frequency_likelihood.AntennaPatternProcessor"),
-            patch("nullpol.analysis.likelihood.time_frequency_likelihood.NullStreamCalculator"),
-        ):
+        # Create mock likelihood instance directly without going through __init__
+        likelihood = TimeFrequencyLikelihood.__new__(TimeFrequencyLikelihood)
 
-            # Create mock likelihood instance directly without going through __init__
-            likelihood = TimeFrequencyLikelihood.__new__(TimeFrequencyLikelihood)
-
-            # Test that log_likelihood raises NotImplementedError
-            with pytest.raises(NotImplementedError):
-                likelihood.log_likelihood()
+        # Test that log_likelihood raises NotImplementedError
+        with pytest.raises(NotImplementedError):
+            likelihood.log_likelihood()
 
     def test_calculate_noise_log_likelihood_not_implemented_error(self):
         """Test that _calculate_noise_log_likelihood raises NotImplementedError in base class."""
