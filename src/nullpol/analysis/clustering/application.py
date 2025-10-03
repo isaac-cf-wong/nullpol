@@ -39,8 +39,7 @@ def run_time_frequency_clustering(
             on threshold_type.
         time_padding (float): Time padding around clusters in seconds.
         frequency_padding (float): Frequency padding around clusters in Hz.
-        skypoints (numpy.ndarray): Array of sky positions (RA, Dec) to test, with shape
-            (n_points, 2).
+        skypoints (int): Number of random sky positions to test.
         return_sky_maximized_spectrogram (bool, optional): If True, also return the
             sky-maximized spectrogram. Defaults to False.
         threshold_type (str, optional): Method for interpreting threshold value:
