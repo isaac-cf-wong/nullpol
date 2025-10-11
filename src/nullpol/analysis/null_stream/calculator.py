@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import numpy as np
 
-from ..tf_transforms import transform_wavelet_freq
-from ..data_context import TimeFrequencyDataContext
 from ..antenna_patterns import AntennaPatternProcessor
+from ..data_context import TimeFrequencyDataContext
+from ..tf_transforms import transform_wavelet_freq
 from .projections import compute_gw_projector, compute_null_projector, compute_null_stream
 
 
@@ -85,10 +85,10 @@ class NullStreamCalculator:
         # Step 2: Compute whitened antenna patterns in frequency domain
         # Shape: (n_frequencies, n_detectors, n_modes)
         whitened_antenna_pattern_matrix = self.antenna_pattern_processor.compute_whitened_antenna_pattern_matrix(
-            self.data_context.interferometers,
-            self.data_context.power_spectral_density_array,
-            self.data_context.frequency_mask,
-            parameters,
+            interferometers=self.data_context.interferometers,
+            power_spectral_density_array=self.data_context.power_spectral_density_array,
+            frequency_mask=self.data_context.frequency_mask,
+            parameters=parameters,
         )
 
         # Step 3: Compute the GW signal projector for each frequency bin (masked)
@@ -120,6 +120,15 @@ class NullStreamCalculator:
 
         # Step 7: Apply the time-frequency filter to the null stream
         filtered_null_strain = null_stream_time_freq * self.data_context.time_frequency_filter
+
+        # Step 8: Recalculating the antenna patterns using the frequency mask of the null stream (in time-frequency domain)
+        # Shape: (n_tf_freq_bins, n_detectors, n_modes)
+        whitened_antenna_pattern_matrix = self.antenna_pattern_processor.compute_whitened_antenna_pattern_matrix(
+            interferometers=self.data_context.interferometers,
+            power_spectral_density_array=self.data_context.power_spectral_density_array,
+            frequency_mask=self.data_context.time_frequency_filter[0, :],
+            parameters=parameters,
+        )
 
         return filtered_null_strain, whitened_antenna_pattern_matrix
 
@@ -182,4 +191,5 @@ class NullStreamCalculator:
 
         # Step 8: Compute the principal null components
         U, _S, _Vh = np.linalg.svd(whitened_antenna_pattern_matrix)
-        return np.einsum("ijk, ji -> ki", np.conj(U), filtered_null_strain)[2:]
+
+        return np.einsum("fdm, dtf -> mtf", np.conj(U), filtered_null_strain)[2, :, :]
