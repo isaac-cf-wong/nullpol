@@ -160,7 +160,7 @@ class NullStreamCalculator:
         """Compute the null stream samples by transforming the principal null components to the time-frequency domain.
 
         Args:
-            injection_parameters (dict): Dictionary of parameters containing sky location, polarization, etc.
+            parameters (dict): Dictionary of parameters containing sky location, polarization, etc.
             ra_true (float): The right ascension parameter to use when constructing the null stream. May differ from the corresponding injection parameter. Default: None (if unknown).
             dec_true (float): The declination parameter to use when constructing the null stream. May differ from the corresponding injection parameter. Default: None (if unknown).
             geocent_time_true (float): The geocent_time parameter to use when constructing the null stream. May differ from the corresponding injection parameter. Default: None (if unknown).
@@ -226,12 +226,10 @@ class NullStreamCalculator:
         )
 
         # Step 7: Apply the time-frequency filter to the principal null components
-        id_filtered_pixels = np.argwhere(self.data_context.time_frequency_filter > 0)
-        filtered_principal_null_components = np.array(
-            [
-                principal_null_components_time_freq[id_filtered_pixels[i, 0], id_filtered_pixels[i, 1]]
-                for i in range(id_filtered_pixels.shape[0])
-            ]
+        filtered_principal_null_components = (
+            principal_null_components_time_freq * self.data_context.time_frequency_filter
         )
+
+        # TODO: Step 8: Remove time-frequency pixels that have been filtered out! (Currently they are all zeros, and distort the result of most frequentist tests.)
 
         return filtered_principal_null_components
