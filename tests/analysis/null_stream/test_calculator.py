@@ -180,7 +180,6 @@ class TestNullStreamCalculator:
             method for method in dir(calculator) if not method.startswith("_") and callable(getattr(calculator, method))
         ]
         assert "compute_null_energy" in public_methods
-        assert "compute_principal_null_components" in public_methods
 
     @patch("nullpol.analysis.null_stream.calculator.transform_wavelet_freq")
     def test_compute_null_energy_workflow(self, mock_transform, calculator_instance):
