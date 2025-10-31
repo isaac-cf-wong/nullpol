@@ -74,9 +74,7 @@ class NullStreamCalculator:
             parameters (dict): Dictionary of parameters containing sky location, polarization, etc.
 
         Returns:
-            tuple: A tuple containing:
-                - filtered_null_strain (np.ndarray): Filtered null stream in time-frequency domain.
-                - whitened_antenna_pattern_matrix (np.ndarray): Whitened antenna pattern matrix.
+            filtered_null_strain (np.ndarray): Filtered null stream in time-frequency domain.
         """
         # Step 1: Get whitened strain data at geocenter in FREQUENCY domain
         # Shape: (n_detectors, n_frequencies)
@@ -121,7 +119,7 @@ class NullStreamCalculator:
         # Step 7: Apply the time-frequency filter to the null stream
         filtered_null_strain = null_stream_time_freq * self.data_context.time_frequency_filter
 
-        return filtered_null_strain, whitened_antenna_pattern_matrix
+        return filtered_null_strain
 
     # =========================================================================
     # PRIMARY INTERFACE METHODS
@@ -142,44 +140,9 @@ class NullStreamCalculator:
             float: The total null energy after projection and filtering.
         """
         # Compute the filtered null stream (Steps 1-7)
-        filtered_null_strain, _ = self._compute_filtered_null_stream(parameters)
+        filtered_null_strain = self._compute_filtered_null_stream(parameters)
 
         # Step 8: Sum the squared magnitude to obtain the total null energy
         null_energy = np.sum(np.abs(filtered_null_strain) ** 2)
 
         return null_energy
-
-    def compute_principal_null_components(self, parameters):
-        """Compute the principal null components from parameters.
-
-        This method computes the whitened antenna patterns and strain data from the parameters,
-        projects the whitened frequency-domain strain data onto the null space,
-        transforms to the time-frequency domain, applies a filter, and computes the principal
-        null components using SVD.
-
-        Args:
-            parameters (dict): Dictionary of parameters containing sky location, polarization, etc.
-
-        Returns:
-            np.ndarray: The principal null components.
-        """
-        # Validate assumptions for this computation
-        n_basis_modes = np.sum(self.antenna_pattern_processor.polarization_basis)
-        assert n_basis_modes == 2, (
-            f"Principal null component computation assumes exactly 2 polarization basis modes, "
-            f"but got {n_basis_modes}. The current implementation uses [2:] slicing which is only "
-            f"valid for 2 basis modes (typically 'plus' and 'cross')."
-        )
-        n_modes = np.sum(self.antenna_pattern_processor.polarization_modes)
-        assert n_modes == n_basis_modes, (
-            f"Principal null component computation assumes all polarization modes are basis modes, "
-            f"but got {n_modes} modes and {n_basis_modes} basis modes. "
-            f"Derived polarization modes are not supported in the current implementation."
-        )
-
-        # Compute the filtered null stream (Steps 1-7)
-        filtered_null_strain, whitened_antenna_pattern_matrix = self._compute_filtered_null_stream(parameters)
-
-        # Step 8: Compute the principal null components
-        U, _S, _Vh = np.linalg.svd(whitened_antenna_pattern_matrix)
-        return np.einsum("ijk, ji -> ki", np.conj(U), filtered_null_strain)[2:]
