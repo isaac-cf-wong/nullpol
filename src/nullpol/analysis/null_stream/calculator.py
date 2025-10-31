@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import numpy as np
 
-from ..antenna_patterns import AntennaPatternProcessor
-from ..data_context import TimeFrequencyDataContext
 from ..tf_transforms import transform_wavelet_freq
+from ..data_context import TimeFrequencyDataContext
+from ..antenna_patterns import AntennaPatternProcessor
 from .projections import compute_gw_projector, compute_null_projector, compute_null_stream
 
 
@@ -72,30 +72,23 @@ class NullStreamCalculator:
 
         Args:
             parameters (dict): Dictionary of parameters containing sky location, polarization, etc.
-            ra_true (float): The right ascension parameter to use when constructing the null stream. May differ from the corresponding injection parameter. Default: None (if unknown).
-            dec_true (float): The declination parameter to use when constructing the null stream. May differ from the corresponding injection parameter. Default: None (if unknown).
-            geocent_time_true (float): The geocent_time parameter to use when constructing the null stream. May differ from the corresponding injection parameter. Default: None (if unknown).
 
         Returns:
-            filtered_null_strain (np.ndarray): Filtered null stream in time-frequency domain.
+            tuple: A tuple containing:
+                - filtered_null_strain (np.ndarray): Filtered null stream in time-frequency domain.
+                - whitened_antenna_pattern_matrix (np.ndarray): Whitened antenna pattern matrix.
         """
         # Step 1: Get whitened strain data at geocenter in FREQUENCY domain
         # Shape: (n_detectors, n_frequencies)
-        whitened_frequency_strain_data = self.data_context.compute_whitened_strain_at_geocenter(injection_parameters)
+        whitened_frequency_strain_data = self.data_context.compute_whitened_strain_at_geocenter(parameters)
 
         # Step 2: Compute whitened antenna patterns in frequency domain
         # Shape: (n_frequencies, n_detectors, n_modes)
-        parameters = injection_parameters.copy()
-        location_is_known = None not in [ra_true, dec_true, geocent_time_true]
-        if location_is_known:
-            parameters["ra"] = ra_true
-            parameters["dec"] = dec_true
-            parameters["geocent_time"] = geocent_time_true
         whitened_antenna_pattern_matrix = self.antenna_pattern_processor.compute_whitened_antenna_pattern_matrix(
-            interferometers=self.data_context.interferometers,
-            power_spectral_density_array=self.data_context.power_spectral_density_array,
-            frequency_mask=self.data_context.frequency_mask,
-            parameters=parameters,
+            self.data_context.interferometers,
+            self.data_context.power_spectral_density_array,
+            self.data_context.frequency_mask,
+            parameters,
         )
 
         # Step 3: Compute the GW signal projector for each frequency bin (masked)
@@ -107,7 +100,7 @@ class NullStreamCalculator:
         # Step 4: Compute the null projector (orthogonal complement to GW projector)
         null_projector = compute_null_projector(gw_projector)
 
-        # Step 5: Project the whitened frequency domain strain onto the null space
+        # Step 5: Project the whitened frequency-domain strain onto the null space
         null_stream_freq = compute_null_stream(
             whitened_frequency_strain_data, null_projector, self.data_context.frequency_mask
         )
@@ -128,7 +121,7 @@ class NullStreamCalculator:
         # Step 7: Apply the time-frequency filter to the null stream
         filtered_null_strain = null_stream_time_freq * self.data_context.time_frequency_filter
 
-        return filtered_null_strain
+        return filtered_null_strain, whitened_antenna_pattern_matrix
 
     # =========================================================================
     # PRIMARY INTERFACE METHODS
@@ -138,7 +131,7 @@ class NullStreamCalculator:
         """Compute the total null energy from parameters.
 
         This method computes the whitened antenna patterns and strain data from the parameters,
-        projects the whitened frequency domain strain data onto the null space
+        projects the whitened frequency-domain strain data onto the null space
         (orthogonal to the GW signal subspace), transforms to the time-frequency domain,
         applies a filter, and sums the squared magnitude to obtain the total null energy.
 
@@ -149,26 +142,28 @@ class NullStreamCalculator:
             float: The total null energy after projection and filtering.
         """
         # Compute the filtered null stream (Steps 1-7)
-        filtered_null_strain = self._compute_filtered_null_stream(parameters)
+        filtered_null_strain, _ = self._compute_filtered_null_stream(parameters)
 
         # Step 8: Sum the squared magnitude to obtain the total null energy
         null_energy = np.sum(np.abs(filtered_null_strain) ** 2)
 
         return null_energy
 
-    def compute_null_stream_samples(self, injection_parameters, ra_true=None, dec_true=None, geocent_time_true=None):
-        """Compute the null stream samples by transforming the principal null components to the time-frequency domain.
+    def compute_principal_null_components(self, parameters):
+        """Compute the principal null components from parameters.
+
+        This method computes the whitened antenna patterns and strain data from the parameters,
+        projects the whitened frequency-domain strain data onto the null space,
+        transforms to the time-frequency domain, applies a filter, and computes the principal
+        null components using SVD.
 
         Args:
             parameters (dict): Dictionary of parameters containing sky location, polarization, etc.
-            ra_true (float): The right ascension parameter to use when constructing the null stream. May differ from the corresponding injection parameter. Default: None (if unknown).
-            dec_true (float): The declination parameter to use when constructing the null stream. May differ from the corresponding injection parameter. Default: None (if unknown).
-            geocent_time_true (float): The geocent_time parameter to use when constructing the null stream. May differ from the corresponding injection parameter. Default: None (if unknown).
 
         Returns:
-            null_stream_samples (np.ndarray): The null stream samples in the time-frequency domain.
+            np.ndarray: The principal null components.
         """
-        # Step 1: Validate assumptions for this computation
+        # Validate assumptions for this computation
         n_basis_modes = np.sum(self.antenna_pattern_processor.polarization_basis)
         assert n_basis_modes == 2, (
             f"Principal null component computation assumes exactly 2 polarization basis modes, "
@@ -182,54 +177,9 @@ class NullStreamCalculator:
             f"Derived polarization modes are not supported in the current implementation."
         )
 
-        # Step 2: Compute whitened frequency strain data
-        whitened_frequency_strain_data = self.data_context.compute_whitened_strain_at_geocenter(injection_parameters)
+        # Compute the filtered null stream (Steps 1-7)
+        filtered_null_strain, whitened_antenna_pattern_matrix = self._compute_filtered_null_stream(parameters)
 
-        # Step 3: Compute whitened antenna pattern matrix
-        parameters = injection_parameters.copy()
-        location_is_known = None not in [ra_true, dec_true, geocent_time_true]
-        if location_is_known:
-            parameters["ra"] = ra_true
-            parameters["dec"] = dec_true
-            parameters["geocent_time"] = geocent_time_true
-        whitened_antenna_pattern_matrix = self.antenna_pattern_processor.compute_whitened_antenna_pattern_matrix(
-            interferometers=self.data_context.interferometers,
-            power_spectral_density_array=self.data_context.power_spectral_density_array,
-            frequency_mask=self.data_context.frequency_mask,
-            parameters=parameters,
-        )
-
-        # Step 4: Compute the GW signal projector for each frequency bin (masked)
-        # Make sure gw_projector and whitened_frequency_strain_data have the same data type
-        gw_projector = compute_gw_projector(whitened_antenna_pattern_matrix, self.data_context.frequency_mask).astype(
-            whitened_frequency_strain_data.dtype
-        )
-
-        # Step 5: Compute the null projector (orthogonal complement to GW projector)
-        null_projector = compute_null_projector(gw_projector)
-
-        # Step 6: Project the whitened frequency domain strain onto the null space
-        null_stream_freq = compute_null_stream(
-            whitened_frequency_strain_data, null_projector, self.data_context.frequency_mask
-        )
-
-        # Step 7: Compute the principal null components of the frequency domain null stream
+        # Step 8: Compute the principal null components
         U, _S, _Vh = np.linalg.svd(whitened_antenna_pattern_matrix)
-        principal_null_components_freq = np.einsum("fdm, df -> mf", np.conj(U), null_stream_freq)[2, :]
-
-        # Step 8: Transform the principal null components to the time-frequency domain
-        principal_null_components_time_freq = transform_wavelet_freq(
-            data=principal_null_components_freq,
-            sampling_frequency=self.data_context.sampling_frequency,
-            frequency_resolution=self.data_context.wavelet_frequency_resolution,
-            nx=self.data_context.wavelet_nx,
-        )
-
-        # Step 7: Apply the time-frequency filter to the principal null components
-        filtered_principal_null_components = (
-            principal_null_components_time_freq * self.data_context.time_frequency_filter
-        )
-
-        # TODO: Step 8: Remove time-frequency pixels that have been filtered out! (Currently they are all zeros, and distort the result of most frequentist tests.)
-
-        return filtered_principal_null_components
+        return np.einsum("ijk, ji -> ki", np.conj(U), filtered_null_strain)[2:]
