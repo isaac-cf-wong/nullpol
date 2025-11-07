@@ -48,7 +48,7 @@ test = [
     "pre-commit==4.3.0",
     "pytest-mock<3.15.2",
     "pytest-github-actions-annotate-failures",
-    "ruff==0.13.1",
+    "ruff==0.14.4",
 ]
 
 [project.urls]
