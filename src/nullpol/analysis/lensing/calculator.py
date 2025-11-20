@@ -62,7 +62,7 @@ class LensingNullStreamCalculator(NullStreamCalculator):
         """
         calibrated_whitened_antenna_pattern_matrix = (
             self.antenna_pattern_processor.compute_calibrated_whitened_antenna_pattern_matrix(
-                self.data_context.interferometers[0] + self.data_context.interferometers[1],
+                self.data_context.interferometers,
                 self.data_context.power_spectral_density_array,
                 self.data_context.masked_frequency_array,
                 self.data_context.frequency_mask,

@@ -27,6 +27,7 @@ corrcoef
 cpus
 currentmodule
 cylon
+demagnified
 detchar
 dryrun
 dynesty

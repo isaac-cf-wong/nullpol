@@ -261,10 +261,6 @@ class TestLensingTimeFrequencyDataContext:
             wavelet_nx=256,
         )
 
-        # Get actual dimensions from the context
-        duration = context.duration
-        sampling_frequency = context.sampling_frequency
-
         # Calculate expected shape - use tf_Nt and tf_Nf from context
         tf_Nt = context.tf_Nt
         tf_Nf = context.tf_Nf
