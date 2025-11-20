@@ -86,7 +86,6 @@ class NullStreamCalculator:
             self.antenna_pattern_processor.compute_calibrated_whitened_antenna_pattern_matrix(
                 self.data_context.interferometers,
                 self.data_context.power_spectral_density_array,
-                self.data_context.frequency_domain_strain_array,
                 self.data_context.masked_frequency_array,
                 self.data_context.frequency_mask,
                 parameters,
