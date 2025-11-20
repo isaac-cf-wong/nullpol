@@ -32,17 +32,13 @@ def two_detector_sets():
     ifos_1 = InterferometerList(["H1", "L1", "V1"])
     for ifo in ifos_1:
         ifo.minimum_frequency = minimum_frequency
-    ifos_1.set_strain_data_from_power_spectral_densities(
-        sampling_frequency=sampling_frequency, duration=duration
-    )
+    ifos_1.set_strain_data_from_power_spectral_densities(sampling_frequency=sampling_frequency, duration=duration)
 
     # Second set of detectors - subset of first set
     ifos_2 = InterferometerList(["H1", "L1"])
     for ifo in ifos_2:
         ifo.minimum_frequency = minimum_frequency
-    ifos_2.set_strain_data_from_power_spectral_densities(
-        sampling_frequency=sampling_frequency, duration=duration
-    )
+    ifos_2.set_strain_data_from_power_spectral_densities(sampling_frequency=sampling_frequency, duration=duration)
 
     return [ifos_1, ifos_2]
 
@@ -128,18 +124,12 @@ class TestLensingTimeFrequencyDataContext:
 
         # Compute expected delays manually
         expected_delays_1 = [
-            ifo.time_delay_from_geocenter(
-                ra=parameters["ra"], 
-                dec=parameters["dec"], 
-                time=parameters["geocent_time"]
-            )
+            ifo.time_delay_from_geocenter(ra=parameters["ra"], dec=parameters["dec"], time=parameters["geocent_time"])
             for ifo in context.interferometers_1
         ]
         expected_delays_2 = [
             ifo.time_delay_from_geocenter(
-                ra=parameters["ra"], 
-                dec=parameters["dec"], 
-                time=parameters["geocent_time"] + lensing_delay
+                ra=parameters["ra"], dec=parameters["dec"], time=parameters["geocent_time"] + lensing_delay
             )
             for ifo in context.interferometers_2
         ]
@@ -270,15 +260,15 @@ class TestLensingTimeFrequencyDataContext:
             wavelet_frequency_resolution=wavelet_frequency_resolution,
             wavelet_nx=256,
         )
-        
+
         # Get actual dimensions from the context
         duration = context.duration
         sampling_frequency = context.sampling_frequency
-        
+
         # Calculate expected shape - use tf_Nt and tf_Nf from context
         tf_Nt = context.tf_Nt
         tf_Nf = context.tf_Nf
-        
+
         # Now create a new context with matching filter
         tf_filter = np.ones((tf_Nt, tf_Nf))
         context_with_filter = LensingTimeFrequencyDataContext(
@@ -309,10 +299,8 @@ class TestLensingTimeFrequencyDataContext:
         for ifo in all_ifos:
             ifo.minimum_frequency = minimum_frequency
 
-        all_ifos.set_strain_data_from_power_spectral_densities(
-            sampling_frequency=sampling_frequency, duration=duration
-        )
-        
+        all_ifos.set_strain_data_from_power_spectral_densities(sampling_frequency=sampling_frequency, duration=duration)
+
         # Separate back into two sets
         ifos_1 = InterferometerList([all_ifos[0]])
         ifos_2 = InterferometerList([all_ifos[1]])
