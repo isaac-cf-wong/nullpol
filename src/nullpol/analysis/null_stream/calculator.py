@@ -12,7 +12,7 @@ from .projections import compute_gw_projector, compute_null_projector, compute_n
 
 # pylint: disable=too-few-public-methods
 class NullStreamCalculator:
-    """Modern null stream calculation using direct projection approach.
+    """Null stream calculation using direct projection approach.
 
     This class manages data context and antenna pattern processing along with
     null stream computations.
@@ -64,11 +64,25 @@ class NullStreamCalculator:
     # INTERNAL HELPER METHODS
     # =========================================================================
 
+    def _compute_calibrated_whitened_antenna_pattern_matrix(self, parameters):
+        """Compute the calibrated whitened antenna pattern matrix.
+
+        Args:
+            parameters (dict): Dictionary of parameters containing sky location, polarization, etc.
+
+        Returns:
+            np.ndarray: Calibrated whitened antenna pattern matrix.
+        """
+        return self.antenna_pattern_processor.compute_calibrated_whitened_antenna_pattern_matrix(
+            self.data_context.interferometers,
+            self.data_context.power_spectral_density_array,
+            self.data_context.masked_frequency_array,
+            self.data_context.frequency_mask,
+            parameters,
+        )
+
     def _compute_filtered_null_stream(self, parameters):
         """Compute the filtered null stream in time-frequency domain.
-
-        This internal method performs the common computation steps shared by both
-        compute_null_energy and compute_principal_null_components methods.
 
         Args:
             parameters (dict): Dictionary of parameters containing sky location, polarization, etc.
@@ -82,14 +96,8 @@ class NullStreamCalculator:
 
         # Step 2: Compute whitened antenna patterns in frequency domain
         # Shape: (n_frequencies, n_detectors, n_modes)
-        calibrated_whitened_antenna_pattern_matrix = (
-            self.antenna_pattern_processor.compute_calibrated_whitened_antenna_pattern_matrix(
-                self.data_context.interferometers,
-                self.data_context.power_spectral_density_array,
-                self.data_context.masked_frequency_array,
-                self.data_context.frequency_mask,
-                parameters,
-            )
+        calibrated_whitened_antenna_pattern_matrix = self._compute_calibrated_whitened_antenna_pattern_matrix(
+            parameters
         )
 
         # Step 3: Compute the GW signal projector for each frequency bin (masked)

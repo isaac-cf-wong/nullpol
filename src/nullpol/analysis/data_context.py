@@ -161,7 +161,7 @@ class TimeFrequencyDataContext:
         interferometers (list): List of interferometers.
         wavelet_frequency_resolution (float): The frequency resolution of the wavelet transform.
         wavelet_nx (int): The number of points in the wavelet transform.
-        time_frequency_filter (str or np.ndarray, optional): The time-frequency filter.
+        time_frequency_filter (np.ndarray, optional): The time-frequency filter.
     """
 
     def __init__(

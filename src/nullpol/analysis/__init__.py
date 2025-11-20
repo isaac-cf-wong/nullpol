@@ -9,6 +9,7 @@ from . import tf_transforms  # Time-frequency transforms (wavelets, STFT)
 from . import antenna_patterns  # Antenna pattern functions (base patterns + conditioning + processor)
 from . import data_context  # Data management and signal processing functions
 from . import prior  # Prior distributions for polarization analysis
+from . import lensing  # Strong lensing analysis modules
 
 __all__ = [
     "likelihood",
@@ -19,4 +20,5 @@ __all__ = [
     "antenna_patterns",
     "data_context",
     "prior",
+    "lensing",
 ]
