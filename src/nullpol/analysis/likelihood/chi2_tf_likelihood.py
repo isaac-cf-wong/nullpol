@@ -1,3 +1,4 @@
+# pylint: disable=duplicate-code  # Legitimate argument parsing patterns shared across modules
 from __future__ import annotations
 
 import numpy as np
@@ -58,29 +59,8 @@ class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
 
     def log_likelihood(self):
         """Compute the log likelihood using the projection approach."""
-        # Step 1: Get whitened strain data at geocenter in FREQUENCY domain
-        # Shape: (n_detectors, n_frequencies)
-        whitened_freq_strain = self.data_context.compute_whitened_strain_at_geocenter(self.parameters)  # noqa: E501
-
-        # Step 2: Compute whitened antenna patterns in frequency domain
-        # Shape: (n_frequencies, n_detectors, n_modes)
-        whitened_antenna_patterns = self.antenna_pattern_processor.compute_whitened_antenna_pattern_matrix(
-            self.data_context.interferometers,
-            self.data_context.power_spectral_density_array,
-            self.data_context.frequency_mask,
-            self.parameters,  # noqa: E501
-        )
-
-        # Step 3: Compute null energy
-        null_energy = self.null_stream_calculator.compute_null_energy(
-            whitened_antenna_patterns,
-            whitened_freq_strain,
-            self.data_context.frequency_mask,
-            self.data_context.time_frequency_filter,
-            self.data_context.sampling_frequency,
-            self.data_context.wavelet_frequency_resolution,
-            self.data_context.wavelet_nx,
-        )
+        # Compute null energy using the parameters
+        null_energy = self.null_stream_calculator.compute_null_energy(self.parameters)
 
         return scipy.stats.chi2.logpdf(null_energy, df=self.DoF)
 

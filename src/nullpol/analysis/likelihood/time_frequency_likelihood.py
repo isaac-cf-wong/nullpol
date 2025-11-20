@@ -1,9 +1,8 @@
+# pylint: disable=duplicate-code  # Legitimate argument parsing patterns shared across modules
 from __future__ import annotations
 
 from bilby.core.likelihood import Likelihood
 
-from ..data_context import TimeFrequencyDataContext
-from ..antenna_patterns import AntennaPatternProcessor
 from ..null_stream import NullStreamCalculator
 
 
@@ -11,12 +10,11 @@ class TimeFrequencyLikelihood(Likelihood):
     """A time-frequency likelihood class with modular architecture.
 
     This class uses composition to separate concerns:
-    - Data management is handled by TimeFrequencyDataContext
-    - Antenna pattern operations are handled by AntennaPatternProcessor
+    - Data management and antenna pattern operations are handled by NullStreamCalculator
     - Null stream computations are handled by NullStreamCalculator
 
-    For low-level data access, use: likelihood.data_context.property_name
-    For antenna pattern operations, use: likelihood.antenna_pattern_processor.method_name
+    For low-level data access, use: likelihood.null_stream_calculator.data_context.property_name
+    For antenna pattern operations, use: likelihood.null_stream_calculator.antenna_pattern_processor.method_name
     For null stream computations, use: likelihood.null_stream_calculator.method_name
     For high-level likelihood operations, use the methods on this class directly.
 
@@ -42,23 +40,15 @@ class TimeFrequencyLikelihood(Likelihood):
     ):
         super().__init__(dict())
 
-        # Create the data context component - handles all data management
-        self.data_context = TimeFrequencyDataContext(
+        # Initialize null stream calculator with all components
+        self.null_stream_calculator = NullStreamCalculator(
             interferometers=interferometers,
             wavelet_frequency_resolution=wavelet_frequency_resolution,
             wavelet_nx=wavelet_nx,
-            time_frequency_filter=time_frequency_filter,
-        )
-
-        # Initialize antenna pattern processor for polarization computations
-        self.antenna_pattern_processor = AntennaPatternProcessor(
             polarization_modes=polarization_modes,
             polarization_basis=polarization_basis,
-            interferometers=interferometers,
+            time_frequency_filter=time_frequency_filter,
         )
-
-        # Initialize null stream calculator for null stream computations
-        self.null_stream_calculator = NullStreamCalculator()
 
         # Initialize the normalization constant
         self._noise_log_likelihood_value = None
@@ -67,13 +57,31 @@ class TimeFrequencyLikelihood(Likelihood):
         self._marginalized_parameters = []
 
     @property
+    def data_context(self):
+        """Access to the data context through null_stream_calculator.
+
+        Returns:
+            TimeFrequencyDataContext: The data context instance.
+        """
+        return self.null_stream_calculator.data_context
+
+    @property
+    def antenna_pattern_processor(self):
+        """Access to the antenna pattern processor through null_stream_calculator.
+
+        Returns:
+            AntennaPatternProcessor: The antenna pattern processor instance.
+        """
+        return self.null_stream_calculator.antenna_pattern_processor
+
+    @property
     def interferometers(self):
         """A list of interferometers.
 
         Returns:
             bilby.gw.detector.InterferometerList: A list of interferometers.
         """
-        return self.data_context.interferometers
+        return self.null_stream_calculator.data_context.interferometers
 
     def log_likelihood(self):
         """Log likelihood.
