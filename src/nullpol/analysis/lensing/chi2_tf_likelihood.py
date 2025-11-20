@@ -5,6 +5,7 @@ from __future__ import annotations
 from ..likelihood.chi2_tf_likelihood import Chi2TimeFrequencyLikelihood
 from ..lensing.calculator import LensingNullStreamCalculator
 
+
 class LensingChi2TimeFrequencyLikelihood(Chi2TimeFrequencyLikelihood):
     """Chi-squared likelihood for strongly lensed signals using null stream method.
 
@@ -19,6 +20,7 @@ class LensingChi2TimeFrequencyLikelihood(Chi2TimeFrequencyLikelihood):
         polarization_basis (list, optional): List of polarization basis.
         time_frequency_filter (np.ndarray, optional): The time-frequency filter.
     """
+
     def __init__(
         self,
         interferometers,
@@ -30,7 +32,11 @@ class LensingChi2TimeFrequencyLikelihood(Chi2TimeFrequencyLikelihood):
         time_frequency_filter=None,
         **kwargs,  # pylint: disable=unused-argument
     ):
-        if not (isinstance(interferometers, list) and len(interferometers) == 2 and all(isinstance(i, list) for i in interferometers)):
+        if not (
+            isinstance(interferometers, list)
+            and len(interferometers) == 2
+            and all(isinstance(i, list) for i in interferometers)
+        ):
             raise ValueError("interferometers must be a list of two lists of interferometers")
 
         # Initialize LensingNullStreamCalculator

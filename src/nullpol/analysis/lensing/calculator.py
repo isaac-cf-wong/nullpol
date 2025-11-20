@@ -8,6 +8,7 @@ from ..null_stream.calculator import NullStreamCalculator
 from ..lensing.data_context import LensingTimeFrequencyDataContext
 from ..antenna_patterns import AntennaPatternProcessor
 
+
 class LensingNullStreamCalculator(NullStreamCalculator):
     """Null stream calculator with strong lensing modifications.
 
@@ -32,7 +33,7 @@ class LensingNullStreamCalculator(NullStreamCalculator):
         polarization_basis=None,
         time_frequency_filter=None,
     ):
-        
+
         self.data_context = LensingTimeFrequencyDataContext(
             interferometers=interferometers,
             wavelet_frequency_resolution=wavelet_frequency_resolution,
@@ -43,7 +44,7 @@ class LensingNullStreamCalculator(NullStreamCalculator):
         self.antenna_pattern_processor = AntennaPatternProcessor(
             polarization_modes=polarization_modes,
             polarization_basis=polarization_basis,
-            interferometers=interferometers[0]+interferometers[1],
+            interferometers=interferometers[0] + interferometers[1],
         )
 
     def _compute_calibrated_whitened_antenna_pattern_matrix(self, parameters):
@@ -59,12 +60,21 @@ class LensingNullStreamCalculator(NullStreamCalculator):
         Returns:
             np.ndarray: Calibrated whitened antenna pattern matrix with lensing factor.
         """
-        calibrated_whitened_antenna_pattern_matrix = self.antenna_pattern_processor.compute_calibrated_whitened_antenna_pattern_matrix(
-            self.data_context.interferometers[0]+self.data_context.interferometers[1],
-            self.data_context.power_spectral_density_array,
-            self.data_context.masked_frequency_array,
-            self.data_context.frequency_mask,
-            parameters,
+        calibrated_whitened_antenna_pattern_matrix = (
+            self.antenna_pattern_processor.compute_calibrated_whitened_antenna_pattern_matrix(
+                self.data_context.interferometers[0] + self.data_context.interferometers[1],
+                self.data_context.power_spectral_density_array,
+                self.data_context.masked_frequency_array,
+                self.data_context.frequency_mask,
+                parameters,
+            )
         )
-        lensing_factor = parameters["amplification"] * np.exp(1j * np.pi * (2 * parameters["time_delay"] * self.data_context.masked_frequency_array[:, None, None] - parameters["n_morse"]))
+        lensing_factor = parameters["amplification"] * np.exp(
+            1j
+            * np.pi
+            * (
+                2 * parameters["time_delay"] * self.data_context.masked_frequency_array[:, None, None]
+                - parameters["n_morse"]
+            )
+        )
         return calibrated_whitened_antenna_pattern_matrix * lensing_factor
