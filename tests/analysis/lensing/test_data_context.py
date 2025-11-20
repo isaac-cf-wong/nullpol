@@ -338,5 +338,5 @@ class TestLensingTimeFrequencyDataContext:
         delays_small = context.compute_time_delay_array({**base_params, "time_delay": 0.01})
         delays_large = context.compute_time_delay_array({**base_params, "time_delay": 1.0})
 
-        # First set (indices 0, 1) should be identical
-        np.testing.assert_allclose(delays_small[:2], delays_large[:2], rtol=1e-12)
+        # First set (indices 0, 1, 2) should be identical
+        np.testing.assert_allclose(delays_small[:3], delays_large[:3], rtol=1e-12)
