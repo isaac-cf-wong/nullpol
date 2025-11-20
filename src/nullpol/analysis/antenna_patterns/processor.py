@@ -175,7 +175,6 @@ class AntennaPatternProcessor:
     def compute_calibration_factor_matrix(
         self,
         interferometers,
-        frequency_domain_strain_array,
         masked_frequency_array,
         frequency_mask,
         parameters: Dict[str, Any],
@@ -184,15 +183,16 @@ class AntennaPatternProcessor:
 
         Args:
             interferometers: List of interferometers.
-            frequency_domain_strain_array: Frequency domain strain data.
             masked_frequency_array: Masked frequency array.
             frequency_mask: Boolean frequency mask.
             parameters: Dictionary of parameters.
 
         Returns:
-            numpy array: Calibration factor array.
+            numpy array: Calibration factor array with shape (n_detectors, n_frequencies).
         """
-        output = np.zeros_like(frequency_domain_strain_array)
+        n_detectors = len(interferometers)
+        n_frequencies = len(frequency_mask)
+        output = np.zeros((n_detectors, n_frequencies), dtype=complex)
 
         for i, interferometer in enumerate(interferometers):
             calibration_errors = interferometer.calibration_model.get_calibration_factor(
@@ -231,7 +231,6 @@ class AntennaPatternProcessor:
         self,
         interferometers,
         power_spectral_density_array,
-        frequency_domain_strain_array,
         masked_frequency_array,
         frequency_mask,
         parameters: Dict[str, Any],
@@ -241,7 +240,6 @@ class AntennaPatternProcessor:
         Args:
             interferometers: List of interferometers.
             power_spectral_density_array: Power spectral density array.
-            frequency_domain_strain_array: Frequency domain strain data.
             masked_frequency_array: Masked frequency array.
             frequency_mask: Boolean frequency mask.
             parameters: Dictionary of parameters.
@@ -256,7 +254,7 @@ class AntennaPatternProcessor:
 
         # Compute the calibration factor
         calibration_factor = self.compute_calibration_factor_matrix(
-            interferometers, frequency_domain_strain_array, masked_frequency_array, frequency_mask, parameters
+            interferometers, masked_frequency_array, frequency_mask, parameters
         )
 
         # Apply calibration corrections

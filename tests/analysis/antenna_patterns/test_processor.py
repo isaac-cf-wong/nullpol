@@ -303,13 +303,10 @@ class TestAntennaPatternProcessor:
         n_frequencies = 100
         n_detectors = len(sample_interferometers)
 
-        frequency_domain_strain_array = np.random.normal(
-            0, 1e-23, (n_detectors, n_frequencies)
-        ) + 1j * np.random.normal(0, 1e-23, (n_detectors, n_frequencies))
-
         # Frequency array should match the strain data shape for calibration
-        masked_frequency_array = np.linspace(50, 500, n_frequencies)  # Frequency values, not complex ones
+        frequency_array = np.linspace(50, 500, n_frequencies)  # Frequency values, not complex ones
         frequency_mask = np.array([True] * 50 + [False] * 50)
+        masked_frequency_array = frequency_array[frequency_mask]  # Only the frequencies where mask is True
 
         parameters = {
             "ra": 0.2,
@@ -321,7 +318,6 @@ class TestAntennaPatternProcessor:
         try:
             calibration_matrix = processor.compute_calibration_factor_matrix(
                 sample_interferometers,
-                frequency_domain_strain_array,
                 masked_frequency_array,
                 frequency_mask,
                 parameters,
@@ -353,13 +349,10 @@ class TestAntennaPatternProcessor:
 
         power_spectral_density_array = np.ones((n_detectors, n_frequencies)) * 1e-46
 
-        frequency_domain_strain_array = np.random.normal(
-            0, 1e-23, (n_detectors, n_frequencies)
-        ) + 1j * np.random.normal(0, 1e-23, (n_detectors, n_frequencies))
-
         # Use actual frequency values for calibration
-        masked_frequency_array = np.linspace(50, 500, n_frequencies)
+        frequency_array = np.linspace(50, 500, n_frequencies)
         frequency_mask = np.array([True] * 25 + [False] * 25)  # Half frequencies active
+        masked_frequency_array = frequency_array[frequency_mask]  # Only the frequencies where mask is True
 
         parameters = {
             "ra": 0.6,
@@ -374,7 +367,6 @@ class TestAntennaPatternProcessor:
             calibrated_whitened_matrix = processor.compute_calibrated_whitened_antenna_pattern_matrix(
                 sample_interferometers,
                 power_spectral_density_array,
-                frequency_domain_strain_array,
                 masked_frequency_array,
                 frequency_mask,
                 parameters,

@@ -197,7 +197,7 @@ class TestNullStreamCalculator:
         calculator_instance.data_context.compute_whitened_strain_at_geocenter = Mock(
             return_value=np.array([[1.0 + 0.0j, 2.0 + 0.0j], [3.0 + 0.0j, 4.0 + 0.0j]], dtype=complex)
         )
-        calculator_instance.antenna_pattern_processor.compute_whitened_antenna_pattern_matrix = Mock(
+        calculator_instance.antenna_pattern_processor.compute_calibrated_whitened_antenna_pattern_matrix = Mock(
             return_value=np.array(
                 [
                     [[1.0, 0.0], [0.0, 1.0]],
@@ -247,7 +247,7 @@ class TestNullStreamCalculator:
         calculator.data_context.compute_whitened_strain_at_geocenter = Mock(
             return_value=np.array([[1.0, 2.0], [3.0, 4.0]], dtype=complex)
         )
-        calculator.antenna_pattern_processor.compute_whitened_antenna_pattern_matrix = Mock(
+        calculator.antenna_pattern_processor.compute_calibrated_whitened_antenna_pattern_matrix = Mock(
             return_value=np.array([[[1.0, 0.0], [0.0, 1.0]], [[1.0, 0.5], [0.5, 1.0]]], dtype=complex)
         )
 
@@ -288,7 +288,7 @@ class TestNullStreamCalculator:
         calculator.data_context.compute_whitened_strain_at_geocenter = Mock(
             return_value=np.array([[1.0 + 0.0j, 2.0 + 0.0j], [3.0 + 0.0j, 4.0 + 0.0j]], dtype=complex)
         )
-        calculator.antenna_pattern_processor.compute_whitened_antenna_pattern_matrix = Mock(
+        calculator.antenna_pattern_processor.compute_calibrated_whitened_antenna_pattern_matrix = Mock(
             return_value=np.array([[[1.0, 0.0], [0.0, 1.0]], [[1.0, 0.5], [0.5, 1.0]]], dtype=complex)
         )
 
@@ -335,7 +335,7 @@ class TestNullStreamCalculator:
         strain_data = np.array([[1.0, 2.0]], dtype=np.complex64)
 
         calculator.data_context.compute_whitened_strain_at_geocenter = Mock(return_value=strain_data)
-        calculator.antenna_pattern_processor.compute_whitened_antenna_pattern_matrix = Mock(
+        calculator.antenna_pattern_processor.compute_calibrated_whitened_antenna_pattern_matrix = Mock(
             return_value=antenna_pattern
         )
 
@@ -383,7 +383,7 @@ class TestNullStreamCalculator:
         calculator.data_context.compute_whitened_strain_at_geocenter = Mock(
             return_value=np.array([[1.0 + 0.0j, 2.0 + 0.0j], [3.0 + 0.0j, 4.0 + 0.0j]], dtype=complex)
         )
-        calculator.antenna_pattern_processor.compute_whitened_antenna_pattern_matrix = Mock(
+        calculator.antenna_pattern_processor.compute_calibrated_whitened_antenna_pattern_matrix = Mock(
             return_value=np.array([[[1.0, 0.0], [0.0, 1.0]], [[1.0, 0.5], [0.5, 1.0]]], dtype=complex)
         )
 
@@ -445,7 +445,7 @@ class TestNullStreamCalculator:
         strain_data = np.array([[5.0]], dtype=complex)  # (1, 1)
 
         calculator.data_context.compute_whitened_strain_at_geocenter = Mock(return_value=strain_data)
-        calculator.antenna_pattern_processor.compute_whitened_antenna_pattern_matrix = Mock(
+        calculator.antenna_pattern_processor.compute_calibrated_whitened_antenna_pattern_matrix = Mock(
             return_value=antenna_pattern
         )
 
@@ -493,7 +493,7 @@ class TestNullStreamCalculator:
         strain_data = np.array([[1.0], [0.0]], dtype=complex)  # Only first detector has signal
 
         calculator.data_context.compute_whitened_strain_at_geocenter = Mock(return_value=strain_data)
-        calculator.antenna_pattern_processor.compute_whitened_antenna_pattern_matrix = Mock(
+        calculator.antenna_pattern_processor.compute_calibrated_whitened_antenna_pattern_matrix = Mock(
             return_value=antenna_pattern
         )
 

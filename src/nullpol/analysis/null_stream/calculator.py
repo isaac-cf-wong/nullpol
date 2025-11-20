@@ -82,18 +82,21 @@ class NullStreamCalculator:
 
         # Step 2: Compute whitened antenna patterns in frequency domain
         # Shape: (n_frequencies, n_detectors, n_modes)
-        whitened_antenna_pattern_matrix = self.antenna_pattern_processor.compute_whitened_antenna_pattern_matrix(
-            self.data_context.interferometers,
-            self.data_context.power_spectral_density_array,
-            self.data_context.frequency_mask,
-            parameters,
+        calibrated_whitened_antenna_pattern_matrix = (
+            self.antenna_pattern_processor.compute_calibrated_whitened_antenna_pattern_matrix(
+                self.data_context.interferometers,
+                self.data_context.power_spectral_density_array,
+                self.data_context.masked_frequency_array,
+                self.data_context.frequency_mask,
+                parameters,
+            )
         )
 
         # Step 3: Compute the GW signal projector for each frequency bin (masked)
         # Make sure gw_projector and whitened_frequency_strain_data have the same data type
-        gw_projector = compute_gw_projector(whitened_antenna_pattern_matrix, self.data_context.frequency_mask).astype(
-            whitened_frequency_strain_data.dtype
-        )
+        gw_projector = compute_gw_projector(
+            calibrated_whitened_antenna_pattern_matrix, self.data_context.frequency_mask
+        ).astype(whitened_frequency_strain_data.dtype)
 
         # Step 4: Compute the null projector (orthogonal complement to GW projector)
         null_projector = compute_null_projector(gw_projector)
