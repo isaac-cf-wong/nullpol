@@ -9,6 +9,7 @@ from ..lensing.data_context import LensingTimeFrequencyDataContext
 from ..antenna_patterns import AntennaPatternProcessor
 
 
+# pylint: disable=too-few-public-methods
 class LensingNullStreamCalculator(NullStreamCalculator):
     """Null stream calculator with strong lensing modifications.
 
@@ -24,6 +25,7 @@ class LensingNullStreamCalculator(NullStreamCalculator):
         time_frequency_filter (np.ndarray, optional): The time-frequency filter.
     """
 
+    # pylint: disable=super-init-not-called  # Intentionally uses LensingTimeFrequencyDataContext
     def __init__(
         self,
         interferometers,
