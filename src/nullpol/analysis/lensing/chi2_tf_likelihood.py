@@ -23,7 +23,7 @@ class LensingChi2TimeFrequencyLikelihood(Chi2TimeFrequencyLikelihood):
         time_frequency_filter (np.ndarray, optional): The time-frequency filter.
     """
 
-    # pylint: disable=super-init-not-called  # Intentionally uses LensingNullStreamCalculator
+    # pylint: disable=super-init-not-called
     def __init__(
         self,
         interferometers,
@@ -35,6 +35,12 @@ class LensingChi2TimeFrequencyLikelihood(Chi2TimeFrequencyLikelihood):
         time_frequency_filter=None,
         **kwargs,  # pylint: disable=unused-argument
     ):
+        """Initialize likelihood with lensing-specific calculator.
+
+        Note: Does not call super().__init__() because it requires LensingNullStreamCalculator
+        instead of the standard NullStreamCalculator. The parent initialization is bypassed
+        to use the lensing-aware calculator that handles two detector sets.
+        """
         Likelihood.__init__(self, dict())
         if not (
             isinstance(interferometers, list)
