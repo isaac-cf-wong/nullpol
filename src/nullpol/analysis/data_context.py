@@ -20,9 +20,10 @@ ensuring efficient processing of large gravitational wave datasets.
 
 from __future__ import annotations
 
+from typing import Optional
+
 import bilby
 import numpy as np
-from typing import Optional
 from numba import njit
 
 from .tf_transforms import get_shape_of_wavelet_transform
@@ -148,6 +149,7 @@ def compute_time_shifted_frequency_domain_strain_array(
     return output
 
 
+# pylint: disable=too-many-instance-attributes
 class TimeFrequencyDataContext:
     """Centralized data management and preprocessing for time-frequency analysis.
 
@@ -418,11 +420,9 @@ class TimeFrequencyDataContext:
             ValueError: If interferometers do not have the same frequency resolution.
         """
         if not all(
-            [
-                interferometer.frequency_array[1] - interferometer.frequency_array[0]
-                == interferometers[0].frequency_array[1] - interferometers[0].frequency_array[0]
-                for interferometer in interferometers[1:]
-            ]
+            interferometer.frequency_array[1] - interferometer.frequency_array[0]
+            == interferometers[0].frequency_array[1] - interferometers[0].frequency_array[0]
+            for interferometer in interferometers[1:]
         ):
             raise ValueError("All interferometers must have the same delta_f.")
 

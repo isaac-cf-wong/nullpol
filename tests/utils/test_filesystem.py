@@ -7,28 +7,26 @@ package for file handling and validation.
 from __future__ import annotations
 
 import tempfile
+import pytest
 
 from nullpol.utils import get_file_extension, is_file
 
 
 def test_get_file_extension():
-    """Test file extension extraction from filenames.
-
-    Validates that file extensions are correctly extracted from
-    filenames.
-    """
-    filename = "filename.txt"
-    extension = get_file_extension(filename)
-    assert extension == ".txt"
+    """Test file extension extraction from filenames."""
+    assert get_file_extension("filename.txt") == ".txt"
+    assert get_file_extension("document.pdf") == ".pdf"
+    assert get_file_extension("archive.tar.gz") == ".gz"
+    assert get_file_extension("README") == ""
 
 
+@pytest.mark.integration
 def test_is_file():
-    """Test file existence validation functionality.
-
-    Validates that the file existence check correctly identifies
-    existing and non-existing files.
-    """
+    """Test file existence validation functionality."""
     with tempfile.NamedTemporaryFile() as temp_file:
-        temp_file_name = temp_file.name
-        assert is_file(temp_file_name) is True
-    assert is_file(temp_file_name) is False
+        assert is_file(temp_file.name) is True
+
+    assert is_file("/nonexistent/path/file.txt") is False
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        assert is_file(temp_dir) is False

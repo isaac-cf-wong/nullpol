@@ -40,7 +40,7 @@ def _convert_string_to_dict(string):
         return string
 
 
-def fill_in_pol_specific_metadata(analysis, corresponding_analysis):
+def fill_in_pol_specific_metadata(analysis, corresponding_analysis):  # pylint: disable=unused-argument
     """
     For pol analysis, fill in fields in metadata other than result list.
 
@@ -61,6 +61,7 @@ def fill_in_pol_specific_metadata(analysis, corresponding_analysis):
 
 
 def bilby_config_to_asimov(config_name):
+    # pylint: disable=too-many-nested-blocks
     """
     Read a bilby ini file and return content in asimov ledger compatible form.
 
@@ -209,13 +210,12 @@ def bilby_config_to_asimov(config_name):
             for line in lines:
                 if not any(c.isalpha() for c in line):
                     continue
-                else:
-                    line.replace("{", "")
-                    line.replace("}", "")
-                    line.replace(" ", "")
-                    elements = line.split("=")
-                    key = elements[0].replace(" ", "")
-                    val = "=".join(elements[1:]).strip()
+                line.replace("{", "")
+                line.replace("}", "")
+                line.replace(" ", "")
+                elements = line.split("=")
+                key = elements[0].replace(" ", "")
+                val = "=".join(elements[1:]).strip()
                 prior_dict[key] = val
         except OSError:  # file might have been deleted
             prior_dict = None

@@ -8,9 +8,9 @@ import subprocess
 import time
 
 from importlib.resources import files
-from asimov import config
-from asimov.pipeline import Pipeline, PipelineException, PipelineLogger
-from asimov.pipelines.bilby import Bilby
+from asimov import config  # pylint: disable=import-error
+from asimov.pipeline import Pipeline, PipelineException, PipelineLogger  # pylint: disable=import-error
+from asimov.pipelines.bilby import Bilby  # pylint: disable=import-error
 
 from .pesummary import PESummaryPipeline
 
@@ -54,16 +54,15 @@ class Nullpol(Bilby):
             if len(results_files) == expected_number_of_result_files:
                 self.logger.info(f"{len(results_files)} result files found, the job is finished.")
                 return True
-            elif len(results_files) > 0:
+            if len(results_files) > 0:
                 self.logger.info(
                     f"{len(results_files)} < {expected_number_of_result_files} result files found, the job is not finished."
                 )
-            else:
-                self.logger.info("No results files found.")
                 return False
-        else:
-            self.logger.info("No results directory found")
+            self.logger.info("No results files found.")
             return False
+        self.logger.info("No results directory found")
+        return False
 
     def subrun_samples(self, subrun_label, absolute=False):
         """
@@ -102,7 +101,7 @@ class Nullpol(Bilby):
             ini = f"{self.production.name}.ini"
         return ini
 
-    def build_dag(self, psds=None, user=None, clobber_psd=False, dryrun=False):
+    def build_dag(self, psds=None, user=None, clobber_psd=False, dryrun=False):  # pylint: disable=unused-argument
         """
         Construct a DAG file in order to submit a production to the
         condor scheduler using nullpol_pipe.
@@ -162,20 +161,20 @@ class Nullpol(Bilby):
 
         if dryrun:
             print(" ".join(command))
-        else:
-            self.logger.info(" ".join(command))
-            pipe = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            out, err = pipe.communicate()
-            self.logger.info(out)
+            return None
 
-            expected_out = "DAG generation complete, to submit jobs"
-            if err or expected_out not in str(out):
-                self.production.status = "stuck"
-                self.logger.error(err)
-                raise PipelineException(
-                    (f"DAG file could not be created.\n" f"{command}\n{out}\n\n{err}"),
-                    production=self.production.name,
-                )
-            else:
-                time.sleep(10)
-                return PipelineLogger(message=out, production=self.production.name)
+        self.logger.info(" ".join(command))
+        with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as pipe:
+            out, err = pipe.communicate()
+        self.logger.info(out)
+
+        expected_out = "DAG generation complete, to submit jobs"
+        if err or expected_out not in str(out):
+            self.production.status = "stuck"
+            self.logger.error(err)
+            raise PipelineException(
+                (f"DAG file could not be created.\n" f"{command}\n{out}\n\n{err}"),
+                production=self.production.name,
+            )
+        time.sleep(10)
+        return PipelineLogger(message=out, production=self.production.name)

@@ -66,7 +66,7 @@ class PolarizationPriorDict(PriorDict):
                 filename = os.path.join(DEFAULT_PRIOR_DIR, filename)
         super().__init__(dictionary=dictionary, filename=filename)
 
-    def validate_prior(self, **kwargs):
+    def validate_prior(self, **kwargs):  # pylint: disable=unused-argument
         """Validate the prior distributions for polarization analysis.
 
         Performs validation checks on the prior distributions to ensure they
