@@ -7,6 +7,7 @@ import numpy as np
 
 from ..data_context import TimeFrequencyDataContext
 
+
 class LensingTimeFrequencyDataContext(TimeFrequencyDataContext):
     """Data context for strong lensing analysis with two images.
 
@@ -19,6 +20,7 @@ class LensingTimeFrequencyDataContext(TimeFrequencyDataContext):
         wavelet_nx (int): The number of points in the wavelet transform.
         time_frequency_filter (np.ndarray, optional): The time-frequency filter.
     """
+
     def __init__(
         self,
         interferometers,
@@ -43,7 +45,7 @@ class LensingTimeFrequencyDataContext(TimeFrequencyDataContext):
             InterferometerList: First set of interferometers.
         """
         return self._interferometers_1
-    
+
     @property
     def interferometers_2(self) -> InterferometerList:
         """Second set of interferometers.
@@ -64,15 +66,13 @@ class LensingTimeFrequencyDataContext(TimeFrequencyDataContext):
         """
 
         time_delay_array_1 = [
-                ifo.time_delay_from_geocenter(
-                    ra=parameters["ra"], dec=parameters["dec"], time=parameters["geocent_time"]
-                )
-                for ifo in self.interferometers_1
-            ]
+            ifo.time_delay_from_geocenter(ra=parameters["ra"], dec=parameters["dec"], time=parameters["geocent_time"])
+            for ifo in self.interferometers_1
+        ]
         time_delay_array_2 = [
-                ifo.time_delay_from_geocenter(
-                    ra=parameters["ra"], dec=parameters["dec"], time=parameters["geocent_time"]+parameters["time_delay"]
-                )
-                for ifo in self.interferometers_2
-            ]
+            ifo.time_delay_from_geocenter(
+                ra=parameters["ra"], dec=parameters["dec"], time=parameters["geocent_time"] + parameters["time_delay"]
+            )
+            for ifo in self.interferometers_2
+        ]
         return np.concatenate([time_delay_array_1, time_delay_array_2])
