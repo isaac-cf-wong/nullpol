@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from bilby.gw.detector.networks import InterferometerList
 import numpy as np
+from bilby.gw.detector.networks import InterferometerList
 
 from ..data_context import TimeFrequencyDataContext
 
