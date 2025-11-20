@@ -25,7 +25,7 @@ class LensingNullStreamCalculator(NullStreamCalculator):
         time_frequency_filter (np.ndarray, optional): The time-frequency filter.
     """
 
-    # pylint: disable=super-init-not-called  # Intentionally uses LensingTimeFrequencyDataContext
+    # pylint: disable=super-init-not-called
     def __init__(
         self,
         interferometers,
@@ -35,7 +35,12 @@ class LensingNullStreamCalculator(NullStreamCalculator):
         polarization_basis=None,
         time_frequency_filter=None,
     ):
+        """Initialize calculator with lensing-specific data context.
 
+        Note: Does not call super().__init__() because the parent class expects
+        a flat list of interferometers, but lensing requires two separate sets
+        for the two lensed images. Instead, manually creates LensingTimeFrequencyDataContext.
+        """
         self.data_context = LensingTimeFrequencyDataContext(
             interferometers=interferometers,
             wavelet_frequency_resolution=wavelet_frequency_resolution,
