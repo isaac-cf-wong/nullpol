@@ -58,13 +58,15 @@ class TestLensingNullStreamCalculator:
         n_freqs = 100
         n_detectors = 3
         n_modes = 2
-        
+
         mock_masked_freq = np.linspace(20, 1000, n_freqs)
         type(calculator.data_context).masked_frequency_array = PropertyMock(return_value=mock_masked_freq)
         # Mock interferometers to return the combined list
         combined_ifos = mock_interferometers[0] + mock_interferometers[1]
         type(calculator.data_context).interferometers = PropertyMock(return_value=combined_ifos)
-        type(calculator.data_context).power_spectral_density_array = PropertyMock(return_value=np.ones((n_detectors, n_freqs)))
+        type(calculator.data_context).power_spectral_density_array = PropertyMock(
+            return_value=np.ones((n_detectors, n_freqs))
+        )
         type(calculator.data_context).frequency_mask = PropertyMock(return_value=np.ones(n_freqs, dtype=bool))
 
         # Mock base antenna pattern
