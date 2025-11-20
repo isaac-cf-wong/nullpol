@@ -2,6 +2,8 @@
 """Chi-squared time-frequency likelihood for strongly lensed signals."""
 from __future__ import annotations
 
+from bilby.core.likelihood import Likelihood
+
 from ..likelihood.chi2_tf_likelihood import Chi2TimeFrequencyLikelihood
 from ..lensing.calculator import LensingNullStreamCalculator
 
@@ -33,6 +35,7 @@ class LensingChi2TimeFrequencyLikelihood(Chi2TimeFrequencyLikelihood):
         time_frequency_filter=None,
         **kwargs,  # pylint: disable=unused-argument
     ):
+        Likelihood.__init__(self, dict())
         if not (
             isinstance(interferometers, list)
             and len(interferometers) == 2
@@ -52,6 +55,3 @@ class LensingChi2TimeFrequencyLikelihood(Chi2TimeFrequencyLikelihood):
 
         # Initialize the normalization constant
         self._noise_log_likelihood_value = None
-
-        # Marginalization
-        self._marginalized_parameters = []
