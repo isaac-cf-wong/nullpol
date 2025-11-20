@@ -1,3 +1,4 @@
+# pylint: disable=duplicate-code  # Calculator classes share initialization and method patterns by design
 """Null stream calculator for strongly lensed signals."""
 
 from __future__ import annotations

@@ -41,7 +41,7 @@ class LensingChi2TimeFrequencyLikelihood(Chi2TimeFrequencyLikelihood):
         instead of the standard NullStreamCalculator. The parent initialization is bypassed
         to use the lensing-aware calculator that handles two detector sets.
         """
-        Likelihood.__init__(self, dict())
+        Likelihood.__init__(self, dict())  # pylint: disable=non-parent-init-called
         if not (
             isinstance(interferometers, list)
             and len(interferometers) == 2
