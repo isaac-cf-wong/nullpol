@@ -27,6 +27,7 @@ corrcoef
 cpus
 currentmodule
 cylon
+demagnified
 detchar
 dryrun
 dynesty
@@ -177,6 +178,7 @@ STFT
 stft
 subanalysis
 subdirs
+sublists
 subprior
 subrun
 subruns

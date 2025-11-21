@@ -228,7 +228,7 @@ def generate_init_content(directory: Path) -> str:
 
 
 def update_init_file(directory: Path, content: str) -> bool:
-    """Update __init__.py file if content has changed."""
+    """Update or create __init__.py file if content has changed."""
     init_file = directory / "__init__.py"
 
     # Check if content has changed
@@ -249,12 +249,17 @@ def update_init_file(directory: Path, content: str) -> bool:
 
 
 def find_python_packages(root_dir: Path) -> List[Path]:
-    """Find all Python packages (directories with __init__.py) under root_dir."""
+    """Find all Python packages (directories with __init__.py or that could be packages) under root_dir."""
     packages = []
 
     for item in root_dir.rglob("*"):
-        if item.is_dir() and (item / "__init__.py").exists():
-            packages.append(item)
+        if item.is_dir():
+            # Include existing packages
+            if (item / "__init__.py").exists():
+                packages.append(item)
+            # Also include directories with .py files (potential packages)
+            elif any(f.suffix == ".py" for f in item.iterdir() if f.is_file() and f.name != "__init__.py"):
+                packages.append(item)
 
     return packages
 
@@ -310,8 +315,11 @@ def auto_generate_init_files(root_dir: Path, excluded_dirs: Set[str] = None, dry
                 else:
                     results[rel_path] = "No change needed"
             else:
+                init_file = package_dir / "__init__.py"
+                was_created = not init_file.exists()
+
                 if update_init_file(package_dir, content):
-                    results[rel_path] = "Updated"
+                    results[rel_path] = "Created" if was_created else "Updated"
                 else:
                     results[rel_path] = "No change needed"
         else:
