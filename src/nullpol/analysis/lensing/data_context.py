@@ -59,7 +59,7 @@ class LensingTimeFrequencyDataContext(TimeFrequencyDataContext):
         """Compute time delay array with lensing time delay applied to second set.
 
         Args:
-            parameters (dict): Dictionary containing 'ra', 'dec', 'geocent_time', and 'time_delay'.
+            parameters (dict): Dictionary containing 'ra', 'dec', 'geocent_time', and 'delta_t'.
 
         Returns:
             np.ndarray: Array of time delays.
@@ -71,7 +71,7 @@ class LensingTimeFrequencyDataContext(TimeFrequencyDataContext):
         ]
         time_delay_array_2 = [
             ifo.time_delay_from_geocenter(
-                ra=parameters["ra"], dec=parameters["dec"], time=parameters["geocent_time"] + parameters["time_delay"]
+                ra=parameters["ra"], dec=parameters["dec"], time=parameters["geocent_time"] + parameters["delta_t"]
             )
             for ifo in self.interferometers_2
         ]

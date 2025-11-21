@@ -58,13 +58,13 @@ class LensingNullStreamCalculator(NullStreamCalculator):
     def _compute_calibrated_whitened_antenna_pattern_matrix(self, parameters):
         """Compute antenna pattern matrix with lensing factor applied.
 
-        Applies lensing factor L(f) = A × exp(i × π × (2 × Δt × f - Δn))
-        to the second image only, where A is relative magnification, Δt is time delay,
+        Applies lensing factor L(f) = μ_rel × exp(i × π × (2 × Δt × f - Δn))
+        to the second image only, where μ_rel is relative magnification, Δt is time delay,
         and Δn is the Morse phase difference.
 
         Args:
             parameters (dict): Dictionary containing standard GW parameters plus
-                'relative_magnification', 'time_delay', and 'delta_n'.
+                'mu_rel', 'delta_t', and 'delta_n'.
 
         Returns:
             np.ndarray: Calibrated whitened antenna pattern matrix with lensing factor
@@ -82,11 +82,11 @@ class LensingNullStreamCalculator(NullStreamCalculator):
 
         # Apply lensing factor only to second image detectors
         n_detectors_image_1 = len(self.data_context.interferometers_1)
-        lensing_factor = parameters["relative_magnification"] * np.exp(
+        lensing_factor = parameters["mu_rel"] * np.exp(
             1j
             * np.pi
             * (
-                2 * parameters["time_delay"] * self.data_context.masked_frequency_array[:, None, None]
+                2 * parameters["delta_t"] * self.data_context.masked_frequency_array[:, None, None]
                 - parameters["delta_n"]
             )
         )

@@ -93,7 +93,7 @@ class TestLensingTimeFrequencyDataContext:
             "ra": 1.0,
             "dec": 0.5,
             "geocent_time": 1234567890.0,
-            "time_delay": 0.0,  # No lensing delay
+            "delta_t": 0.0,  # No lensing delay
         }
 
         time_delays = context.compute_time_delay_array(parameters)
@@ -117,7 +117,7 @@ class TestLensingTimeFrequencyDataContext:
             "ra": 1.0,
             "dec": 0.5,
             "geocent_time": 1234567890.0,
-            "time_delay": lensing_delay,
+            "delta_t": lensing_delay,
         }
 
         time_delays = context.compute_time_delay_array(parameters)
@@ -150,7 +150,7 @@ class TestLensingTimeFrequencyDataContext:
             "ra": 1.0,
             "dec": 0.5,
             "geocent_time": 1234567890.0,
-            "time_delay": 0.05,
+            "delta_t": 0.05,
         }
 
         time_delays = context.compute_time_delay_array(parameters)
@@ -171,13 +171,13 @@ class TestLensingTimeFrequencyDataContext:
             "ra": 0.0,
             "dec": 0.0,
             "geocent_time": 1234567890.0,
-            "time_delay": 0.1,
+            "delta_t": 0.1,
         }
         params2 = {
             "ra": 1.0,
             "dec": 0.5,
             "geocent_time": 1234567890.0,
-            "time_delay": 0.1,
+            "delta_t": 0.1,
         }
 
         delays1 = context.compute_time_delay_array(params1)
@@ -198,13 +198,13 @@ class TestLensingTimeFrequencyDataContext:
             "ra": 1.0,
             "dec": 0.5,
             "geocent_time": 1234567890.0,
-            "time_delay": 0.0,
+            "delta_t": 0.0,
         }
         params2 = {
             "ra": 1.0,
             "dec": 0.5,
             "geocent_time": 1234567890.0,
-            "time_delay": 0.1,
+            "delta_t": 0.1,
         }
 
         delays1 = context.compute_time_delay_array(params1)
@@ -311,7 +311,7 @@ class TestLensingTimeFrequencyDataContext:
             "ra": 1.0,
             "dec": 0.5,
             "geocent_time": 1234567890.0,
-            "time_delay": 0.1,
+            "delta_t": 0.1,
         }
 
         time_delays = context.compute_time_delay_array(parameters)
@@ -335,8 +335,8 @@ class TestLensingTimeFrequencyDataContext:
         }
 
         # Test with different lensing delays
-        delays_small = context.compute_time_delay_array({**base_params, "time_delay": 0.01})
-        delays_large = context.compute_time_delay_array({**base_params, "time_delay": 1.0})
+        delays_small = context.compute_time_delay_array({**base_params, "delta_t": 0.01})
+        delays_large = context.compute_time_delay_array({**base_params, "delta_t": 1.0})
 
         # First set (indices 0, 1, 2) should be identical
         np.testing.assert_allclose(delays_small[:3], delays_large[:3], rtol=1e-12)

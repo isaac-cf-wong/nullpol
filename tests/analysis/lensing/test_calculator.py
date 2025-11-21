@@ -79,8 +79,8 @@ class TestLensingNullStreamCalculator:
         )
 
         # Test parameters
-        relative_magnification = 2.0
-        time_delay = 0.1  # 100 ms
+        mu_rel = 2.0
+        delta_t = 0.1  # 100 ms
         delta_n = 0  # Type I image
 
         parameters = {
@@ -88,8 +88,8 @@ class TestLensingNullStreamCalculator:
             "dec": 0.5,
             "psi": 0.3,
             "geocent_time": 1234567890.0,
-            "relative_magnification": relative_magnification,
-            "time_delay": time_delay,
+            "mu_rel": mu_rel,
+            "delta_t": delta_t,
             "delta_n": delta_n,
         }
 
@@ -104,9 +104,7 @@ class TestLensingNullStreamCalculator:
         np.testing.assert_allclose(lensed_pattern[:, :n_detectors_1, :], base_pattern[:, :n_detectors_1, :], rtol=1e-10)
 
         # Second image (detectors 3-4) should have lensing factor applied
-        expected_factor = relative_magnification * np.exp(
-            1j * np.pi * (2 * time_delay * mock_masked_freq[:, None, None] - delta_n)
-        )
+        expected_factor = mu_rel * np.exp(1j * np.pi * (2 * delta_t * mock_masked_freq[:, None, None] - delta_n))
         expected_pattern_image2 = base_pattern[:, n_detectors_1:, :] * expected_factor
         np.testing.assert_allclose(lensed_pattern[:, n_detectors_1:, :], expected_pattern_image2, rtol=1e-10)
 
@@ -145,8 +143,8 @@ class TestLensingNullStreamCalculator:
             "dec": 0.5,
             "psi": 0.3,
             "geocent_time": 1234567890.0,
-            "relative_magnification": 1.5,
-            "time_delay": 0.0,  # Zero delay
+            "mu_rel": 1.5,
+            "delta_t": 0.0,  # Zero delay
             "delta_n": 0,
         }
 
@@ -196,8 +194,8 @@ class TestLensingNullStreamCalculator:
             "dec": 0.5,
             "psi": 0.3,
             "geocent_time": 1234567890.0,
-            "relative_magnification": 1.0,
-            "time_delay": 0.0,
+            "mu_rel": 1.0,
+            "delta_t": 0.0,
         }
 
         # Test Type I (delta_n=0)
@@ -263,8 +261,8 @@ class TestLensingNullStreamCalculator:
             "dec": 0.5,
             "psi": 0.3,
             "geocent_time": 1234567890.0,
-            "relative_magnification": 3.0,
-            "time_delay": 0.0,
+            "mu_rel": 3.0,
+            "delta_t": 0.0,
             "delta_n": 0,
         }
         pattern_magnified = calculator._compute_calibrated_whitened_antenna_pattern_matrix(params_magnified)
@@ -283,8 +281,8 @@ class TestLensingNullStreamCalculator:
             "dec": 0.5,
             "psi": 0.3,
             "geocent_time": 1234567890.0,
-            "relative_magnification": 0.3,
-            "time_delay": 0.0,
+            "mu_rel": 0.3,
+            "delta_t": 0.0,
             "delta_n": 0,
         }
         pattern_demagnified = calculator._compute_calibrated_whitened_antenna_pattern_matrix(params_demagnified)
@@ -328,14 +326,14 @@ class TestLensingNullStreamCalculator:
             return_value=base_pattern.copy()
         )
 
-        time_delay = 0.1
+        delta_t = 0.1
         parameters = {
             "ra": 1.0,
             "dec": 0.5,
             "psi": 0.3,
             "geocent_time": 1234567890.0,
-            "relative_magnification": 1.0,
-            "time_delay": time_delay,
+            "mu_rel": 1.0,
+            "delta_t": delta_t,
             "delta_n": 0,
         }
 
@@ -354,7 +352,7 @@ class TestLensingNullStreamCalculator:
         # Verify phase difference matches expected frequency dependence
         freq_low = mock_masked_freq[10]
         freq_high = mock_masked_freq[90]
-        expected_phase_diff = 2 * np.pi * time_delay * (freq_high - freq_low)
+        expected_phase_diff = 2 * np.pi * delta_t * (freq_high - freq_low)
         actual_phase_diff = phase_high - phase_low
 
         # Account for 2π wrapping
@@ -393,8 +391,8 @@ class TestLensingNullStreamCalculator:
             return_value=base_pattern.copy()
         )
 
-        relative_magnification = 2.5
-        time_delay = 0.05
+        mu_rel = 2.5
+        delta_t = 0.05
         delta_n = 0.5
 
         parameters = {
@@ -402,8 +400,8 @@ class TestLensingNullStreamCalculator:
             "dec": 0.5,
             "psi": 0.3,
             "geocent_time": 1234567890.0,
-            "relative_magnification": relative_magnification,
-            "time_delay": time_delay,
+            "mu_rel": mu_rel,
+            "delta_t": delta_t,
             "delta_n": delta_n,
         }
 
@@ -413,9 +411,7 @@ class TestLensingNullStreamCalculator:
         np.testing.assert_allclose(lensed_pattern[:, :n_detectors_1, :], base_pattern[:, :n_detectors_1, :], rtol=1e-10)
 
         # Compute expected result for second image
-        lensing_factor = relative_magnification * np.exp(
-            1j * np.pi * (2 * time_delay * mock_masked_freq[:, None, None] - delta_n)
-        )
+        lensing_factor = mu_rel * np.exp(1j * np.pi * (2 * delta_t * mock_masked_freq[:, None, None] - delta_n))
         expected_pattern_image2 = base_pattern[:, n_detectors_1:, :] * lensing_factor
 
         np.testing.assert_allclose(lensed_pattern[:, n_detectors_1:, :], expected_pattern_image2, rtol=1e-10)
@@ -456,8 +452,8 @@ class TestLensingNullStreamCalculator:
             "dec": 0.5,
             "psi": 0.3,
             "geocent_time": 1234567890.0,
-            "relative_magnification": 2.0,
-            "time_delay": 0.1,
+            "mu_rel": 2.0,
+            "delta_t": 0.1,
             "delta_n": 0,
         }
 
