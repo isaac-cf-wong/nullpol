@@ -41,14 +41,14 @@ dependencies = [
 asimov = ["asimov", "cbcflow"]
 spark = ["pyspark>=3.0.0"]
 test = [
-    "black==25.9.0",
     "check-manifest==0.51",
-    "pytest==8.4.2",
+    "black==25.11.0",
+    "pytest==9.0.1",
     "pytest-cov==7.0.0",
-    "pre-commit==4.3.0",
+    "pre-commit==4.4.0",
     "pytest-mock<3.15.2",
     "pytest-github-actions-annotate-failures",
-    "ruff==0.13.1",
+    "ruff==0.14.5",
 ]
 
 [project.urls]
