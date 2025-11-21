@@ -55,7 +55,6 @@ def real_result_data():
     return {"result": real_result, "injection_data": injection_data}
 
 
-@pytest.mark.integration
 @pytest.fixture
 def mock_likelihood_metadata():
     """Create mock likelihood metadata for testing properties that require structured data.

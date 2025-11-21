@@ -17,7 +17,6 @@ import pytest
 from nullpol.cli.create_injection import main
 
 
-@pytest.mark.integration
 @pytest.fixture(scope="module")
 def test_frame_paths():
     """Create temporary directory and define output file paths for testing.
