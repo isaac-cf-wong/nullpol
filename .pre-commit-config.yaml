@@ -4,7 +4,7 @@ ci:
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: check-added-large-files
       - id: check-case-conflict
@@ -29,20 +29,20 @@ repos:
         additional_dependencies: []
 
   - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 25.1.0
+    rev: 25.11.0
     hooks:
       - id: black
         files: ^(src|tests)/
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.7
+    rev: v0.14.5
     hooks:
       - id: ruff
         args: ["--fix"]
         files: ^(src|tests)/
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v9.1.1 # Keep this version or update to the latest stable
+    rev: v9.3.3 # Keep this version or update to the latest stable
     hooks:
       - id: cspell
         name: Check spelling in Python, reSt, and Markdown files.
@@ -69,7 +69,7 @@ repos:
       - id: rst-inline-touching-normal
 
   - repo: https://github.com/mgedmin/check-manifest
-    rev: "0.50"
+    rev: "0.51"
     hooks:
       - id: check-manifest
         stages: [manual]
