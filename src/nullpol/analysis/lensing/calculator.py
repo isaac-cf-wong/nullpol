@@ -58,15 +58,17 @@ class LensingNullStreamCalculator(NullStreamCalculator):
     def _compute_calibrated_whitened_antenna_pattern_matrix(self, parameters):
         """Compute antenna pattern matrix with lensing factor applied.
 
-        Applies lensing factor L(f) = A × exp(i × π × (2 × Δt × f - n_morse))
-        where A is amplification, Δt is time delay, and n_morse is Morse phase.
+        Applies lensing factor L(f) = A × exp(i × π × (2 × Δt × f - Δn))
+        to the second image only, where A is relative magnification, Δt is time delay,
+        and Δn is the Morse phase difference.
 
         Args:
             parameters (dict): Dictionary containing standard GW parameters plus
-                'amplification', 'time_delay', and 'n_morse'.
+                'relative_magnification', 'time_delay', and 'delta_n'.
 
         Returns:
-            np.ndarray: Calibrated whitened antenna pattern matrix with lensing factor.
+            np.ndarray: Calibrated whitened antenna pattern matrix with lensing factor
+                applied to second image.
         """
         calibrated_whitened_antenna_pattern_matrix = (
             self.antenna_pattern_processor.compute_calibrated_whitened_antenna_pattern_matrix(
@@ -77,12 +79,18 @@ class LensingNullStreamCalculator(NullStreamCalculator):
                 parameters,
             )
         )
-        lensing_factor = parameters["amplification"] * np.exp(
+
+        # Apply lensing factor only to second image detectors
+        n_detectors_image_1 = len(self.data_context.interferometers_1)
+        lensing_factor = parameters["relative_magnification"] * np.exp(
             1j
             * np.pi
             * (
                 2 * parameters["time_delay"] * self.data_context.masked_frequency_array[:, None, None]
-                - parameters["n_morse"]
+                - parameters["delta_n"]
             )
         )
-        return calibrated_whitened_antenna_pattern_matrix * lensing_factor
+
+        calibrated_whitened_antenna_pattern_matrix[:, n_detectors_image_1:, :] *= lensing_factor
+
+        return calibrated_whitened_antenna_pattern_matrix

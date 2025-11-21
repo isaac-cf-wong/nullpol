@@ -45,7 +45,7 @@ class TestLensingNullStreamCalculator:
     @patch("nullpol.analysis.lensing.calculator.AntennaPatternProcessor")
     @patch("nullpol.analysis.lensing.calculator.LensingTimeFrequencyDataContext")
     def test_lensing_factor_computation(self, mock_data_context_class, mock_antenna_class, mock_interferometers):
-        """Test that lensing factor is correctly computed and applied."""
+        """Test that lensing factor is correctly computed and applied to second image only."""
         calculator = LensingNullStreamCalculator(
             interferometers=mock_interferometers,
             wavelet_frequency_resolution=4.0,
@@ -56,7 +56,9 @@ class TestLensingNullStreamCalculator:
 
         # Setup mocks
         n_freqs = 100
-        n_detectors = 3
+        n_detectors_1 = 3  # H1, L1, V1
+        n_detectors_2 = 2  # H1, L1
+        n_detectors = n_detectors_1 + n_detectors_2
         n_modes = 2
 
         mock_masked_freq = np.linspace(20, 1000, n_freqs)
@@ -64,6 +66,7 @@ class TestLensingNullStreamCalculator:
         # Mock interferometers to return the combined list
         combined_ifos = mock_interferometers[0] + mock_interferometers[1]
         type(calculator.data_context).interferometers = PropertyMock(return_value=combined_ifos)
+        type(calculator.data_context).interferometers_1 = PropertyMock(return_value=mock_interferometers[0])
         type(calculator.data_context).power_spectral_density_array = PropertyMock(
             return_value=np.ones((n_detectors, n_freqs))
         )
@@ -72,22 +75,22 @@ class TestLensingNullStreamCalculator:
         # Mock base antenna pattern
         base_pattern = np.ones((n_freqs, n_detectors, n_modes), dtype=complex)
         calculator.antenna_pattern_processor.compute_calibrated_whitened_antenna_pattern_matrix = Mock(
-            return_value=base_pattern
+            return_value=base_pattern.copy()
         )
 
         # Test parameters
-        amplification = 2.0
+        relative_magnification = 2.0
         time_delay = 0.1  # 100 ms
-        n_morse = 0  # Type I image
+        delta_n = 0  # Type I image
 
         parameters = {
             "ra": 1.0,
             "dec": 0.5,
             "psi": 0.3,
             "geocent_time": 1234567890.0,
-            "amplification": amplification,
+            "relative_magnification": relative_magnification,
             "time_delay": time_delay,
-            "n_morse": n_morse,
+            "delta_n": delta_n,
         }
 
         # Compute lensed antenna pattern
@@ -96,19 +99,21 @@ class TestLensingNullStreamCalculator:
         # Verify shape is preserved
         assert lensed_pattern.shape == base_pattern.shape
 
-        # Verify lensing factor is applied
-        # Compute expected lensing factor
-        expected_factor = amplification * np.exp(
-            1j * np.pi * (2 * time_delay * mock_masked_freq[:, None, None] - n_morse)
+        # Verify lensing factor is applied only to second image
+        # First image (detectors 0-2) should be unchanged
+        np.testing.assert_allclose(lensed_pattern[:, :n_detectors_1, :], base_pattern[:, :n_detectors_1, :], rtol=1e-10)
+        
+        # Second image (detectors 3-4) should have lensing factor applied
+        expected_factor = relative_magnification * np.exp(
+            1j * np.pi * (2 * time_delay * mock_masked_freq[:, None, None] - delta_n)
         )
-        expected_pattern = base_pattern * expected_factor
-
-        np.testing.assert_allclose(lensed_pattern, expected_pattern, rtol=1e-10)
+        expected_pattern_image2 = base_pattern[:, n_detectors_1:, :] * expected_factor
+        np.testing.assert_allclose(lensed_pattern[:, n_detectors_1:, :], expected_pattern_image2, rtol=1e-10)
 
     @patch("nullpol.analysis.lensing.calculator.AntennaPatternProcessor")
     @patch("nullpol.analysis.lensing.calculator.LensingTimeFrequencyDataContext")
     def test_lensing_factor_zero_time_delay(self, mock_data_context_class, mock_antenna_class, mock_interferometers):
-        """Test lensing factor with zero time delay."""
+        """Test lensing factor with zero time delay applied to second image only."""
         calculator = LensingNullStreamCalculator(
             interferometers=mock_interferometers,
             wavelet_frequency_resolution=4.0,
@@ -117,16 +122,20 @@ class TestLensingNullStreamCalculator:
         )
 
         n_freqs = 50
+        n_detectors_1 = 3
+        n_detectors_2 = 2
+        n_detectors = n_detectors_1 + n_detectors_2
         mock_masked_freq = np.linspace(20, 1000, n_freqs)
         combined_ifos = mock_interferometers[0] + mock_interferometers[1]
         type(calculator.data_context).masked_frequency_array = PropertyMock(return_value=mock_masked_freq)
         type(calculator.data_context).interferometers = PropertyMock(return_value=combined_ifos)
-        type(calculator.data_context).power_spectral_density_array = PropertyMock(return_value=np.ones((3, n_freqs)))
+        type(calculator.data_context).interferometers_1 = PropertyMock(return_value=mock_interferometers[0])
+        type(calculator.data_context).power_spectral_density_array = PropertyMock(return_value=np.ones((n_detectors, n_freqs)))
         type(calculator.data_context).frequency_mask = PropertyMock(return_value=np.ones(n_freqs, dtype=bool))
 
-        base_pattern = np.ones((n_freqs, 3, 2), dtype=complex)
+        base_pattern = np.ones((n_freqs, n_detectors, 2), dtype=complex)
         calculator.antenna_pattern_processor.compute_calibrated_whitened_antenna_pattern_matrix = Mock(
-            return_value=base_pattern
+            return_value=base_pattern.copy()
         )
 
         parameters = {
@@ -134,23 +143,25 @@ class TestLensingNullStreamCalculator:
             "dec": 0.5,
             "psi": 0.3,
             "geocent_time": 1234567890.0,
-            "amplification": 1.5,
+            "relative_magnification": 1.5,
             "time_delay": 0.0,  # Zero delay
-            "n_morse": 0,
+            "delta_n": 0,
         }
 
         lensed_pattern = calculator._compute_calibrated_whitened_antenna_pattern_matrix(parameters)
 
-        # With zero time delay, only amplification and morse phase apply
+        # With zero time delay, only relative magnification and delta_n apply
         # Factor = 1.5 * exp(-i*pi*0) = 1.5
-        expected_pattern = base_pattern * 1.5
-
-        np.testing.assert_allclose(lensed_pattern, expected_pattern, rtol=1e-10)
+        # First image should be unchanged
+        np.testing.assert_allclose(lensed_pattern[:, :n_detectors_1, :], base_pattern[:, :n_detectors_1, :], rtol=1e-10)
+        # Second image should have factor 1.5
+        expected_pattern_image2 = base_pattern[:, n_detectors_1:, :] * 1.5
+        np.testing.assert_allclose(lensed_pattern[:, n_detectors_1:, :], expected_pattern_image2, rtol=1e-10)
 
     @patch("nullpol.analysis.lensing.calculator.AntennaPatternProcessor")
     @patch("nullpol.analysis.lensing.calculator.LensingTimeFrequencyDataContext")
     def test_morse_phase_effects(self, mock_data_context_class, mock_antenna_class, mock_interferometers):
-        """Test different Morse phase values."""
+        """Test different Morse phase values applied to second image only."""
         calculator = LensingNullStreamCalculator(
             interferometers=mock_interferometers,
             wavelet_frequency_resolution=4.0,
@@ -159,16 +170,21 @@ class TestLensingNullStreamCalculator:
         )
 
         n_freqs = 50
+        n_detectors_1 = 3
+        n_detectors_2 = 2
+        n_detectors = n_detectors_1 + n_detectors_2
         mock_masked_freq = np.linspace(20, 1000, n_freqs)
         combined_ifos = mock_interferometers[0] + mock_interferometers[1]
         type(calculator.data_context).masked_frequency_array = PropertyMock(return_value=mock_masked_freq)
         type(calculator.data_context).interferometers = PropertyMock(return_value=combined_ifos)
-        type(calculator.data_context).power_spectral_density_array = PropertyMock(return_value=np.ones((3, n_freqs)))
+        type(calculator.data_context).interferometers_1 = PropertyMock(return_value=mock_interferometers[0])
+        type(calculator.data_context).power_spectral_density_array = PropertyMock(return_value=np.ones((n_detectors, n_freqs)))
         type(calculator.data_context).frequency_mask = PropertyMock(return_value=np.ones(n_freqs, dtype=bool))
 
-        base_pattern = np.ones((n_freqs, 3, 2), dtype=complex)
+        base_pattern = np.ones((n_freqs, n_detectors, 2), dtype=complex)
+        # Mock must return a new copy each time to mimic real behavior where antenna pattern processor creates new arrays
         calculator.antenna_pattern_processor.compute_calibrated_whitened_antenna_pattern_matrix = Mock(
-            return_value=base_pattern.copy()
+            side_effect=lambda *args, **kwargs: base_pattern.copy()
         )
 
         base_params = {
@@ -176,35 +192,41 @@ class TestLensingNullStreamCalculator:
             "dec": 0.5,
             "psi": 0.3,
             "geocent_time": 1234567890.0,
-            "amplification": 1.0,
+            "relative_magnification": 1.0,
             "time_delay": 0.0,
         }
 
-        # Test Type I (n_morse=0)
-        params_type1 = {**base_params, "n_morse": 0}
+        # Test Type I (delta_n=0)
+        params_type1 = {**base_params, "delta_n": 0}
         pattern_type1 = calculator._compute_calibrated_whitened_antenna_pattern_matrix(params_type1)
 
-        # Test Type II (n_morse=0.5)
-        params_type2 = {**base_params, "n_morse": 0.5}
+        # Test Type II (delta_n=0.5)
+        params_type2 = {**base_params, "delta_n": 0.5}
         pattern_type2 = calculator._compute_calibrated_whitened_antenna_pattern_matrix(params_type2)
 
-        # Test Type III (n_morse=1)
-        params_type3 = {**base_params, "n_morse": 1}
+        # Test Type III (delta_n=1)
+        params_type3 = {**base_params, "delta_n": 1}
         pattern_type3 = calculator._compute_calibrated_whitened_antenna_pattern_matrix(params_type3)
 
-        # Expected factors: exp(-i*pi*0) = 1, exp(-i*pi*0.5) = -i, exp(-i*pi*1) = -1
-        expected_type1 = base_pattern * 1.0
-        expected_type2 = base_pattern * np.exp(-1j * np.pi * 0.5)
-        expected_type3 = base_pattern * np.exp(-1j * np.pi * 1.0)
-
-        np.testing.assert_allclose(pattern_type1, expected_type1, rtol=1e-10)
-        np.testing.assert_allclose(pattern_type2, expected_type2, rtol=1e-10)
-        np.testing.assert_allclose(pattern_type3, expected_type3, rtol=1e-10)
+        # Expected factors applied only to second image: exp(-i*pi*0) = 1, exp(-i*pi*0.5) = -i, exp(-i*pi*1) = -1
+        # First image unchanged in all cases
+        np.testing.assert_allclose(pattern_type1[:, :n_detectors_1, :], base_pattern[:, :n_detectors_1, :], rtol=1e-10)
+        np.testing.assert_allclose(pattern_type2[:, :n_detectors_1, :], base_pattern[:, :n_detectors_1, :], rtol=1e-10)
+        np.testing.assert_allclose(pattern_type3[:, :n_detectors_1, :], base_pattern[:, :n_detectors_1, :], rtol=1e-10)
+        
+        # Second image with phase factors
+        expected_type1_img2 = base_pattern[:, n_detectors_1:, :] * 1.0
+        expected_type2_img2 = base_pattern[:, n_detectors_1:, :] * np.exp(-1j * np.pi * 0.5)
+        expected_type3_img2 = base_pattern[:, n_detectors_1:, :] * np.exp(-1j * np.pi * 1.0)
+        
+        np.testing.assert_allclose(pattern_type1[:, n_detectors_1:, :], expected_type1_img2, rtol=1e-10)
+        np.testing.assert_allclose(pattern_type2[:, n_detectors_1:, :], expected_type2_img2, rtol=1e-10)
+        np.testing.assert_allclose(pattern_type3[:, n_detectors_1:, :], expected_type3_img2, rtol=1e-10)
 
     @patch("nullpol.analysis.lensing.calculator.AntennaPatternProcessor")
     @patch("nullpol.analysis.lensing.calculator.LensingTimeFrequencyDataContext")
     def test_amplification_factor(self, mock_data_context_class, mock_antenna_class, mock_interferometers):
-        """Test amplification factor scaling."""
+        """Test relative magnification factor scaling on second image only."""
         calculator = LensingNullStreamCalculator(
             interferometers=mock_interferometers,
             wavelet_frequency_resolution=4.0,
@@ -213,48 +235,58 @@ class TestLensingNullStreamCalculator:
         )
 
         n_freqs = 50
+        n_detectors_1 = 3
+        n_detectors_2 = 2
+        n_detectors = n_detectors_1 + n_detectors_2
         mock_masked_freq = np.linspace(20, 1000, n_freqs)
         combined_ifos = mock_interferometers[0] + mock_interferometers[1]
         type(calculator.data_context).masked_frequency_array = PropertyMock(return_value=mock_masked_freq)
         type(calculator.data_context).interferometers = PropertyMock(return_value=combined_ifos)
-        type(calculator.data_context).power_spectral_density_array = PropertyMock(return_value=np.ones((3, n_freqs)))
+        type(calculator.data_context).interferometers_1 = PropertyMock(return_value=mock_interferometers[0])
+        type(calculator.data_context).power_spectral_density_array = PropertyMock(return_value=np.ones((n_detectors, n_freqs)))
         type(calculator.data_context).frequency_mask = PropertyMock(return_value=np.ones(n_freqs, dtype=bool))
 
-        base_pattern = np.random.randn(n_freqs, 3, 2) + 1j * np.random.randn(n_freqs, 3, 2)
+        base_pattern = np.random.randn(n_freqs, n_detectors, 2) + 1j * np.random.randn(n_freqs, n_detectors, 2)
         calculator.antenna_pattern_processor.compute_calibrated_whitened_antenna_pattern_matrix = Mock(
             return_value=base_pattern.copy()
         )
 
-        # Test magnification (A > 1)
+        # Test magnification (A > 1) on second image
         params_magnified = {
             "ra": 1.0,
             "dec": 0.5,
             "psi": 0.3,
             "geocent_time": 1234567890.0,
-            "amplification": 3.0,
+            "relative_magnification": 3.0,
             "time_delay": 0.0,
-            "n_morse": 0,
+            "delta_n": 0,
         }
         pattern_magnified = calculator._compute_calibrated_whitened_antenna_pattern_matrix(params_magnified)
-        assert np.mean(np.abs(pattern_magnified)) > np.mean(np.abs(base_pattern))
+        # Second image should be magnified
+        assert np.mean(np.abs(pattern_magnified[:, n_detectors_1:, :])) > np.mean(np.abs(base_pattern[:, n_detectors_1:, :]))
+        # First image unchanged
+        np.testing.assert_allclose(pattern_magnified[:, :n_detectors_1, :], base_pattern[:, :n_detectors_1, :], rtol=1e-10)
 
-        # Test demagnification (A < 1)
+        # Test demagnification (A < 1) on second image
         params_demagnified = {
             "ra": 1.0,
             "dec": 0.5,
             "psi": 0.3,
             "geocent_time": 1234567890.0,
-            "amplification": 0.3,
+            "relative_magnification": 0.3,
             "time_delay": 0.0,
-            "n_morse": 0,
+            "delta_n": 0,
         }
         pattern_demagnified = calculator._compute_calibrated_whitened_antenna_pattern_matrix(params_demagnified)
-        assert np.mean(np.abs(pattern_demagnified)) < np.mean(np.abs(base_pattern))
+        # Second image should be demagnified
+        assert np.mean(np.abs(pattern_demagnified[:, n_detectors_1:, :])) < np.mean(np.abs(base_pattern[:, n_detectors_1:, :]))
+        # First image unchanged
+        np.testing.assert_allclose(pattern_demagnified[:, :n_detectors_1, :], base_pattern[:, :n_detectors_1, :], rtol=1e-10)
 
     @patch("nullpol.analysis.lensing.calculator.AntennaPatternProcessor")
     @patch("nullpol.analysis.lensing.calculator.LensingTimeFrequencyDataContext")
     def test_frequency_dependent_phase(self, mock_data_context_class, mock_antenna_class, mock_interferometers):
-        """Test that phase varies with frequency as expected."""
+        """Test that phase varies with frequency as expected for second image."""
         calculator = LensingNullStreamCalculator(
             interferometers=mock_interferometers,
             wavelet_frequency_resolution=4.0,
@@ -263,17 +295,21 @@ class TestLensingNullStreamCalculator:
         )
 
         n_freqs = 100
+        n_detectors_1 = 3
+        n_detectors_2 = 2
+        n_detectors = n_detectors_1 + n_detectors_2
         mock_masked_freq = np.linspace(20, 1000, n_freqs)
         combined_ifos = mock_interferometers[0] + mock_interferometers[1]
         type(calculator.data_context).masked_frequency_array = PropertyMock(return_value=mock_masked_freq)
         type(calculator.data_context).interferometers = PropertyMock(return_value=combined_ifos)
-        type(calculator.data_context).power_spectral_density_array = PropertyMock(return_value=np.ones((3, n_freqs)))
+        type(calculator.data_context).interferometers_1 = PropertyMock(return_value=mock_interferometers[0])
+        type(calculator.data_context).power_spectral_density_array = PropertyMock(return_value=np.ones((n_detectors, n_freqs)))
         type(calculator.data_context).frequency_mask = PropertyMock(return_value=np.ones(n_freqs, dtype=bool))
 
         # Use unit amplitude pattern to isolate phase effects
-        base_pattern = np.ones((n_freqs, 3, 2), dtype=complex)
+        base_pattern = np.ones((n_freqs, n_detectors, 2), dtype=complex)
         calculator.antenna_pattern_processor.compute_calibrated_whitened_antenna_pattern_matrix = Mock(
-            return_value=base_pattern
+            return_value=base_pattern.copy()
         )
 
         time_delay = 0.1
@@ -282,16 +318,19 @@ class TestLensingNullStreamCalculator:
             "dec": 0.5,
             "psi": 0.3,
             "geocent_time": 1234567890.0,
-            "amplification": 1.0,
+            "relative_magnification": 1.0,
             "time_delay": time_delay,
-            "n_morse": 0,
+            "delta_n": 0,
         }
 
         lensed_pattern = calculator._compute_calibrated_whitened_antenna_pattern_matrix(parameters)
 
-        # Extract phases at two different frequencies
-        phase_low = np.angle(lensed_pattern[10, 0, 0])
-        phase_high = np.angle(lensed_pattern[90, 0, 0])
+        # First image should be unchanged (no phase variation)
+        np.testing.assert_allclose(lensed_pattern[:, :n_detectors_1, :], base_pattern[:, :n_detectors_1, :], rtol=1e-10)
+        
+        # Extract phases at two different frequencies for second image
+        phase_low = np.angle(lensed_pattern[10, n_detectors_1, 0])
+        phase_high = np.angle(lensed_pattern[90, n_detectors_1, 0])
 
         # Phases should differ due to frequency-dependent term
         assert not np.isclose(phase_low, phase_high)
@@ -311,7 +350,7 @@ class TestLensingNullStreamCalculator:
     @patch("nullpol.analysis.lensing.calculator.AntennaPatternProcessor")
     @patch("nullpol.analysis.lensing.calculator.LensingTimeFrequencyDataContext")
     def test_combined_lensing_effects(self, mock_data_context_class, mock_antenna_class, mock_interferometers):
-        """Test combined amplification, time delay, and Morse phase."""
+        """Test combined relative magnification, time delay, and Morse phase on second image."""
         calculator = LensingNullStreamCalculator(
             interferometers=mock_interferometers,
             wavelet_frequency_resolution=4.0,
@@ -320,41 +359,48 @@ class TestLensingNullStreamCalculator:
         )
 
         n_freqs = 50
+        n_detectors_1 = 3
+        n_detectors_2 = 2
+        n_detectors = n_detectors_1 + n_detectors_2
         mock_masked_freq = np.linspace(100, 500, n_freqs)
         combined_ifos = mock_interferometers[0] + mock_interferometers[1]
         type(calculator.data_context).masked_frequency_array = PropertyMock(return_value=mock_masked_freq)
         type(calculator.data_context).interferometers = PropertyMock(return_value=combined_ifos)
-        type(calculator.data_context).power_spectral_density_array = PropertyMock(return_value=np.ones((3, n_freqs)))
+        type(calculator.data_context).interferometers_1 = PropertyMock(return_value=mock_interferometers[0])
+        type(calculator.data_context).power_spectral_density_array = PropertyMock(return_value=np.ones((n_detectors, n_freqs)))
         type(calculator.data_context).frequency_mask = PropertyMock(return_value=np.ones(n_freqs, dtype=bool))
 
-        base_pattern = np.ones((n_freqs, 3, 2), dtype=complex) * (1 + 1j) / np.sqrt(2)
+        base_pattern = np.ones((n_freqs, n_detectors, 2), dtype=complex) * (1 + 1j) / np.sqrt(2)
         calculator.antenna_pattern_processor.compute_calibrated_whitened_antenna_pattern_matrix = Mock(
-            return_value=base_pattern
+            return_value=base_pattern.copy()
         )
 
-        amplification = 2.5
+        relative_magnification = 2.5
         time_delay = 0.05
-        n_morse = 0.5
+        delta_n = 0.5
 
         parameters = {
             "ra": 1.0,
             "dec": 0.5,
             "psi": 0.3,
             "geocent_time": 1234567890.0,
-            "amplification": amplification,
+            "relative_magnification": relative_magnification,
             "time_delay": time_delay,
-            "n_morse": n_morse,
+            "delta_n": delta_n,
         }
 
         lensed_pattern = calculator._compute_calibrated_whitened_antenna_pattern_matrix(parameters)
 
-        # Compute expected result
-        lensing_factor = amplification * np.exp(
-            1j * np.pi * (2 * time_delay * mock_masked_freq[:, None, None] - n_morse)
+        # First image unchanged
+        np.testing.assert_allclose(lensed_pattern[:, :n_detectors_1, :], base_pattern[:, :n_detectors_1, :], rtol=1e-10)
+        
+        # Compute expected result for second image
+        lensing_factor = relative_magnification * np.exp(
+            1j * np.pi * (2 * time_delay * mock_masked_freq[:, None, None] - delta_n)
         )
-        expected_pattern = base_pattern * lensing_factor
+        expected_pattern_image2 = base_pattern[:, n_detectors_1:, :] * lensing_factor
 
-        np.testing.assert_allclose(lensed_pattern, expected_pattern, rtol=1e-10)
+        np.testing.assert_allclose(lensed_pattern[:, n_detectors_1:, :], expected_pattern_image2, rtol=1e-10)
 
     @patch("nullpol.analysis.lensing.calculator.AntennaPatternProcessor")
     @patch("nullpol.analysis.lensing.calculator.LensingTimeFrequencyDataContext")
@@ -368,17 +414,21 @@ class TestLensingNullStreamCalculator:
         )
 
         n_freqs = 50
+        n_detectors_1 = 3
+        n_detectors_2 = 2
+        n_detectors = n_detectors_1 + n_detectors_2
         mock_masked_freq = np.linspace(20, 1000, n_freqs)
         combined_ifos = mock_interferometers[0] + mock_interferometers[1]
         type(calculator.data_context).masked_frequency_array = PropertyMock(return_value=mock_masked_freq)
         type(calculator.data_context).interferometers = PropertyMock(return_value=combined_ifos)
-        type(calculator.data_context).power_spectral_density_array = PropertyMock(return_value=np.ones((3, n_freqs)))
+        type(calculator.data_context).interferometers_1 = PropertyMock(return_value=mock_interferometers[0])
+        type(calculator.data_context).power_spectral_density_array = PropertyMock(return_value=np.ones((n_detectors, n_freqs)))
         type(calculator.data_context).frequency_mask = PropertyMock(return_value=np.ones(n_freqs, dtype=bool))
 
         # Test with complex128
-        base_pattern_128 = np.ones((n_freqs, 3, 2), dtype=np.complex128)
+        base_pattern_128 = np.ones((n_freqs, n_detectors, 2), dtype=np.complex128)
         calculator.antenna_pattern_processor.compute_calibrated_whitened_antenna_pattern_matrix = Mock(
-            return_value=base_pattern_128
+            return_value=base_pattern_128.copy()
         )
 
         parameters = {
@@ -386,9 +436,9 @@ class TestLensingNullStreamCalculator:
             "dec": 0.5,
             "psi": 0.3,
             "geocent_time": 1234567890.0,
-            "amplification": 2.0,
+            "relative_magnification": 2.0,
             "time_delay": 0.1,
-            "n_morse": 0,
+            "delta_n": 0,
         }
 
         lensed_pattern = calculator._compute_calibrated_whitened_antenna_pattern_matrix(parameters)
