@@ -7,7 +7,7 @@ name = "nullpol"
 description = "A package to perform model-independent polarization test of gravitational-wave signals."
 authors = [
     { name = "Isaac C.F. Wong", email = "chunfung.wong@kuleuven.be" },
-    { name = "Thomas Ng" },
+    { name = "Thomas Ng", email = "thomas.ng@nikhef.nl" },
     { name = "Balázs Cirok" },
 ]
 readme = "README.md"
@@ -19,7 +19,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.10,<3.12"
 dynamic = ["version"]
 dependencies = [
     "matplotlib",
@@ -41,14 +41,14 @@ dependencies = [
 asimov = ["asimov", "cbcflow"]
 spark = ["pyspark>=3.0.0"]
 test = [
-    "black==25.1.0",
+    "black==25.9.0",
     "check-manifest==0.50",
-    "pre-commit==4.1.0",
-    "pytest-cov==6.0.0",
-    "pytest-mock<3.14.1",
-    "pytest==8.3.4",
+    "pytest==8.4.2",
+    "pytest-cov==7.0.0",
+    "pre-commit==4.3.0",
+    "pytest-mock<3.15.2",
     "pytest-github-actions-annotate-failures",
-    "ruff==0.12.7",
+    "ruff==0.13.1",
 ]
 
 [project.urls]
@@ -65,6 +65,49 @@ fast = true
 
 [tool.ruff]
 exclude = ["docs"]
+line-length = 120
+
+[tool.flake8]
+max-line-length = 120
+exclude = ["docs"]
+
+[tool.pylint.format]
+max-line-length = 120
+
+[tool.pylint.messages_control]
+# Disable specific pylint checks that are not suitable for this codebase
+disable = [
+    # Documentation requirements
+    "missing-module-docstring",       # C0114 - Allow modules without docstrings
+    "missing-class-docstring",        # C0115 - Allow classes without docstrings
+    "missing-function-docstring",     # C0111 - Allow functions without docstrings
+
+    # Variable naming and usage
+    "invalid-name",                   # C0103 - Allow single-letter and short variable names
+
+    # Code complexity limits
+    "too-many-locals",                # R0914 - Allow functions with many local variables
+    "too-many-arguments",             # R0913 - Allow functions with many parameters
+    "too-many-branches",              # R0912 - Allow functions with many conditional branches
+    "too-many-statements",            # R0915 - Allow functions with many statements
+    "too-many-positional-arguments",  # R0917 - Allow functions with many positional parameters
+
+    # Formatting and style preferences
+    "line-too-long",                  # C0301 - Disable line length checking (handled by black)
+    "use-dict-literal",               # R1735 - Allow dict() calls instead of requiring {} literals
+    "logging-fstring-interpolation",  # W1203 - Allow f-strings in logging (more readable than % formatting)
+
+    # Testing patterns
+    "redefined-outer-name",           # W0621 - Allow pytest fixture name reuse in different scopes
+    "protected-access",               # W0212 - Allow access to protected members in tests and internal APIs
+
+    # File handling
+    "unspecified-encoding",           # W1514 - Allow open() without explicit encoding for compatibility
+]
+
+# Ignore duplicate code violations in test files only
+[tool.pylint.similarities]
+ignore-paths = ["tests/"]
 
 [tool.coverage.run]
 branch = true

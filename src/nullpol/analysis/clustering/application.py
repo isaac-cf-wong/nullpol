@@ -39,8 +39,7 @@ def run_time_frequency_clustering(
             on threshold_type.
         time_padding (float): Time padding around clusters in seconds.
         frequency_padding (float): Frequency padding around clusters in Hz.
-        skypoints (numpy.ndarray): Array of sky positions (RA, Dec) to test, with shape
-            (n_points, 2).
+        skypoints (int): Number of random sky positions to test.
         return_sky_maximized_spectrogram (bool, optional): If True, also return the
             sky-maximized spectrogram. Defaults to False.
         threshold_type (str, optional): Method for interpreting threshold value:
@@ -83,7 +82,7 @@ def run_time_frequency_clustering(
         logger.warning("Returning an empty cluster filter.")
         output = energy_filter.astype(np.float64)
     else:
-        wavelet_Nt, wavelet_Nf = get_shape_of_wavelet_transform(
+        wavelet_Nt, _wavelet_Nf = get_shape_of_wavelet_transform(
             duration=interferometers[0].duration,
             sampling_frequency=interferometers[0].sampling_frequency,
             wavelet_frequency_resolution=wavelet_frequency_resolution,
@@ -102,5 +101,4 @@ def run_time_frequency_clustering(
 
     if return_sky_maximized_spectrogram:
         return output, sky_maximized_spectrogram
-    else:
-        return output
+    return output

@@ -1,9 +1,9 @@
 name: Python CI
 on:
   push:
-    branches: [ main ]
+    branches: [ main, nullpol-dev]
   pull_request:
-    branches: [ main ]
+    branches: [ main, nullpol-dev]
   release:
     types: [created]
   workflow_dispatch:
@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.10", "3.11"]
     steps:
     - uses: actions/checkout@v5
 
@@ -32,7 +32,7 @@ jobs:
         pytest --junitxml=test-results.xml --cov src --cov-report=xml --cov-report=html
 
   # publish:
-  #   uses: microsoft/action-python/.github/workflows/publish.yml@0.6.4
+  #   uses: microsoft/action-python/.github/workflows/publish.yml@0.7.3
   #   secrets:
   #     PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-  #     TEST_PYPI_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD  }}
+  #     TEST_PYPI_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}

@@ -107,7 +107,7 @@ def phi_vec(Nf: int, nx: float = 4.0, mult: int = 16) -> np.ndarray:
     Returns:
         numpy.ndarray: 1D numpy array representing time domain phi.
     """
-    # TODO fix mult
+    # NOTE: Multiplication factor may need adjustment for optimal wavelet scaling
 
     OM = np.pi
     DOM = OM / Nf
