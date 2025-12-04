@@ -259,9 +259,7 @@ def find_python_packages(root_dir: Path) -> List[Path]:
     return packages
 
 
-def auto_generate_init_files(
-    root_dir: Path, excluded_dirs: Set[str] = None, dry_run: bool = False
-) -> Dict[str, str]:
+def auto_generate_init_files(root_dir: Path, excluded_dirs: Set[str] = None, dry_run: bool = False) -> Dict[str, str]:
     """
     Auto-generate __init__.py files for leaf packages.
 
@@ -324,7 +322,7 @@ def auto_generate_init_files(
 
 def main():
     """Main entry point."""
-    import argparse
+    import argparse  # pylint: disable=import-outside-toplevel
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -347,7 +345,7 @@ def main():
     if root_dir is None:
         # Default to src/ directory relative to this script's location
         script_dir = Path(__file__).parent
-        root_dir = script_dir.parent / 'src'
+        root_dir = script_dir.parent / "src"
 
     excluded_dirs = set(args.exclude)
     results = auto_generate_init_files(root_dir=root_dir, excluded_dirs=excluded_dirs, dry_run=args.dry_run)

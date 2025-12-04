@@ -1,35 +1,20 @@
+# pylint: disable=duplicate-code  # Legitimate shared CLI argument patterns across scripts
 from __future__ import annotations
 
-import importlib
 import json
-from pathlib import Path
+from importlib.resources import files
 
 import healpy as hp
 import numpy as np
-from importlib.resources import files
 from bilby.gw.detector import InterferometerList, PowerSpectralDensity
 from bilby.gw.waveform_generator import WaveformGenerator
 from configargparse import ArgParser
 
 from ..analysis.tf_transforms import transform_wavelet_freq, transform_wavelet_freq_quadrature
 from ..utils import logger
-
-
-def _import_function(path):
-    module_path, func_name = path.rsplit(".", 1)
-    module = importlib.import_module(module_path)
-    func = getattr(module, func_name)
-    return func
-
-
-def _get_file_extension(file_path):
-    return Path(file_path).suffix
-
-
-def _json_loads_with_none(value):
-    # Replace 'None' with 'null' to make it valid JSON
-    value = value.replace("None", "null")
-    return json.loads(value)
+from ..utils.filesystem import get_file_extension
+from ..utils.imports import import_function
+from ..utils.json_utils import json_loads_with_none
 
 
 def main():
@@ -40,7 +25,7 @@ def main():
     parser.add("-c", "--config", is_config_file=True, help="Path to custom config file.")
     parser.add("-o", "--output", type=str, help="Path of output.")
     parser.add("--detectors", type=str, nargs="+", help="Detector prefix.")
-    parser.add("--psds", type=_json_loads_with_none, help="A dictionary of PSD files.")
+    parser.add("--psds", type=json_loads_with_none, help="A dictionary of PSD files.")
     parser.add("--minimum-frequency", type=float, help="Minimum frequency in Hz.")
     parser.add("--signal-parameters", type=str, help="Path to a JSON file with a list of signal parameters.")
     parser.add("--waveform-arguments", type=str, help="A dictionary of additional arguments for the waveform model.")
@@ -82,7 +67,7 @@ def main():
     # Load the signal parameters
     if args.signal_parameters is not None:
         # Check the extension of a file.
-        if _get_file_extension(args.signal_parameters) != ".json":
+        if get_file_extension(args.signal_parameters) != ".json":
             raise ValueError("--signal-parameters needs to be a .json file.")
         with open(args.signal_parameters) as f:
             signal_parameters = json.load(f)
@@ -92,7 +77,7 @@ def main():
     # Construct waveform generator
     if args.frequency_domain_source_model is not None:
         # Load the frequency domain source model
-        frequency_domain_source_model = _import_function(args.frequency_domain_source_model)
+        frequency_domain_source_model = import_function(args.frequency_domain_source_model)
 
         # Load the waveform arguments
         if args.waveform_arguments is not None:
@@ -102,7 +87,7 @@ def main():
 
         if args.parameter_conversion is not None:
             # Load the parameter conversion function
-            parameter_conversion = _import_function(args.parameter_conversion)
+            parameter_conversion = import_function(args.parameter_conversion)
         else:
             parameter_conversion = None
 
@@ -124,11 +109,9 @@ def main():
 
     # Inject signal
     if signal_parameters is not None and waveform_generator is not None:
-        for i in range(len(signal_parameters)):
-            interferometers.inject_signal(parameters=signal_parameters[i], waveform_generator=waveform_generator)
-            logger.info(
-                f"Signal {i+1}/{len(signal_parameters)} - Injected a signal with parameters: {signal_parameters[i]}"
-            )
+        for i, signal_param in enumerate(signal_parameters):
+            interferometers.inject_signal(parameters=signal_param, waveform_generator=waveform_generator)
+            logger.info(f"Signal {i+1}/{len(signal_parameters)} - Injected a signal with parameters: {signal_param}")
 
     # Construct the whitened frequency-domain strain.
     whitened_frequency_domain_strains = []

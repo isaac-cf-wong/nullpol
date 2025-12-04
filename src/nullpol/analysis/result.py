@@ -54,8 +54,8 @@ class PolarizationResult(Result):
                 item = dictionary[k]
                 dictionary = item
             return item
-        except KeyError:
-            raise AttributeError("No information stored for {}".format("/".join(keys)))
+        except KeyError as exc:
+            raise AttributeError(f"No information stored for {'/'.join(keys)}") from exc
 
     @property
     def sampling_frequency(self):
@@ -75,7 +75,7 @@ class PolarizationResult(Result):
     @property
     def interferometers(self):
         """List of interferometer names"""
-        return [name for name in self.__get_from_nested_meta_data("likelihood", "interferometers")]
+        return list(self.__get_from_nested_meta_data("likelihood", "interferometers"))
 
     def detector_injection_properties(self, detector):
         """Returns a dictionary of the injection properties for each detector
@@ -113,7 +113,7 @@ class PolarizationResult(Result):
         dpi=600,
         transparent=False,
         colorbar=False,
-        contour=[50, 90],
+        contour=None,
         annotate=True,
         cmap="cylon",
         load_pickle=False,
@@ -141,7 +141,7 @@ class PolarizationResult(Result):
         geo: bool
             Plot in geographic coordinates (lat, lon) instead of RA, Dec
         dpi: int
-            Resolution of figure in fots per inch
+            Resolution of figure in dots per inch
         transparent: bool
             Save image with transparent background
         colorbar: bool
@@ -156,18 +156,31 @@ class PolarizationResult(Result):
             If true, load the cached pickle file (default name), or the
             pickle-file give as a path.
         """
-        import matplotlib.pyplot as plt
-        from matplotlib import rcParams
+        import matplotlib.pyplot as plt  # pylint: disable=import-outside-toplevel
+        from matplotlib import rcParams  # pylint: disable=import-outside-toplevel
 
         try:
-            import healpy as hp
-            from astropy.time import Time
-            from ligo.skymap import bayestar, io, kde, plot, postprocess, version
+            import healpy as hp  # pylint: disable=import-outside-toplevel
+            from astropy.time import Time  # pylint: disable=import-outside-toplevel
+
+            # pylint: disable=import-outside-toplevel  # Optional dependency for sky localization
+            from ligo.skymap import (
+                bayestar,
+                io,
+                kde,
+                plot,
+                postprocess,
+                version,
+            )  # pylint: disable=import-outside-toplevel
         except ImportError as e:
             logger.info(f"Unable to generate skymap: error {e}")
             return
 
         check_directory_exists_and_if_not_mkdir(self.outdir)
+
+        # Set default contour levels if None provided
+        if contour is None:
+            contour = [50, 90]
 
         logger.info("Reading samples for skymap")
         data = self.posterior
@@ -182,7 +195,7 @@ class PolarizationResult(Result):
             pts = data[["ra", "dec"]].values
             confidence_levels = kde.Clustered2DSkyKDE
 
-            logger.info("Initialising skymap class")
+            logger.info("Initializing skymap class")
             skypost = confidence_levels(pts, trials=trials, jobs=jobs)
             logger.info(f"Pickling skymap to {default_obj_filename}")
             safe_file_dump(skypost, default_obj_filename, "pickle")
@@ -281,4 +294,4 @@ class PolarizationResult(Result):
 
         filename = os.path.join(self.outdir, f"{self.label}_skymap.png")
         logger.info(f"Generating 2D projected skymap to {filename}")
-        safe_save_figure(fig=plt.gcf(), filename=filename, dpi=dpi)
+        safe_save_figure(fig=plt.gcf(), filename=filename, dpi=dpi, transparent=transparent)
