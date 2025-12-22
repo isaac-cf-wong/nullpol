@@ -43,14 +43,14 @@ repos:
         files: ^(src|tests)/
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.9
+    rev: v0.14.10
     hooks:
       - id: ruff
         args: ["--fix"]
         files: ^(src|tests)/
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v9.3.3 # Keep this version or update to the latest stable
+    rev: v9.4.0 # Keep this version or update to the latest stable
     hooks:
       - id: cspell
         name: Check spelling in Python, reSt, and Markdown files.
