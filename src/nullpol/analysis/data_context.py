@@ -170,7 +170,10 @@ class TimeFrequencyDataContext:
     ):
         """Initialize the data context."""
         # Load and validate interferometers
-        self._interferometers = bilby.gw.detector.networks.InterferometerList(interferometers)
+        if isinstance(interferometers, bilby.gw.detector.networks.InterferometerList):
+            self._interferometers = interferometers
+        else:
+            self._interferometers = bilby.gw.detector.networks.InterferometerList(interferometers)
         self._validate_interferometers(self._interferometers)
 
         # Set up basic data properties
