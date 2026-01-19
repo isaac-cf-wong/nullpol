@@ -25,7 +25,6 @@ import bilby
 import nullpol.analysis.result as result_module
 from nullpol.analysis.result import PolarizationResult
 
-
 # =============================================================================
 # FIXTURES
 # =============================================================================

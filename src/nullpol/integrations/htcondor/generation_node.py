@@ -1,5 +1,6 @@
 # pylint: disable=duplicate-code  # Legitimate CLI argument parsing patterns shared across modules
 """HTCondor job node for nullpol data generation."""
+
 from __future__ import annotations
 
 from bilby_pipe.job_creation.nodes.generation_node import GenerationNode as Node

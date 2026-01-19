@@ -11,7 +11,6 @@ import pytest
 
 from nullpol.analysis.null_stream.projections import compute_gw_projector, compute_null_projector, compute_null_stream
 
-
 # =============================================================================
 # TEST UTILITIES
 # =============================================================================
