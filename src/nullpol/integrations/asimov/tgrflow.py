@@ -206,20 +206,16 @@ class Collector:
                         # If there aren't any, this implies we have more than one result,
                         # and they are all jsons
                         # Choose the 1st result
-                        logger.warning(
-                            "No hdf5 results were found, but more than one json result is present -\
-                                    grabbing the first result."
-                        )
+                        logger.warning("No hdf5 results were found, but more than one json result is present -\
+                                    grabbing the first result.")
                         analysis_output["ResultFile"]["Path"] = results["samples"][0]
                     elif len(hdf_results) == 1:
                         # If there's only one hdf5, then we can proceed smoothly
                         analysis_output["ResultFile"]["Path"] = hdf_results[0]
                     elif len(hdf_results) > 1:
                         # This is the same issue as described above, just with all hdf5s instead
-                        logger.warning(
-                            "Multiple merge_result hdf5s returned from Bilby analysis -\
-                                    grabbing the first result."
-                        )
+                        logger.warning("Multiple merge_result hdf5s returned from Bilby analysis -\
+                                    grabbing the first result.")
                         analysis_output["ResultFile"]["Path"] = hdf_results[0]
                     if analysis_output["ResultFile"] == {}:
                         # Cleanup if we fail to get any results

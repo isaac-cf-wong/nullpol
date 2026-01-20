@@ -5,7 +5,6 @@ from __future__ import annotations
 import numpy as np
 from numba import njit
 
-
 # =============================================================================
 # CORE PROJECTION FUNCTIONS (NUMBA OPTIMIZED)
 # =============================================================================

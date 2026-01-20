@@ -29,7 +29,6 @@ from numba import njit
 from .tf_transforms import get_shape_of_wavelet_transform
 from ..utils import logger
 
-
 # =============================================================================
 # SIGNAL PROCESSING FUNCTIONS (NUMBA OPTIMIZED)
 # =============================================================================
