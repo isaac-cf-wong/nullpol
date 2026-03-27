@@ -353,6 +353,9 @@ def validate_gr_pe_result(result: dict) -> bool:
         return False
     if result.get("Deprecated", False):
         return False
+    # Ensure required files are present for actual PE results
+    if "ResultFile" not in result or "ConfigFile" not in result:
+        return False
     return True
 
 
