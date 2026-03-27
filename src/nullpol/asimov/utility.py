@@ -35,8 +35,11 @@ def read_bilby_ini_file(file: str) -> dict:
 def convert_string_to_dict(string):
     try:
         return bilby_pipe.utils.convert_string_to_dict(string)
-    except (bilby_pipe.utils.BilbyPipeError, AttributeError):
-        return string
+    except (bilby_pipe.utils.BilbyPipeError, AttributeError, TypeError):
+        try:
+            return literal_eval(string)
+        except (ValueError, SyntaxError):
+            return string
 
 def fill_in_pol_specific_metadata(analysis, corresponding_analysis):
     """
