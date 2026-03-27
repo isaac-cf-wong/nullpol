@@ -5,7 +5,7 @@ from . import (asimov, calibration, clustering, detector, injection,
                time_frequency_transform, utils)
 from .utils import logger
 
-__version__ = '1.0.0'
+__version__ = '0.1.1'
 
 
 def get_version_information() -> str:
