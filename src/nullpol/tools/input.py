@@ -129,14 +129,6 @@ class Input(BilbyInput):
         return d
 
     @property
-    def calibration_correction_type(self):
-        return getattr(self, "_calibration_correction_type", None)
-
-    @calibration_correction_type.setter
-    def calibration_correction_type(self, correction_type):
-        self._calibration_correction_type = correction_type
-
-    @property
     def polarization_modes(self):
         return getattr(self, '_polarization_modes', None)
 
