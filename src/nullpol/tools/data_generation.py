@@ -74,6 +74,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
         # Data arguments
         self.ignore_gwpy_data_quality_check = args.ignore_gwpy_data_quality_check
         self.detectors = args.detectors
+        self.calibration_correction_type = args.calibration_correction_type
         self.channel_dict = args.channel_dict
         self.data_dict = args.data_dict
         self.data_format = args.data_format
