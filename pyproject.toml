@@ -27,7 +27,7 @@ dependencies = [
     "bilby",
     "bilby_pipe<=1.8.0",
     "gwpy",
-    "numba>=0.56",
+    "numba>=0.65.0",
     "rocket-fft",
     "scipy",
     "ConfigArgParse",
