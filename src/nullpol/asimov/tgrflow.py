@@ -365,11 +365,11 @@ def identify_basis_production(metadata) -> dict:
     """
     Identifies the PE result that will be used as the basis for TGR analyses.
 
-    The IllustrativeResult is tried first. If it is complete and non-deprecated
-    it is used regardless of its UID. If it is not available or does not pass,
-    the function falls back to the first result that passes the full validation
-    (which additionally excludes online/exploratory/detchar UIDs). Returns an
-    empty dict if no valid result is found.
+    The IllustrativeResult is tried first. If it passes full validation
+    (complete, non-deprecated, not online/exp*/detchar*, and has all required
+    files) it is returned. If it is not available or does not pass, the
+    function falls back to the first result that passes the full validation.
+    Returns an empty dict if no valid result is found.
 
     Parameters
     ----------
