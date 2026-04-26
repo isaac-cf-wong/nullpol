@@ -181,7 +181,7 @@ class Collector:
             # We only want to add the comment to the notes if it doesn't already exist
             if corresponding_analysis is None:
                 analysis_output["Notes"].append(analysis.comment)
-            elif analysis.comment not in corresponding_analysis["Notes"]:
+            elif analysis.comment not in corresponding_analysis.get("Notes", []):
                 analysis_output["Notes"].append(analysis.comment)
 
         if analysis.review.status:
@@ -201,7 +201,7 @@ class Collector:
                     )
                 elif (
                     f"{messages[0].timestamp:%Y-%m-%d}: {messages[0].message}"
-                    in corresponding_analysis["Notes"]
+                    in corresponding_analysis.get("Notes", [])
                 ):
                     analysis_output["Notes"].append(
                         f"{messages[0].timestamp:%Y-%m-%d}: {messages[0].message}"
