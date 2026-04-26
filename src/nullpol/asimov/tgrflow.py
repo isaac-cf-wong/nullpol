@@ -184,7 +184,7 @@ class Collector:
             elif analysis.comment not in corresponding_analysis.get("Notes", []):
                 analysis_output["Notes"].append(analysis.comment)
 
-        if analysis.review.status:
+        if analysis.review is not None and analysis.review.status:
             if analysis.review.status.lower() == "approved":
                 analysis_output["ReviewStatus"] = "pass"
             elif analysis.review.status.lower() == "rejected":
