@@ -479,11 +479,16 @@ class Applicator:
 
         # GraceDB Settings
         ligo = {}
+        event_time = None
         for event in grace["Events"]:
             if event["State"] == "preferred":
                 ligo["preferred event"] = event["UID"]
                 ligo["false alarm rate"] = event["FAR"]
                 event_time = event["GPSTime"]
+        if event_time is None:
+            raise ValueError(
+                f"No preferred GraceDB event found for {sid}. Cannot determine event time."
+            )
         ligo["sname"] = sid
 
         # also add the sampling rate to the output
