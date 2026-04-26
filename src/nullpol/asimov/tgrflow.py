@@ -356,6 +356,8 @@ def validate_gr_pe_result(result: dict) -> bool:
     # Ensure required files are present for actual PE results
     if "ResultFile" not in result or "ConfigFile" not in result:
         return False
+    if "PESummaryResultFile" not in result:
+        return False
     return True
 
 
