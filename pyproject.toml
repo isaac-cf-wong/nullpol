@@ -42,7 +42,7 @@ asimov = ["asimov", "cbcflow"]
 spark = ["pyspark>=4.1.1"]
 test = [
     "check-manifest==0.51",
-    "black==26.3.1",
+    "black==26.5.1",
     "pytest==9.0.3",
     "pytest-cov==7.1.0",
     "pre-commit==4.6.0",
