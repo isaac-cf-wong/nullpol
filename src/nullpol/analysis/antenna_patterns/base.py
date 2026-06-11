@@ -1,3 +1,5 @@
+"""Base module."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -6,8 +8,7 @@ from .encoding import POLARIZATION_DECODING
 
 
 def get_antenna_pattern(interferometer, right_ascension, declination, polarization_angle, gps_time, polarization):
-    """
-    Get antenna pattern for a given interferometer at a specific sky location and time.
+    """Get antenna pattern for a given interferometer at a specific sky location and time.
 
     Args:
         interferometer (bilby.gw.detector.Interferometer): Interferometer object.
@@ -36,8 +37,7 @@ def get_antenna_pattern(interferometer, right_ascension, declination, polarizati
 def get_antenna_pattern_matrix(
     interferometers, right_ascension, declination, polarization_angle, gps_time, polarization
 ):
-    """
-    Get antenna pattern matrix for a given sky location and time.
+    """Get antenna pattern matrix for a given sky location and time.
 
     Args:
         interferometers (list): List of bilby.gw.detector.Interferometer objects.
@@ -63,8 +63,7 @@ def get_antenna_pattern_matrix(
 
 
 def relative_amplification_factor_map(polarization_basis, polarization_derived):
-    """
-    Generate a mapping matrix of keyword labels for relative amplification factors.
+    """Generate a mapping matrix of keyword labels for relative amplification factors.
 
     Creates a matrix where each element represents a keyword combining a derived
     polarization mode with a basis polarization mode, used for constructing
@@ -102,8 +101,7 @@ def relative_amplification_factor_map(polarization_basis, polarization_derived):
 
 
 def relative_amplification_factor_helper(parameters_map, parameters):
-    """
-    Construct a matrix of relative amplification factors from parameter mappings.
+    """Construct a matrix of relative amplification factors from parameter mappings.
 
     Args:
         parameters_map (array-like): Matrix of keyword strings mapping derived modes
@@ -126,8 +124,7 @@ def relative_amplification_factor_helper(parameters_map, parameters):
 def get_collapsed_antenna_pattern_matrix(
     antenna_pattern_matrix, polarization_basis, polarization_derived, relative_amplification_factor
 ):
-    """
-    Compute the collapsed antenna pattern matrix by combining basis and derived modes.
+    """Compute the collapsed antenna pattern matrix by combining basis and derived modes.
 
     This function creates a reduced antenna pattern matrix by expressing derived
     polarization modes as linear combinations of basis modes, effectively

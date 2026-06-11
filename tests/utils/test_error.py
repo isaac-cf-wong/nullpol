@@ -33,4 +33,4 @@ def test_nullpol_error_raising():
     except NullpolError as e:
         assert str(e) == "test error"
     except Exception:
-        assert False, "Should have caught NullpolError specifically"
+        raise AssertionError("Should have caught NullpolError specifically") from None

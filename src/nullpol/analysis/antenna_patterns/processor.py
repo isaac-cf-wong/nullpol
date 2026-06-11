@@ -6,10 +6,11 @@ computations, polarization encoding, and calibration corrections.
 
 from __future__ import annotations
 
-from typing import Dict, Any
+from typing import Any
 
 import numpy as np
 
+from ...utils import NullpolError
 from .base import (
     get_antenna_pattern_matrix,
     get_collapsed_antenna_pattern_matrix,
@@ -23,8 +24,6 @@ from .conditioning import (
 from .encoding import (
     encode_polarization,
 )
-
-from ...utils import NullpolError
 
 
 class AntennaPatternProcessor:
@@ -46,6 +45,7 @@ class AntennaPatternProcessor:
         polarization_basis=None,
         interferometers=None,
     ):
+        """Initialize the antenna pattern processor."""
         # Encode the polarization labels
         self._polarization_modes, self._polarization_basis, self._polarization_derived = encode_polarization(
             polarization_modes, polarization_basis
@@ -112,6 +112,7 @@ class AntennaPatternProcessor:
     @property
     def polarization_basis_collapsed(self):
         """A collapsed boolean array of the polarization basis.
+
         The modes not in polarization_modes are removed.
 
         Returns:
@@ -122,6 +123,7 @@ class AntennaPatternProcessor:
     @property
     def polarization_derived_collapsed(self):
         """A collapsed boolean array of the derived polarization modes.
+
         The modes not in polarization_modes are removed.
 
         Returns:
@@ -138,7 +140,7 @@ class AntennaPatternProcessor:
         """
         return self._relative_amplification_factor_map
 
-    def compute_antenna_pattern_matrix(self, interferometers, parameters: Dict[str, Any]):
+    def compute_antenna_pattern_matrix(self, interferometers, parameters: dict[str, Any]):
         """Compute the antenna pattern matrix.
 
         Args:
@@ -177,7 +179,7 @@ class AntennaPatternProcessor:
         interferometers,
         masked_frequency_array,
         frequency_mask,
-        parameters: Dict[str, Any],
+        parameters: dict[str, Any],
     ):
         """Compute the calibration factor matrix.
 
@@ -204,7 +206,7 @@ class AntennaPatternProcessor:
         return output
 
     def compute_whitened_antenna_pattern_matrix(
-        self, interferometers, power_spectral_density_array, frequency_mask, parameters: Dict[str, Any]
+        self, interferometers, power_spectral_density_array, frequency_mask, parameters: dict[str, Any]
     ):
         """Compute the whitened antenna pattern matrix.
 
@@ -233,7 +235,7 @@ class AntennaPatternProcessor:
         power_spectral_density_array,
         masked_frequency_array,
         frequency_mask,
-        parameters: Dict[str, Any],
+        parameters: dict[str, Any],
     ):
         """Compute the calibrated whitened antenna pattern matrix.
 
@@ -248,7 +250,7 @@ class AntennaPatternProcessor:
             numpy array: Calibrated whitened antenna pattern matrix.
         """
         # Compute the whitened antenna pattern matrix
-        whitened_antenna_patten_matrix = self.compute_whitened_antenna_pattern_matrix(
+        whitened_antenna_pattern_matrix = self.compute_whitened_antenna_pattern_matrix(
             interferometers, power_spectral_density_array, frequency_mask, parameters
         )
 
@@ -260,6 +262,6 @@ class AntennaPatternProcessor:
         # Apply calibration corrections
         return compute_calibrated_whitened_antenna_pattern_matrix(
             frequency_mask=frequency_mask,
-            whitened_antenna_pattern_matrix=whitened_antenna_patten_matrix,
+            whitened_antenna_pattern_matrix=whitened_antenna_pattern_matrix,
             calibration_error_matrix=calibration_factor,
         )

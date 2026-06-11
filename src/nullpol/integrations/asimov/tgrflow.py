@@ -1,10 +1,13 @@
 # from bilby_tgr.asimov.tgrflow import Applicator as BilbyTGRApplicator
 # from bilby_tgr.asimov.tgrflow import Collector as BilbyTGRCollector
+"""Tgrflow module."""
+
 from __future__ import annotations
 
 import glob
 import os
 import shutil
+from typing import ClassVar
 
 import cbcflow
 from asimov import config  # pylint: disable=import-error
@@ -16,7 +19,9 @@ from .utility import bilby_config_to_asimov, deep_update, fill_in_pol_specific_m
 
 # pylint: disable=too-few-public-methods
 class Collector:
-    status_map = {
+    """Collector class."""
+
+    status_map: ClassVar[dict[str, str]] = {
         "ready": "unstarted",
         "processing": "running",
         "running": "running",
@@ -27,9 +32,9 @@ class Collector:
         "uploaded": "complete",
     }
 
-    supported_pipelines = ["nullpol"]
+    supported_pipelines: ClassVar[tuple[str, ...]] = ("nullpol",)
 
-    tgr_schema_sections = [
+    tgr_schema_sections: ClassVar[tuple[str, ...]] = (
         "BHMAnalyses",
         "EchoesCWBAnalyses",
         "FTIAnalyses",
@@ -48,12 +53,10 @@ class Collector:
         "SSBAnalyses",
         "TIGERAnalyses",
         "UnmodeledEchoesAnalyses",
-    ]
+    )
 
     def __init__(self, ledger):
-        """
-        Collect data from the asimov ledger and write it to a CBCFlow library.
-        """
+        """Collect data from the asimov ledger and write it to a CBCFlow library."""
         hook_data = ledger.data["hooks"]["postmonitor"]["tgrflow"]
         self.library = cbcflow.core.database.LocalLibraryDatabase(hook_data["library location"])
         self.library.git_pull_from_remote(automated=True)
@@ -62,10 +65,7 @@ class Collector:
 
     def run(self):
         # pylint: disable=too-many-nested-blocks
-        """
-        Run the hook.
-        """
-
+        """Run the hook."""
         for event in self.ledger.get_event():
             # Do setup for the event
             output = {}
@@ -132,8 +132,8 @@ class Collector:
         self.library.git_push_to_remote()
 
     def _get_pe_result_from_production(self, analysis, corresponding_analysis):
-        """
-        Get the Result field for PE analysis in cbcflow form given asimov analysis.
+        """Get the Result field for PE analysis in cbcflow form given asimov analysis.
+
         Most analyses copied it from cbc result, so it should be the same for most analyses.
         For bilby based pipelines, no changes apart from adding the pipeline name to if statement.
 
@@ -150,9 +150,8 @@ class Collector:
         analysis_output["InferenceSoftware"] = str(analysis.pipeline)
         if analysis.status.lower() in self.status_map:
             analysis_output["RunStatus"] = self.status_map[analysis.status.lower()]
-        if "waveform" in analysis.meta:
-            if "approximant" in analysis.meta["waveform"]:
-                analysis_output["WaveformApproximant"] = str(analysis.meta["waveform"]["approximant"])
+        if "waveform" in analysis.meta and "approximant" in analysis.meta["waveform"]:
+            analysis_output["WaveformApproximant"] = str(analysis.meta["waveform"]["approximant"])
 
         try:
             ini = analysis.pipeline.production.event.repository.find_prods(
@@ -166,12 +165,11 @@ class Collector:
 
         analysis_output["Notes"] = []
 
-        if analysis.comment is not None:
+        if analysis.comment is not None and (
+            corresponding_analysis is None or analysis.comment not in corresponding_analysis["Notes"]
+        ):
             # We only want to add the comment to the notes if it doesn't already exist
-            if corresponding_analysis is None:
-                analysis_output["Notes"].append(analysis.comment)
-            elif analysis.comment not in corresponding_analysis["Notes"]:
-                analysis_output["Notes"].append(analysis.comment)
+            analysis_output["Notes"].append(analysis.comment)
 
         if analysis.review.status:
             if analysis.review.status.lower() == "approved":
@@ -181,11 +179,11 @@ class Collector:
             elif analysis.review.status.lower() == "deprecated":
                 analysis_output["Deprecated"] = True
             messages = sorted(analysis.review.messages, key=lambda k: k.timestamp)
-            if len(messages) > 0:
-                if corresponding_analysis is None:
-                    analysis_output["Notes"].append(f"{messages[0].timestamp:%Y-%m-%d}: {messages[0].message}")
-                elif f"{messages[0].timestamp:%Y-%m-%d}: {messages[0].message}" in corresponding_analysis["Notes"]:
-                    analysis_output["Notes"].append(f"{messages[0].timestamp:%Y-%m-%d}: {messages[0].message}")
+            if len(messages) > 0 and (
+                corresponding_analysis is None
+                or f"{messages[0].timestamp:%Y-%m-%d}: {messages[0].message}" in corresponding_analysis["Notes"]
+            ):
+                analysis_output["Notes"].append(f"{messages[0].timestamp:%Y-%m-%d}: {messages[0].message}")
 
         if analysis.finished:
             # Get the results
@@ -206,16 +204,20 @@ class Collector:
                         # If there aren't any, this implies we have more than one result,
                         # and they are all jsons
                         # Choose the 1st result
-                        logger.warning("No hdf5 results were found, but more than one json result is present -\
-                                    grabbing the first result.")
+                        logger.warning(
+                            "No hdf5 results were found, but more than one json result is present -\
+                                    grabbing the first result."
+                        )
                         analysis_output["ResultFile"]["Path"] = results["samples"][0]
                     elif len(hdf_results) == 1:
                         # If there's only one hdf5, then we can proceed smoothly
                         analysis_output["ResultFile"]["Path"] = hdf_results[0]
                     elif len(hdf_results) > 1:
                         # This is the same issue as described above, just with all hdf5s instead
-                        logger.warning("Multiple merge_result hdf5s returned from Bilby analysis -\
-                                    grabbing the first result.")
+                        logger.warning(
+                            "Multiple merge_result hdf5s returned from Bilby analysis -\
+                                    grabbing the first result."
+                        )
                         analysis_output["ResultFile"]["Path"] = hdf_results[0]
                     if analysis_output["ResultFile"] == {}:
                         # Cleanup if we fail to get any results
@@ -246,16 +248,16 @@ class Collector:
                 if "PESummaryResultFile" in analysis_output:
                     # We want to get whatever the name we previously decided was
                     # This will only run if we did make that decision before, so we can use similar logic
-                    analysis_output["PESummaryResultFile"][
-                        "PublicHTML"
-                    ] = f"{pesummary_pages_url_dir}/samples/{sample_h5s[0].split('/')[-1]}"
+                    analysis_output["PESummaryResultFile"]["PublicHTML"] = (
+                        f"{pesummary_pages_url_dir}/samples/{sample_h5s[0].split('/')[-1]}"
+                    )
                 # Infer the summary pages URL
                 analysis_output["PESummaryPageURL"] = f"{pesummary_pages_url_dir}/home.html"
         return analysis_output
 
     def _sort_analysis_by_subtype(self, analysis):  # pylint: disable=unused-argument
-        """
-        TestingGR schema differs from PE in that each entry is list of the analyses.
+        """TestingGR schema differs from PE in that each entry is list of the analyses.
+
         It is to be associated with different kinds of test each analysis does (like coefficients in TIGER).
         This function looks at asimov ledger data to determine UID of the category each analysis falls into.
 
@@ -269,8 +271,7 @@ class Collector:
         return uid
 
     def _fill_in_analysis_specific_metadata(self, analysis, corresponding_analysis):
-        """
-        For given analysis subtype, fill in fields in metadata other than result list.
+        """For given analysis subtype, fill in fields in metadata other than result list.
 
         input:
         analysis - asimov production for given event
@@ -279,18 +280,18 @@ class Collector:
         output:
         analysis_output - dictionary used to update cbcflow with new information
         """
-
         if analysis.meta["tgr schema section"] == "POLAnalyses":
             return fill_in_pol_specific_metadata(analysis, corresponding_analysis)
-        return dict()
+        return {}
 
 
 # Functionality for information which flows from cbcflow into Asimov
 # pylint: disable=too-few-public-methods
 class Applicator:
-    """Apply information from CBCFlow to an asimov event"""
+    """Apply information from CBCFlow to an asimov event."""
 
     def __init__(self, ledger):
+        """Initialize the instance."""
         hook_data = ledger.data["hooks"]["applicator"]["tgrflow"]
         self.ledger = ledger
         self.library = cbcflow.core.database.LocalLibraryDatabase(hook_data["library location"])
@@ -309,7 +310,7 @@ class Applicator:
             self.prefer_config = True
 
     def run(self, sid=None):
-
+        """Run."""
         metadata = cbcflow.get_superevent(sid, library=self.library)
         detchar = metadata.data["DetectorCharacterization"]
         grace = metadata.data["GraceDB"]
@@ -332,17 +333,17 @@ class Applicator:
             # Grab IFO specific quantities
             ifo_name = ifo["UID"]
             ifo_list.append(ifo_name)
-            if "RecommendedDuration" in detchar.keys():
+            if "RecommendedDuration" in detchar:
                 data["segment length"] = int(detchar["RecommendedDuration"])
-            if "RecommendedMaximumFrequency" in ifo.keys():
+            if "RecommendedMaximumFrequency" in ifo:
                 max_f[ifo_name] = ifo["RecommendedMaximumFrequency"]
-            if "RecommendedMinimumFrequency" in ifo.keys():
+            if "RecommendedMinimumFrequency" in ifo:
                 min_f[ifo_name] = ifo["RecommendedMinimumFrequency"]
-            if "RecommendedChannel" in ifo.keys():
+            if "RecommendedChannel" in ifo:
                 channels[ifo_name] = ifo["RecommendedChannel"]
-            if "FrameType" in ifo.keys():
+            if "FrameType" in ifo:
                 frame_types[ifo_name] = ifo["FrameType"]
-            if "FrameFile" in ifo.keys():
+            if "FrameFile" in ifo:
                 frame_file_dict[ifo_name] = ifo["FrameFile"]
 
             if len(frame_file_dict) == 0:
@@ -398,7 +399,7 @@ class Applicator:
                     "config file path": "/" + result["ConfigFile"]["Path"].split(":/")[-1],
                     "pesummary result path": "/" + result["PESummaryResultFile"]["Path"].split(":/")[-1],
                 }
-                if "WaveformApproximant" in result.keys():
+                if "WaveformApproximant" in result:
                     quality["waveform approximant"] = result["WaveformApproximant"]
         if gr_pe["available"] is False:
             raise AttributeError("IllustrativeResult not in the library or the PE run is incomplete.")

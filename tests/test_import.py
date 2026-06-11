@@ -106,12 +106,13 @@ print('API design test passed')
         capture_output=True,
         text=True,
         cwd=None,  # Use current working directory
+        check=False,
     )
 
     if result.returncode != 0:
         print("STDOUT:", result.stdout)
         print("STDERR:", result.stderr)
-        assert False, f"API design test failed: {result.stderr}"
+        raise AssertionError(f"API design test failed: {result.stderr}")
 
     assert "API design test passed" in result.stdout
 

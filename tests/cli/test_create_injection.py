@@ -9,9 +9,9 @@ from __future__ import annotations
 import json
 import os
 import tempfile
+from importlib.resources import files
 from unittest import mock
 
-from importlib.resources import files
 import pytest
 
 from nullpol.cli.create_injection import main

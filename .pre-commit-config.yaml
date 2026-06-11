@@ -1,83 +1,59 @@
-ci:
-  autoupdate_commit_msg: "chore: update pre-commit hooks"
-  autofix_commit_msg: "style: pre-commit fixes"
-
 repos:
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v6.0.0
-    hooks:
-      - id: check-added-large-files
-      - id: check-case-conflict
-      - id: check-merge-conflict
-      - id: check-symlinks
-      - id: check-yaml
-      - id: debug-statements
-      - id: end-of-file-fixer
-      - id: mixed-line-ending
-      - id: requirements-txt-fixer
-      - id: trailing-whitespace
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v6.0.0
+      hooks:
+          - id: check-added-large-files
+            exclude: uv.lock
+          - id: check-case-conflict
+          - id: check-merge-conflict
+          - id: check-symlinks
+          - id: check-yaml
+          - id: check-toml
+          - id: debug-statements
+          - id: end-of-file-fixer
+          - id: mixed-line-ending
+          - id: trailing-whitespace
+          - id: check-docstring-first
+          - id: check-json
 
-  - repo: local
-    hooks:
-      - id: auto-generate-init-src
-        name: Auto-generate __init__.py files for src
-        entry: python scripts/auto_generate_init.py
-        language: python
-        files: '^src/.*\.py$'
-        pass_filenames: false
-        description: "Auto-generate __init__.py files for leaf packages in src"
-        additional_dependencies: []
-      - id: auto-generate-init-tests
-        name: Auto-generate __init__.py files for tests
-        entry: python scripts/auto_generate_init.py --root-dir tests
-        language: python
-        files: '^tests/.*\.py$'
-        pass_filenames: false
-        description: "Auto-generate __init__.py files for leaf packages in tests"
-        additional_dependencies: []
+    - repo: https://github.com/astral-sh/ruff-pre-commit
+      rev: v0.15.16
+      hooks:
+          - id: ruff
+            args: [--fix, --config=pyproject.toml]
+          - id: ruff-format
 
-  - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 26.5.1
-    hooks:
-      - id: black
-        files: ^(src|tests)/
+    - repo: https://github.com/ComPWA/taplo-pre-commit
+      rev: v0.9.3
+      hooks:
+          - id: taplo-format
 
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.15
-    hooks:
-      - id: ruff
-        args: ["--fix"]
-        files: ^(src|tests)/
+    - repo: https://github.com/crate-ci/typos
+      rev: v1.47.2
+      hooks:
+          - id: typos
+            args: []
 
-  - repo: https://github.com/streetsidesoftware/cspell-cli
-    rev: v10.0.0 # Keep this version or update to the latest stable
-    hooks:
-      - id: cspell
-        name: Check spelling in Python, reSt, and Markdown files.
-        args: ["--config", "cspell.json"]
-        files: ^.*\.(py|rst|md)$
-      - id: cspell
-        name: Check commit message spelling.
-        args:
-          - --config
-          - cspell.json
-          - --no-must-find-files
-          - --no-progress
-          - --no-summary
-          - --files
-          - .git/COMMIT_EDITMSG
-        stages: [commit-msg]
-        always_run: true
+    - repo: https://github.com/rbubley/mirrors-prettier
+      rev: v3.8.4
+      hooks:
+          - id: prettier
 
-  - repo: https://github.com/pre-commit/pygrep-hooks
-    rev: v1.10.0
-    hooks:
-      - id: rst-backticks
-      - id: rst-directive-colons
-      - id: rst-inline-touching-normal
+    - repo: https://github.com/DavidAnson/markdownlint-cli2
+      rev: v0.22.1
+      hooks:
+          - id: markdownlint-cli2
+            args:
+                - --config
+                - .markdownlint.yaml
 
-  - repo: https://github.com/mgedmin/check-manifest
-    rev: "0.51"
-    hooks:
-      - id: check-manifest
-        stages: [manual]
+    - repo: https://github.com/astral-sh/uv-pre-commit
+      rev: 0.11.19
+      hooks:
+          # Update the uv lockfile
+          - id: uv-lock
+
+    - repo: https://github.com/gitleaks/gitleaks
+      rev: v8.30.1
+      hooks:
+          - id: gitleaks

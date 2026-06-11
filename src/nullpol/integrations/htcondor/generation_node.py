@@ -28,6 +28,7 @@ class GenerationNode(Node):
     """
 
     def __init__(self, inputs, trigger_time, idx, dag, parent=None):
+        """Initialize the instance."""
         super().__init__(inputs=inputs, trigger_time=trigger_time, idx=idx, dag=dag, parent=parent)
 
     @property

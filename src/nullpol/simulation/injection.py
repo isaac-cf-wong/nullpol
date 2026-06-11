@@ -1,6 +1,8 @@
+"""Injection module."""
+
 from __future__ import annotations
 
-from typing import Callable
+from collections.abc import Callable
 
 from bilby.gw.conversion import convert_to_lal_binary_black_hole_parameters
 from bilby.gw.detector import InterferometerList

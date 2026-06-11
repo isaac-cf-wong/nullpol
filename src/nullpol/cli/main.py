@@ -1,3 +1,5 @@
+"""Main module."""
+
 from __future__ import annotations
 
 import importlib
@@ -39,6 +41,7 @@ class MainInput(BilbyMainInput, Input):
     """
 
     def __init__(self, args, unknown_args, perform_checks=True):
+        """Initialize the instance."""
         # pylint: disable=super-init-not-called  # Using Input.__init__ directly for clarity
         Input.__init__(self, args, unknown_args, print_msg=False)
 
@@ -186,6 +189,7 @@ class MainInput(BilbyMainInput, Input):
 
     @property
     def analysis_executable(self):
+        """Analysis Executable."""
         return self._analysis_executable
 
     @analysis_executable.setter
@@ -197,6 +201,7 @@ class MainInput(BilbyMainInput, Input):
 
 
 def create_main_parser():
+    """Create Main Parser."""
     _nullpol_pipe_doc = """
     nullpol_pipe is a command line tools for taking user input (as command line
     arguments or an ini file) and creating DAG files for submitting nullpol parameter
@@ -219,7 +224,7 @@ def create_main_parser():
 
 
 def main():
-    """Top-level interface for nullpol_pipe"""
+    """Top-level interface for nullpol_pipe."""
     parser = create_main_parser()
     args, unknown_args = parse_args(get_command_line_arguments(), parser)
 

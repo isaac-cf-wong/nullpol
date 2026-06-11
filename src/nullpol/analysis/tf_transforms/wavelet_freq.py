@@ -1,4 +1,4 @@
-"""helper functions for transform_freq"""
+"""helper functions for transform_freq."""
 
 from __future__ import annotations
 
@@ -148,9 +148,7 @@ def _DX_assign_loop(m: int, Nt: int, Nf: int, DX: np.ndarray, data: np.ndarray, 
     for jj in range(jj_base + 1 - Nt // 2, jj_base + Nt // 2):
         j = np.abs(jj - jj_base)
         i = i_base - jj_base + jj
-        if m == Nf and jj > jj_base:
-            DX[i] = 0.0
-        elif m == 0 and jj < jj_base:
+        if (m == Nf and jj > jj_base) or (m == 0 and jj < jj_base):
             DX[i] = 0.0
         elif j == 0:
             continue
@@ -183,11 +181,10 @@ def _DX_unpack_loop(m: int, Nt: int, Nf: int, DX_trans: np.ndarray, wave: np.nda
                     wave[n, m] = -np.imag(DX_trans[n])
                 else:
                     wave[n, m] = np.real(DX_trans[n])
+            elif (n + m) % 2:
+                wave[n, m] = np.imag(DX_trans[n])
             else:
-                if (n + m) % 2:
-                    wave[n, m] = np.imag(DX_trans[n])
-                else:
-                    wave[n, m] = np.real(DX_trans[n])
+                wave[n, m] = np.real(DX_trans[n])
 
 
 @njit
@@ -215,8 +212,7 @@ def _DX_unpack_loop_quadrature(m: int, Nt: int, Nf: int, DX_trans: np.ndarray, w
                     wave[n, m] = np.real(DX_trans[n])
                 else:
                     wave[n, m] = -np.imag(DX_trans[n])
+            elif (n + m) % 2:
+                wave[n, m] = np.real(DX_trans[n])
             else:
-                if (n + m) % 2:
-                    wave[n, m] = np.real(DX_trans[n])
-                else:
-                    wave[n, m] = np.imag(DX_trans[n])
+                wave[n, m] = np.imag(DX_trans[n])

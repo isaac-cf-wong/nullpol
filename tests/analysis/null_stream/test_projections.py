@@ -151,7 +151,8 @@ class TestProjectorMasking:
         """Test that frequency masking works correctly."""
         # 2 frequency bins, only second one is valid
         F = np.array(
-            [[[1.0, 0.0], [0.0, 1.0]], [[1.0, 0.5], [0.5, 1.0]]], dtype=complex  # First frequency  # Second frequency
+            [[[1.0, 0.0], [0.0, 1.0]], [[1.0, 0.5], [0.5, 1.0]]],
+            dtype=complex,  # First frequency  # Second frequency
         )
         frequency_mask = np.array([False, True])
 

@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import numpy as np
 
-from ..tf_transforms import transform_wavelet_freq
-from ..data_context import TimeFrequencyDataContext
 from ..antenna_patterns import AntennaPatternProcessor
+from ..data_context import TimeFrequencyDataContext
+from ..tf_transforms import transform_wavelet_freq
 from .projections import compute_gw_projector, compute_null_projector, compute_null_stream
 
 

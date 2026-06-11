@@ -1,12 +1,12 @@
-"""helper functions for transform_time.py"""
+"""helper functions for transform_time.py."""
 
 from __future__ import annotations
 
 import numpy as np
 
-from .utils import get_shape_of_wavelet_transform
 from .inverse_wavelet_freq import inverse_wavelet_freq_helper_fast
 from .inverse_wavelet_time import inverse_wavelet_time_helper_fast
+from .utils import get_shape_of_wavelet_transform
 from .wavelet_freq import (
     _phitilde_vec_norm,
     _transform_wavelet_freq_helper,
@@ -36,8 +36,7 @@ def inverse_wavelet_time(wave_in, nx=4.0, mult=32):
 
 
 def inverse_wavelet_freq_time(wave_in, nx=4.0):
-    """Inverse wavelet transform to time domain via Fourier transform
-    of frequency domain.
+    """Inverse wavelet transform to time domain via Fourier transform of frequency domain.
 
     Args:
         wave_in (2D numpy array): Wavelet domain data.
@@ -68,8 +67,9 @@ def inverse_wavelet_freq(wave_in, nx=4.0):
 
 
 def transform_wavelet_time(data, sampling_frequency, frequency_resolution, nx=4.0, mult=32):
-    """Do the wavelet transform in the time domain,
-    note there can be significant leakage if mult is too small and the
+    """Do the wavelet transform in the time domain.
+
+    Note there can be significant leakage if mult is too small and the
     transform is only approximately exact if mult=Nt/2.
 
     Args:
@@ -95,8 +95,7 @@ def transform_wavelet_time(data, sampling_frequency, frequency_resolution, nx=4.
 
 
 def transform_wavelet_freq_time(data, sampling_frequency, frequency_resolution, nx=4.0):
-    """Transform time domain data into wavelet domain via FFT
-    and then frequency transform.
+    """Transform time domain data into wavelet domain via FFT and then frequency transform.
 
     Args:
         data (1D numpy array): Time domain data.
@@ -114,8 +113,7 @@ def transform_wavelet_freq_time(data, sampling_frequency, frequency_resolution, 
 
 
 def transform_wavelet_freq_time_quadrature(data, sampling_frequency, frequency_resolution, nx=4.0):
-    """Transform time domain data into wavelet quadrature domain via FFT
-    and then frequency transform.
+    """Transform time domain data into wavelet quadrature domain via FFT and then frequency transform.
 
     Args:
         data (1D numpy array): Time domain data.

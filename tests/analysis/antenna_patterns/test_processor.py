@@ -6,9 +6,9 @@ for computing antenna patterns and polarization operations.
 
 from __future__ import annotations
 
+import bilby
 import numpy as np
 import pytest
-import bilby
 
 from nullpol.analysis.antenna_patterns import AntennaPatternProcessor
 from nullpol.utils import NullpolError
@@ -50,26 +50,26 @@ class TestAntennaPatternProcessor:
         expected_basis = np.array([True, False, False, False, False, False])  # p=T only
         expected_derived = np.array([False, True, False, False, False, False])  # c=T only
 
-        assert np.array_equal(
-            processor.polarization_modes, expected_modes
-        ), f"Modes: expected {expected_modes}, got {processor.polarization_modes}"
-        assert np.array_equal(
-            processor.polarization_basis, expected_basis
-        ), f"Basis: expected {expected_basis}, got {processor.polarization_basis}"
-        assert np.array_equal(
-            processor.polarization_derived, expected_derived
-        ), f"Derived: expected {expected_derived}, got {processor.polarization_derived}"
+        assert np.array_equal(processor.polarization_modes, expected_modes), (
+            f"Modes: expected {expected_modes}, got {processor.polarization_modes}"
+        )
+        assert np.array_equal(processor.polarization_basis, expected_basis), (
+            f"Basis: expected {expected_basis}, got {processor.polarization_basis}"
+        )
+        assert np.array_equal(processor.polarization_derived, expected_derived), (
+            f"Derived: expected {expected_derived}, got {processor.polarization_derived}"
+        )
 
         # Test collapsed arrays (should exclude inactive modes)
         expected_basis_collapsed = np.array([True, False])  # p=basis, c=not basis
         expected_derived_collapsed = np.array([False, True])  # p=not derived, c=derived
 
-        assert np.array_equal(
-            processor.polarization_basis_collapsed, expected_basis_collapsed
-        ), f"Basis collapsed: expected {expected_basis_collapsed}, got {processor.polarization_basis_collapsed}"
-        assert np.array_equal(
-            processor.polarization_derived_collapsed, expected_derived_collapsed
-        ), f"Derived collapsed: expected {expected_derived_collapsed}, got {processor.polarization_derived_collapsed}"
+        assert np.array_equal(processor.polarization_basis_collapsed, expected_basis_collapsed), (
+            f"Basis collapsed: expected {expected_basis_collapsed}, got {processor.polarization_basis_collapsed}"
+        )
+        assert np.array_equal(processor.polarization_derived_collapsed, expected_derived_collapsed), (
+            f"Derived collapsed: expected {expected_derived_collapsed}, got {processor.polarization_derived_collapsed}"
+        )
 
     def test_processor_initialization_all_modes(self, sample_interferometers):
         """Test processor with all polarization modes and known basis."""
@@ -233,25 +233,25 @@ class TestAntennaPatternProcessor:
 
         # Test that derived = modes & ~basis
         expected_derived = processor.polarization_modes & (~processor.polarization_basis)
-        assert np.array_equal(
-            processor.polarization_derived, expected_derived
-        ), "Derived should equal modes AND NOT basis"
+        assert np.array_equal(processor.polarization_derived, expected_derived), (
+            "Derived should equal modes AND NOT basis"
+        )
 
         # Test collapsed arrays consistency
         n_active_modes = np.sum(processor.polarization_modes)
-        assert (
-            len(processor.polarization_basis_collapsed) == n_active_modes
-        ), "Collapsed basis should have length equal to number of active modes"
-        assert (
-            len(processor.polarization_derived_collapsed) == n_active_modes
-        ), "Collapsed derived should have length equal to number of active modes"
+        assert len(processor.polarization_basis_collapsed) == n_active_modes, (
+            "Collapsed basis should have length equal to number of active modes"
+        )
+        assert len(processor.polarization_derived_collapsed) == n_active_modes, (
+            "Collapsed derived should have length equal to number of active modes"
+        )
 
         # Test that collapsed arrays sum correctly
         n_basis_collapsed = np.sum(processor.polarization_basis_collapsed)
         n_derived_collapsed = np.sum(processor.polarization_derived_collapsed)
-        assert (
-            n_basis_collapsed + n_derived_collapsed == n_active_modes
-        ), "Collapsed basis + derived should equal total active modes"
+        assert n_basis_collapsed + n_derived_collapsed == n_active_modes, (
+            "Collapsed basis + derived should equal total active modes"
+        )
 
     def test_compute_whitened_antenna_pattern_matrix_method(self, sample_interferometers):
         """Test the processor's whitened antenna pattern matrix computation."""
@@ -325,9 +325,9 @@ class TestAntennaPatternProcessor:
 
             # Check output shape: (n_detectors, n_frequencies)
             expected_shape = (n_detectors, n_frequencies)
-            assert (
-                calibration_matrix.shape == expected_shape
-            ), f"Expected shape {expected_shape}, got {calibration_matrix.shape}"
+            assert calibration_matrix.shape == expected_shape, (
+                f"Expected shape {expected_shape}, got {calibration_matrix.shape}"
+            )
 
             # All values should be finite
             assert np.all(np.isfinite(calibration_matrix)), "All calibration factors should be finite"
@@ -375,9 +375,9 @@ class TestAntennaPatternProcessor:
             # Check output shape
             n_basis_modes = np.sum(processor.polarization_basis_collapsed)
             expected_shape = (n_frequencies, n_detectors, n_basis_modes)
-            assert (
-                calibrated_whitened_matrix.shape == expected_shape
-            ), f"Expected shape {expected_shape}, got {calibrated_whitened_matrix.shape}"
+            assert calibrated_whitened_matrix.shape == expected_shape, (
+                f"Expected shape {expected_shape}, got {calibrated_whitened_matrix.shape}"
+            )
 
             # Check that masked frequencies are zero
             assert np.all(calibrated_whitened_matrix[25:, :, :] == 0), "Masked frequencies should have zero values"
@@ -386,9 +386,9 @@ class TestAntennaPatternProcessor:
             assert np.any(calibrated_whitened_matrix[:25, :, :] != 0), "Active frequencies should have non-zero values"
 
             # All active values should be finite
-            assert np.all(
-                np.isfinite(calibrated_whitened_matrix[:25, :, :])
-            ), "All active calibrated values should be finite"
+            assert np.all(np.isfinite(calibrated_whitened_matrix[:25, :, :])), (
+                "All active calibrated values should be finite"
+            )
 
         except (ValueError, AttributeError) as e:
             # If the calibration or whitening fails due to interface issues, skip

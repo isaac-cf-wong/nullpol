@@ -1,10 +1,14 @@
+"""Coherent Sky Scan module."""
+
 from __future__ import annotations
 
 import numpy as np
 from tqdm import tqdm
 
-from ..data_context import compute_time_shifted_frequency_domain_strain_array
-from ..data_context import compute_whitened_frequency_domain_strain_array
+from ..data_context import (
+    compute_time_shifted_frequency_domain_strain_array,
+    compute_whitened_frequency_domain_strain_array,
+)
 from ..tf_transforms import (
     get_shape_of_wavelet_transform,
     transform_wavelet_freq,

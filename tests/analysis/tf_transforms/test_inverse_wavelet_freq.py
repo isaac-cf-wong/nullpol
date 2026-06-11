@@ -11,9 +11,9 @@ from __future__ import annotations
 import numpy as np
 
 from nullpol.analysis.tf_transforms.inverse_wavelet_freq import (
-    inverse_wavelet_freq_helper_fast,
     _pack_wave_inverse,
     _unpack_wave_inverse,
+    inverse_wavelet_freq_helper_fast,
 )
 
 
@@ -61,8 +61,8 @@ class TestInverseWaveletFreqHelpers:
 
         # Transform to wavelet domain using high-level interface
         from nullpol.analysis.tf_transforms.wavelet_transforms import (
-            transform_wavelet_freq_time,
             inverse_wavelet_freq_time,
+            transform_wavelet_freq_time,
         )
 
         wavelet_domain = transform_wavelet_freq_time(signal, sampling_frequency, frequency_resolution, nx)
@@ -118,8 +118,8 @@ class TestInverseWaveletFreqHelpers:
 
         # Forward and inverse transform using high-level interface for simplicity
         from nullpol.analysis.tf_transforms.wavelet_transforms import (
-            transform_wavelet_freq_time,
             inverse_wavelet_freq_time,
+            transform_wavelet_freq_time,
         )
 
         wavelet_domain = transform_wavelet_freq_time(original_signal, sampling_frequency, frequency_resolution, nx)
@@ -136,9 +136,9 @@ class TestInverseWaveletFreqHelpers:
         # More lenient check - means should be reasonably close
         if abs(original_mean) > 1e-10:  # Avoid division by very small numbers
             relative_error = abs(reconstructed_mean - original_mean) / abs(original_mean)
-            assert (
-                relative_error < 0.5
-            ), f"Mean should be reasonably preserved: original={original_mean}, reconstructed={reconstructed_mean}"
+            assert relative_error < 0.5, (
+                f"Mean should be reasonably preserved: original={original_mean}, reconstructed={reconstructed_mean}"
+            )
 
         # Check that energy is reasonably preserved (more lenient bounds)
         original_energy = np.sum(original_signal**2)
@@ -190,12 +190,12 @@ class TestInverseWaveletFreqPackingHelpers:
         _pack_wave_inverse(2, Nt, Nf, prefactor2s_m2, wave_in)
 
         # Should produce different results for different frequency indices
-        assert not np.allclose(
-            prefactor2s_m0, prefactor2s_m1
-        ), "Different frequency indices should produce different results"
-        assert not np.allclose(
-            prefactor2s_m1, prefactor2s_m2
-        ), "Different frequency indices should produce different results"
+        assert not np.allclose(prefactor2s_m0, prefactor2s_m1), (
+            "Different frequency indices should produce different results"
+        )
+        assert not np.allclose(prefactor2s_m1, prefactor2s_m2), (
+            "Different frequency indices should produce different results"
+        )
 
     def test_unpack_wave_inverse_basic_properties(self):
         """Test basic properties of the inverse wave unpacking helper."""

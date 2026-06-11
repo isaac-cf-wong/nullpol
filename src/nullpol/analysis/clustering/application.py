@@ -1,10 +1,12 @@
+"""Application module."""
+
 from __future__ import annotations
 
 import numpy as np
 import scipy.stats
 
-from ..tf_transforms import get_shape_of_wavelet_transform
 from ...utils import NullpolError, logger
+from ..tf_transforms import get_shape_of_wavelet_transform
 from .algorithm import clustering
 from .coherent_sky_scan import scan_sky_for_coherent_power
 

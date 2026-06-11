@@ -1,3 +1,5 @@
+"""Htcondor package."""
+
 from __future__ import annotations
 
 from .analysis_node import AnalysisNode

@@ -9,7 +9,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from nullpol.analysis.clustering.algorithm import clustering, _get_neighbors, _dfs
+from nullpol.analysis.clustering.algorithm import _dfs, _get_neighbors, clustering
 
 
 class TestClusteringAlgorithm:

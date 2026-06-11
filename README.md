@@ -1,7 +1,7 @@
 # nullpol
 
 [![PyPI version](https://badge.fury.io/py/nullpol.svg)](https://pypi.org/project/nullpol/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License: GPL-3.0-or-later](https://img.shields.io/badge/License-GPL--3.0--or--later-blue.svg)](LICENSE)
 [![Build](https://git.ligo.org/bayesian-null-stream/nullpol/badges/main/pipeline.svg)](https://git.ligo.org/bayesian-null-stream/nullpol/-/pipelines)
 [![codecov](https://codecov.io/gh/username/package_name/branch/main/graph/badge.svg)](https://codecov.io/gh/username/package_name)
 [![Python Version](https://img.shields.io/pypi/pyversions/nullpol)](https://pypi.org/project/nullpol/)
@@ -9,10 +9,15 @@
 [![Documentation Status](https://img.shields.io/badge/documentation-online-brightgreen)](https://git.ligo.org/bayesian-null-stream/nullpol/docs)
 [![DOI](https://zenodo.org/badge/ID.svg)](https://doi.org/DOI)
 
-**A package to perform model-independent polarization test of gravitational-wave signals.**
+**A package to perform model-independent polarization test of gravitational-wave
+signals.**
 
-`nullpol` is a Python package designed to facilitate model-agnostic tests of gravitational-wave polarizations.
-Built upon the robust parameter estimation capabilities of the [bilby](https://git.ligo.org/lscsoft/bilby) framework, nullpol seamlessly integrates with [bilby_pipe](https://git.ligo.org/lscsoft/bilby_pipe) to automate the workflow, enabling efficient and reproducible analyses.
+`nullpol` is a Python package designed to facilitate model-agnostic tests of
+gravitational-wave polarizations. Built upon the robust parameter estimation
+capabilities of the [bilby](https://git.ligo.org/lscsoft/bilby) framework,
+nullpol seamlessly integrates with
+[bilby_pipe](https://git.ligo.org/lscsoft/bilby_pipe) to automate the workflow,
+enabling efficient and reproducible analyses.
 
 ## Installation
 
@@ -83,9 +88,12 @@ import nullpol
 
 ## Documentation
 
-- **Documentation**: [https://git.ligo.org/bayesian-null-stream/nullpol/-/tree/main/docs](https://git.ligo.org/bayesian-null-stream/nullpol/-/tree/main/docs)
-- **Source Code**: [https://git.ligo.org/bayesian-null-stream/nullpol](https://git.ligo.org/bayesian-null-stream/nullpol)
-- **Issue Tracker**: [https://git.ligo.org/bayesian-null-stream/nullpol/-/issues](https://git.ligo.org/bayesian-null-stream/nullpol/-/issues)
+- **Documentation**:
+  [https://git.ligo.org/bayesian-null-stream/nullpol/-/tree/main/docs](https://git.ligo.org/bayesian-null-stream/nullpol/-/tree/main/docs)
+- **Source Code**:
+  [https://git.ligo.org/bayesian-null-stream/nullpol](https://git.ligo.org/bayesian-null-stream/nullpol)
+- **Issue Tracker**:
+  [https://git.ligo.org/bayesian-null-stream/nullpol/-/issues](https://git.ligo.org/bayesian-null-stream/nullpol/-/issues)
 
 ## Examples
 
@@ -112,7 +120,8 @@ pip install nullpol[test]
 
 ## Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md).
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md)
+and [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ### Development Setup
 
@@ -151,12 +160,13 @@ pytest -m "unit"             # Run only unit tests
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
+for details.
 
 ## Authors
 
-- **Isaac C.F. Wong** - chunfung.wong@kuleuven.be
-- **Thomas Ng** - thomas.ng@nikhef.nl
+- **Isaac C.F. Wong** - <chunfung.wong@kuleuven.be>
+- **Thomas Ng** - <thomas.ng@nikhef.nl>
 - **Balázs Cirok**
 
 ## Citation
@@ -175,9 +185,12 @@ If you use nullpol in your research, please cite:
 ## Acknowledgments
 
 - Built on the [bilby](https://git.ligo.org/lscsoft/bilby) framework
-- Integrates with [bilby_pipe](https://git.ligo.org/lscsoft/bilby_pipe) for workflow automation
+- Integrates with [bilby_pipe](https://git.ligo.org/lscsoft/bilby_pipe) for
+  workflow automation
 - Part of the LIGO Scientific Collaboration software ecosystem
 
 ---
 
-For more information, visit our [documentation](https://git.ligo.org/bayesian-null-stream/nullpol/-/tree/main/docs) or open an [issue](https://git.ligo.org/bayesian-null-stream/nullpol/-/issues).
+For more information, visit our
+[documentation](https://git.ligo.org/bayesian-null-stream/nullpol/-/tree/main/docs)
+or open an [issue](https://git.ligo.org/bayesian-null-stream/nullpol/-/issues).

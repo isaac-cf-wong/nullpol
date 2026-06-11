@@ -62,7 +62,6 @@ class TestRunTimeFrequencyClustering:
             patch("nullpol.analysis.clustering.application.get_shape_of_wavelet_transform") as mock_shape,
             patch("nullpol.analysis.clustering.application.clustering") as mock_clustering,
         ):
-
             # Mock a simple 10x10 spectrogram with some high values
             mock_spectrogram = np.ones((10, 10)) * 0.5  # Background
             mock_spectrogram[4:6, 4:6] = 2.0  # High energy region
@@ -109,7 +108,6 @@ class TestRunTimeFrequencyClustering:
             patch("nullpol.analysis.clustering.application.clustering") as mock_clustering,
             patch("nullpol.analysis.clustering.application.scipy.stats.chi2.ppf") as mock_ppf,
         ):
-
             # Mock spectrogram
             mock_spectrogram = np.ones((5, 5)) * 1.0
             mock_spectrogram[2, 2] = 5.0  # Single high pixel
@@ -149,7 +147,6 @@ class TestRunTimeFrequencyClustering:
             patch("nullpol.analysis.clustering.application.get_shape_of_wavelet_transform") as mock_shape,
             patch("nullpol.analysis.clustering.application.clustering") as mock_clustering,
         ):
-
             # Mock spectrogram
             mock_spectrogram = np.ones((3, 3)) * 1.0
             mock_spectrogram[1, 1] = 10.0  # High energy pixel
@@ -203,7 +200,6 @@ class TestRunTimeFrequencyClustering:
             patch("nullpol.analysis.clustering.application.scan_sky_for_coherent_power") as mock_scan,
             patch("nullpol.analysis.clustering.application.logger") as mock_logger,
         ):
-
             # Mock spectrogram with all low values
             mock_spectrogram = np.ones((4, 4)) * 0.1  # All very low values
             mock_scan.return_value = mock_spectrogram
@@ -238,7 +234,6 @@ class TestRunTimeFrequencyClustering:
             patch("nullpol.analysis.clustering.application.get_shape_of_wavelet_transform") as mock_shape,
             patch("nullpol.analysis.clustering.application.clustering") as mock_clustering,
         ):
-
             # Mock spectrogram - 6x10 (6 time bins, 10 frequency bins)
             mock_spectrogram = np.ones((6, 10)) * 0.5
             mock_spectrogram[2:4, 4:6] = 2.0  # High energy cluster
@@ -290,7 +285,6 @@ class TestRunTimeFrequencyClustering:
             patch("nullpol.analysis.clustering.application.get_shape_of_wavelet_transform") as mock_shape,
             patch("nullpol.analysis.clustering.application.clustering") as mock_clustering,
         ):
-
             # Mock spectrogram
             mock_spectrogram = np.ones((3, 3)) * 1.0
             mock_spectrogram[1, 1] = 3.0
@@ -332,7 +326,6 @@ class TestRunTimeFrequencyClustering:
             patch("nullpol.analysis.clustering.application.get_shape_of_wavelet_transform") as mock_shape,
             patch("nullpol.analysis.clustering.application.clustering") as mock_clustering,
         ):
-
             # Mock return values
             mock_scan.return_value = np.ones((2, 2)) * 2.0  # All above threshold
             mock_shape.return_value = (2, 2)
@@ -367,7 +360,6 @@ class TestRunTimeFrequencyClustering:
             patch("nullpol.analysis.clustering.application.get_shape_of_wavelet_transform") as mock_shape,
             patch("nullpol.analysis.clustering.application.clustering") as mock_clustering,
         ):
-
             # Mock return values
             mock_spectrogram = np.ones((8, 5)) * 1.0
             mock_spectrogram[3:5, 2:4] = 3.0  # High energy region
@@ -425,7 +417,6 @@ class TestRunTimeFrequencyClustering:
             patch("nullpol.analysis.clustering.application.get_shape_of_wavelet_transform") as mock_shape,
             patch("nullpol.analysis.clustering.application.clustering") as mock_clustering,
         ):
-
             # Mock return values
             mock_scan.return_value = np.ones((4, 4)) * 2.0
             mock_shape.return_value = (4, 4)
@@ -455,7 +446,6 @@ class TestRunTimeFrequencyClustering:
             patch("nullpol.analysis.clustering.application.get_shape_of_wavelet_transform") as mock_shape,
             patch("nullpol.analysis.clustering.application.clustering") as mock_clustering,
         ):
-
             # Create spectrogram with zeros and non-zero values
             mock_spectrogram = np.array(
                 [[0.0, 0.0, 1.0, 2.0], [0.0, 1.0, 2.0, 3.0], [1.0, 2.0, 3.0, 4.0], [2.0, 3.0, 4.0, 5.0]]

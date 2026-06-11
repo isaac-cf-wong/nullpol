@@ -1,3 +1,5 @@
+"""Antenna Patterns package."""
+
 from __future__ import annotations
 
 from .test_base import (

@@ -1,4 +1,6 @@
 # pylint: disable=duplicate-code  # Legitimate argument parsing patterns shared across modules
+"""Time Frequency Likelihood module."""
+
 from __future__ import annotations
 
 from bilby.core.likelihood import Likelihood
@@ -38,7 +40,8 @@ class TimeFrequencyLikelihood(Likelihood):
         time_frequency_filter=None,
         **kwargs,  # pylint: disable=unused-argument
     ):
-        super().__init__(dict())
+        """Initialize the instance."""
+        super().__init__({})
 
         # Initialize null stream calculator with all components
         self.null_stream_calculator = NullStreamCalculator(
@@ -93,6 +96,7 @@ class TimeFrequencyLikelihood(Likelihood):
 
     def _calculate_noise_log_likelihood(self):
         """Calculate noise log likelihood.
+
         This should be implemented in a subclass.
 
         Raises:
@@ -101,8 +105,7 @@ class TimeFrequencyLikelihood(Likelihood):
         raise NotImplementedError("The _calculate_noise_log_likelihood method must be implemented in a subclass.")
 
     def noise_log_likelihood(self):
-        """
-        Compute the noise log likelihood.
+        """Compute the noise log likelihood.
 
         Returns:
             float: The noise log likelihood.

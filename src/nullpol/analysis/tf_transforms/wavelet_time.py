@@ -1,4 +1,4 @@
-"""helper functions for transform_time.py"""
+"""helper functions for transform_time.py."""
 
 from __future__ import annotations
 

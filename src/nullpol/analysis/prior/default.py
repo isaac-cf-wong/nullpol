@@ -1,3 +1,5 @@
+"""Default module."""
+
 from __future__ import annotations
 
 import os
@@ -33,10 +35,10 @@ class PolarizationPriorDict(PriorDict):
         >>> priors = PolarizationPriorDict()
 
         >>> # Load custom prior file
-        >>> priors = PolarizationPriorDict(filename='my_priors.prior')
+        >>> priors = PolarizationPriorDict(filename="my_priors.prior")
 
         >>> # Use custom prior dictionary
-        >>> custom_priors = {'amplitude_pp': Uniform(0, 1)}
+        >>> custom_priors = {"amplitude_pp": Uniform(0, 1)}
         >>> priors = PolarizationPriorDict(dictionary=custom_priors)
     """
 

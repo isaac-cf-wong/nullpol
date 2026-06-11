@@ -7,6 +7,7 @@ package for file handling and validation.
 from __future__ import annotations
 
 import tempfile
+
 import pytest
 
 from nullpol.utils import get_file_extension, is_file

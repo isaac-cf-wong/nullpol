@@ -6,6 +6,7 @@ This module tests the JSON parsing functions used in the nullpol package.
 from __future__ import annotations
 
 import json
+
 import pytest
 
 from nullpol.utils.json_utils import json_loads_with_none

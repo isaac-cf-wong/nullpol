@@ -110,7 +110,8 @@ def simple_test_data():
     )
 
     whitened_strain = np.array(
-        [[1.0 + 0.0j, 2.0 + 0.0j], [3.0 + 0.0j, 4.0 + 0.0j]], dtype=complex  # Detector 0  # Detector 1
+        [[1.0 + 0.0j, 2.0 + 0.0j], [3.0 + 0.0j, 4.0 + 0.0j]],
+        dtype=complex,  # Detector 0  # Detector 1
     )
 
     frequency_mask = np.array([True, True])
@@ -500,6 +501,6 @@ class TestNullStreamCalculator:
         test_parameters = {"ra": 0.0, "dec": 0.0, "psi": 0.0, "geocent_time": 1234567890.0}
         energy = calculator.compute_null_energy(test_parameters)
 
-        # With our setup: 2 detectors × 16 points × |0.5 * 2.0|² = 2 × 16 × 1 = 32
+        # With our setup: 2 detectors x 16 points x |0.5 * 2.0|^2 = 2 x 16 x 1 = 32
         expected_energy = 2 * 16 * abs(0.5 * 2.0) ** 2
         assert abs(energy - expected_energy) < 1e-10
