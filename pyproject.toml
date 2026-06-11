@@ -173,3 +173,9 @@ convention = "google"
 # PLR2004: allow magic values in the unit tests
 "src/nullpol/analysis/result.py" = ["PLC0415", "S301"]
 "scripts/*" = ["SIM102", "PLC0415", "PLR2004"]
+
+[[tool.uv.index]]
+name = "testpypi"
+url = "https://test.pypi.org/simple/"
+publish-url = "https://test.pypi.org/legacy/"
+explicit = true
