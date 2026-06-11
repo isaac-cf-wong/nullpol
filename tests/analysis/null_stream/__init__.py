@@ -1,3 +1,5 @@
+"""Null Stream package."""
+
 from __future__ import annotations
 
 from .test_calculator import (

@@ -1,3 +1,5 @@
+"""Input module."""
+
 from __future__ import annotations
 
 import inspect
@@ -40,6 +42,7 @@ class Input(BilbyInput):
     """
 
     def __init__(self, args, unknown_args, print_msg=True):
+        """Initialize the instance."""
         super().__init__(args=args, unknown_args=unknown_args, print_msg=print_msg)
         self.polarization_modes = args.polarization_modes
         self.polarization_basis = args.polarization_basis
@@ -75,7 +78,7 @@ class Input(BilbyInput):
 
     @property
     def priors(self):
-        """Read in and compose the prior at run-time"""
+        """Read in and compose the prior at run-time."""
         if getattr(self, "_priors", None) is None:
             self._priors = self._get_priors()
             self._add_default_extrinsic_priors()
@@ -98,17 +101,18 @@ class Input(BilbyInput):
 
     @property
     def likelihood(self):
+        """Likelihood."""
         if self.search_priors is None:
             self.search_priors = self.priors.copy()
-        likelihood_kwargs = dict(
-            interferometers=self.interferometers,  # pylint: disable=no-member
-            wavelet_frequency_resolution=self.wavelet_frequency_resolution,
-            wavelet_nx=self.wavelet_nx,
-            polarization_modes=self.polarization_modes,
-            polarization_basis=self.polarization_basis,
-            time_frequency_filter=self.meta_data["time_frequency_filter"],  # pylint: disable=no-member
-            priors=self.search_priors,
-        )
+        likelihood_kwargs = {
+            "interferometers": self.interferometers,  # pylint: disable=no-member
+            "wavelet_frequency_resolution": self.wavelet_frequency_resolution,
+            "wavelet_nx": self.wavelet_nx,
+            "polarization_modes": self.polarization_modes,
+            "polarization_basis": self.polarization_basis,
+            "time_frequency_filter": self.meta_data["time_frequency_filter"],  # pylint: disable=no-member
+            "priors": self.search_priors,
+        }
         if self.likelihood_type == "Chi2TimeFrequencyLikelihood":
             Likelihood = Chi2TimeFrequencyLikelihood
             likelihood_kwargs.update(self.extra_likelihood_kwargs)
@@ -139,11 +143,13 @@ class Input(BilbyInput):
 
     @property
     def combined_default_prior_dicts(self):
+        """Combined Default Prior Dicts."""
         d = nullpol_prior.__dict__.copy()
         return d
 
     @property
     def calibration_correction_type(self):
+        """Calibration Correction Type."""
         return getattr(self, "_calibration_correction_type", None)
 
     @calibration_correction_type.setter
@@ -152,6 +158,7 @@ class Input(BilbyInput):
 
     @property
     def polarization_modes(self):
+        """Polarization Modes."""
         return getattr(self, "_polarization_modes", None)
 
     @polarization_modes.setter
@@ -177,6 +184,7 @@ class Input(BilbyInput):
 
     @property
     def polarization_basis(self):
+        """Polarization Basis."""
         return getattr(self, "_polarization_basis", None)
 
     @polarization_basis.setter
@@ -190,6 +198,7 @@ class Input(BilbyInput):
 
     @property
     def wavelet_nx(self):
+        """Wavelet Nx."""
         return getattr(self, "_wavelet_nx", None)
 
     @wavelet_nx.setter
@@ -203,6 +212,7 @@ class Input(BilbyInput):
 
     @property
     def wavelet_frequency_resolution(self):
+        """Wavelet Frequency Resolution."""
         return getattr(self, "_wavelet_frequency_resolution", None)
 
     @wavelet_frequency_resolution.setter
@@ -225,6 +235,7 @@ class Input(BilbyInput):
 
     @property
     def injection_parameters(self):
+        """Injection Parameters."""
         return self._injection_parameters
 
     @injection_parameters.setter

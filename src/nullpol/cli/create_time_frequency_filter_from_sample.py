@@ -1,4 +1,6 @@
 # pylint: disable=duplicate-code  # Legitimate shared CLI argument patterns across scripts
+"""Create Time Frequency Filter From Sample module."""
+
 from __future__ import annotations
 
 import json
@@ -18,6 +20,7 @@ from ..utils.json_utils import json_loads_with_none
 
 
 def main():
+    """Main."""
     default_config_file_path = str(
         files("nullpol.cli.templates") / "default_config_create_time_frequency_filter_from_sample.ini"
     )
@@ -80,10 +83,7 @@ def main():
         frequency_domain_source_model = import_function(args.frequency_domain_source_model)
 
         # Load the waveform arguments
-        if args.waveform_arguments is not None:
-            waveform_arguments = json.loads(args.waveform_arguments)
-        else:
-            waveform_arguments = None
+        waveform_arguments = json.loads(args.waveform_arguments) if args.waveform_arguments is not None else None
 
         if args.parameter_conversion is not None:
             # Load the parameter conversion function
@@ -111,7 +111,7 @@ def main():
     if signal_parameters is not None and waveform_generator is not None:
         for i, signal_param in enumerate(signal_parameters):
             interferometers.inject_signal(parameters=signal_param, waveform_generator=waveform_generator)
-            logger.info(f"Signal {i+1}/{len(signal_parameters)} - Injected a signal with parameters: {signal_param}")
+            logger.info(f"Signal {i + 1}/{len(signal_parameters)} - Injected a signal with parameters: {signal_param}")
 
     # Construct the whitened frequency-domain strain.
     whitened_frequency_domain_strains = []
@@ -165,7 +165,7 @@ def main():
             )
             time_frequency_map += whitened_wavelet_domain_power
         maximized_time_frequency_map = np.maximum(maximized_time_frequency_map, time_frequency_map)
-        logger.info(f"Maximizing signal power over the sky sphere - {ipix+1}/{npix}.")
+        logger.info(f"Maximizing signal power over the sky sphere - {ipix + 1}/{npix}.")
 
     # Perform the clustering on the sky-maximized time-frequency map.
     # Apply a threshold

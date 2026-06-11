@@ -1,3 +1,5 @@
+"""Asimov package."""
+
 from __future__ import annotations
 
 from .asimov import Nullpol

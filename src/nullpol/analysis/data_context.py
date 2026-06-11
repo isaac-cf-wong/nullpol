@@ -20,14 +20,12 @@ ensuring efficient processing of large gravitational wave datasets.
 
 from __future__ import annotations
 
-from typing import Optional
-
 import bilby
 import numpy as np
 from numba import njit
 
-from .tf_transforms import get_shape_of_wavelet_transform
 from ..utils import logger
+from .tf_transforms import get_shape_of_wavelet_transform
 
 # =============================================================================
 # SIGNAL PROCESSING FUNCTIONS (NUMBA OPTIMIZED)
@@ -68,7 +66,7 @@ def compute_time_shifted_frequency_domain_strain(frequency_array, frequency_mask
     in the time domain but computed more efficiently in frequency space.
 
     The time shift is applied using the formula:
-    h_shifted(f) = h(f) × exp(2πif×Δt)
+    h_shifted(f) = h(f) x exp(2πif x Δt)
 
     where h(f) is the original frequency domain strain, f is frequency,
     and Δt is the time delay.
@@ -113,7 +111,7 @@ def compute_time_shifted_frequency_domain_strain_array(
     different arrival time delay.
 
     The time shift for each detector is applied using:
-    h_shifted[i](f) = h[i](f) × exp(2πif×Δt[i])
+    h_shifted[i](f) = h[i](f) x exp(2πif x Δt[i])
 
     where h[i](f) is the frequency domain strain for detector i, f is frequency,
     and Δt[i] is the time delay for detector i.
@@ -170,6 +168,7 @@ class TimeFrequencyDataContext:
         wavelet_nx,
         time_frequency_filter=None,
     ):
+        """Initialize the data context."""
         # Load and validate interferometers
         self._interferometers = bilby.gw.detector.networks.InterferometerList(interferometers)
         self._validate_interferometers(self._interferometers)
@@ -286,7 +285,7 @@ class TimeFrequencyDataContext:
         return self._tf_Nf
 
     @property
-    def time_frequency_filter(self) -> Optional[np.ndarray]:
+    def time_frequency_filter(self) -> np.ndarray | None:
         """Time frequency filter.
 
         Returns:
@@ -297,7 +296,7 @@ class TimeFrequencyDataContext:
         return self._time_frequency_filter
 
     @property
-    def whitened_frequency_domain_strain_array(self) -> Optional[np.ndarray]:
+    def whitened_frequency_domain_strain_array(self) -> np.ndarray | None:
         """Whitened frequency domain strain array of the interferometers.
 
         Returns:
@@ -429,9 +428,11 @@ class TimeFrequencyDataContext:
         """Validate the time frequency filter."""
         if self.time_frequency_filter is not None:
             ntime, nfreq = self.time_frequency_filter.shape
-            assert (
-                nfreq == self.tf_Nf
-            ), f"The length of frequency axis = {nfreq} in the wavelet domain does not match the time frequency filter = {self.tf_Nf}."
-            assert (
-                ntime == self.tf_Nt
-            ), f"The length of time axis = {ntime} in the wavelet domain does not match the time frequency filter = {self.tf_Nt}."
+            if nfreq != self.tf_Nf:
+                raise ValueError(
+                    f"The length of frequency axis = {nfreq} in the wavelet domain does not match the time frequency filter = {self.tf_Nf}."
+                )
+            if ntime != self.tf_Nt:
+                raise ValueError(
+                    f"The length of time axis = {ntime} in the wavelet domain does not match the time frequency filter = {self.tf_Nt}."
+                )

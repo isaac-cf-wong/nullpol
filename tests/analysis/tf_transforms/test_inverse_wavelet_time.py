@@ -11,11 +11,11 @@ from __future__ import annotations
 import numpy as np
 
 from nullpol.analysis.tf_transforms.inverse_wavelet_time import (
-    inverse_wavelet_time_helper_fast,
-    _unpack_time_wave_helper,
-    _unpack_time_wave_helper_compact,
     _pack_wave_time_helper,
     _pack_wave_time_helper_compact,
+    _unpack_time_wave_helper,
+    _unpack_time_wave_helper_compact,
+    inverse_wavelet_time_helper_fast,
 )
 
 
@@ -62,7 +62,7 @@ class TestInverseWaveletTimeHelpers:
         signal = np.sin(2 * np.pi * 32 * t)
 
         # Transform to wavelet domain using high-level interface
-        from nullpol.analysis.tf_transforms.wavelet_transforms import transform_wavelet_time, inverse_wavelet_time
+        from nullpol.analysis.tf_transforms.wavelet_transforms import inverse_wavelet_time, transform_wavelet_time
 
         wavelet_domain = transform_wavelet_time(signal, sampling_frequency, frequency_resolution, nx, mult)
 

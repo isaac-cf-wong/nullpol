@@ -1,4 +1,4 @@
-"""functions for computing the inverse wavelet transforms"""
+"""functions for computing the inverse wavelet transforms."""
 
 from __future__ import annotations
 
@@ -114,9 +114,6 @@ def _pack_wave_inverse(m: int, Nt: int, Nf: int, prefactor2s: np.ndarray, wave_i
     else:
         for n in range(0, Nt):
             val = wave_in[n, m]
-            if (n + m) % 2:
-                mult2 = -1j
-            else:
-                mult2 = 1
+            mult2 = -1j if (n + m) % 2 else 1
 
             prefactor2s[n] = mult2 * val

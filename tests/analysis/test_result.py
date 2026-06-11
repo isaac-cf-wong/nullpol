@@ -13,13 +13,14 @@ to ensure comprehensive coverage of all functionality.
 """
 
 from __future__ import annotations
-import os
+
 import json
+import os
 import tempfile
 
-import pytest
-import numpy as np
 import bilby
+import numpy as np
+import pytest
 
 # Import result module and PolarizationResult class
 import nullpol.analysis.result as result_module
@@ -48,7 +49,7 @@ def real_result_data():
     # Load real result and injection data
     real_result = bilby.core.result.read_in_result(result_file)
 
-    with open(injection_file, "r") as f:
+    with open(injection_file) as f:
         injection_data = json.load(f)
 
     return {"result": real_result, "injection_data": injection_data}
@@ -108,7 +109,7 @@ class TestBasicFunctionality:
         import nullpol.analysis  # pylint: disable=import-outside-toplevel
 
         assert hasattr(nullpol.analysis, "result")
-        assert getattr(nullpol.analysis, "result") is result_module
+        assert nullpol.analysis.result is result_module
 
     def test_polarization_result_inheritance_and_initialization(self, real_result_data):
         """Test PolarizationResult initialization and inheritance from bilby.Result."""
@@ -539,9 +540,9 @@ class TestRealDataIntegration:
         available_params = set(real_result.posterior.columns)
 
         for param in expected_gw_params:
-            assert (
-                param in available_params
-            ), f"Expected GW parameter '{param}' not found in posterior columns: {list(available_params)[:10]}"
+            assert param in available_params, (
+                f"Expected GW parameter '{param}' not found in posterior columns: {list(available_params)[:10]}"
+            )
 
         # Verify posterior has realistic number of samples
         assert len(real_result.posterior) > 0, "Posterior should have samples"
@@ -551,9 +552,9 @@ class TestRealDataIntegration:
         assert injection["mass_1"] > 0, "Mass 1 should be positive"
         assert injection["mass_2"] > 0, "Mass 2 should be positive"
         assert injection["luminosity_distance"] > 0, "Luminosity distance should be positive"
-        assert (
-            0 <= injection["theta_jn"] <= np.pi
-        ), f"Inclination angle should be between 0 and π, got {injection['theta_jn']}"
+        assert 0 <= injection["theta_jn"] <= np.pi, (
+            f"Inclination angle should be between 0 and π, got {injection['theta_jn']}"
+        )
 
     def test_metadata_structure_completeness(self, real_result_data):
         """Test that real fixture metadata has complete expected structure."""
@@ -575,9 +576,9 @@ class TestRealDataIntegration:
         ]
 
         for key in essential_keys:
-            assert (
-                key in result.meta_data
-            ), f"Essential metadata key '{key}' not found in: {list(result.meta_data.keys())}"
+            assert key in result.meta_data, (
+                f"Essential metadata key '{key}' not found in: {list(result.meta_data.keys())}"
+            )
 
         # Verify command_line_args substructure
         cmd_args = result.meta_data["command_line_args"]

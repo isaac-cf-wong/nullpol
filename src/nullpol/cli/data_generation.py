@@ -1,3 +1,5 @@
+"""Data Generation module."""
+
 from __future__ import annotations
 
 import sys
@@ -14,9 +16,9 @@ from bilby_pipe.utils import DataDump, convert_string_to_dict
 
 from .. import __version__, log_version_information
 from ..analysis.clustering import (
-    scan_sky_for_coherent_power,
     plot_reverse_cumulative_distribution,
     plot_spectrogram,
+    scan_sky_for_coherent_power,
 )
 from ..analysis.clustering import run_time_frequency_clustering as _run_time_frequency_clustering
 from ..utils import NullpolError, is_file, logger
@@ -37,16 +39,17 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
     """
 
     def __init__(self, args: Namespace, unknown_args: list, create_data: bool = True):
+        """Initialize the instance."""
         # pylint: disable=super-init-not-called  # Using Input.__init__ directly for clarity
         Input.__init__(self, args, unknown_args)
 
         # Generic initialization
-        self.meta_data = dict(
-            command_line_args=args.__dict__,
-            unknown_command_line_args=unknown_args,
-            injection_parameters=None,
-            nullpol_version=__version__,
-        )
+        self.meta_data = {
+            "command_line_args": args.__dict__,
+            "unknown_command_line_args": unknown_args,
+            "injection_parameters": None,
+            "nullpol_version": __version__,
+        }
         self.injection_parameters = None
 
         # Admin arguments
@@ -137,6 +140,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
 
     @property
     def time_frequency_clustering_method(self):
+        """Time Frequency Clustering Method."""
         return getattr(self, "_time_frequency_clustering_method", None)
 
     @time_frequency_clustering_method.setter
@@ -145,6 +149,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
 
     @property
     def time_frequency_clustering_pe_samples_filename(self):
+        """Time Frequency Clustering Pe Samples Filename."""
         return getattr(self, "_time_frequency_clustering_pe_samples_filename", None)
 
     @time_frequency_clustering_pe_samples_filename.setter
@@ -153,6 +158,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
 
     @property
     def time_frequency_clustering_threshold(self):
+        """Time Frequency Clustering Threshold."""
         return getattr(self, "_time_frequency_clustering_threshold", None)
 
     @time_frequency_clustering_threshold.setter
@@ -161,6 +167,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
 
     @property
     def time_frequency_clustering_threshold_type(self):
+        """Time Frequency Clustering Threshold Type."""
         return getattr(self, "_time_frequency_clustering_threshold_type", None)
 
     @time_frequency_clustering_threshold_type.setter
@@ -169,6 +176,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
 
     @property
     def time_frequency_clustering_time_padding(self):
+        """Time Frequency Clustering Time Padding."""
         return getattr(self, "_time_frequency_clustering_time_padding", None)
 
     @time_frequency_clustering_time_padding.setter
@@ -177,6 +185,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
 
     @property
     def time_frequency_clustering_frequency_padding(self):
+        """Time Frequency Clustering Frequency Padding."""
         return getattr(self, "_time_frequency_clustering_frequency_padding", None)
 
     @time_frequency_clustering_frequency_padding.setter
@@ -185,6 +194,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
 
     @property
     def time_frequency_clustering_skypoints(self):
+        """Time Frequency Clustering Skypoints."""
         return getattr(self, "_time_frequency_clustering_skypoints", None)
 
     @time_frequency_clustering_skypoints.setter
@@ -222,6 +232,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
         return interferometers
 
     def run_time_frequency_clustering(self):
+        """Run Time Frequency Clustering."""
         # pylint: disable=too-many-nested-blocks
         logger.info(f"Running time-frequency clustering with method: {self.time_frequency_clustering_method}")
         # Build the strain data for time-frequency clustering
@@ -271,7 +282,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
                         logger.warning("Trying to read the posterior as a .h5 file.")
                         with h5py.File(self.time_frequency_clustering_pe_samples_filename, "r") as f:
                             posterior = pd.DataFrame(
-                                f[list(f.keys())[0]]["posterior_samples"][()]
+                                f[next(iter(f.keys()))]["posterior_samples"][()]
                             )  # Use the first waveform result
                     if self.time_frequency_clustering_method == "maxL":
                         parameters = posterior.loc[posterior["log_likelihood"].idxmax()].to_dict()
@@ -303,7 +314,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
                         or "lambda_2" in parameters
                     ):
                         logger.info(
-                            f'Found tidal parameters: {",".join([key for key in ["lambda_1", "lambda_2"] if key in parameters]+[key for key in remove_keys if key in parameters])}'
+                            f"Found tidal parameters: {','.join([key for key in ['lambda_1', 'lambda_2'] if key in parameters] + [key for key in remove_keys if key in parameters])}"
                         )
                         if "lambda_1" not in parameters:
                             raise NullpolError("lambda_1 and lambda_2 must be both provided. lambda_1 is missing.")
@@ -443,7 +454,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
         logger.info(f"Saved plot of sky-maximized spectrogram of data to {spectrogram_data_fig_fname}.")
 
     def save_data_dump(self):
-        """Method to dump the saved data to disk for later analysis"""
+        """Method to dump the saved data to disk for later analysis."""
         self.meta_data["reweighting_configuration"] = self.reweighting_configuration
         data_dump = DataDump(
             outdir=self.data_directory,
@@ -463,12 +474,12 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
 
 
 def create_generation_parser():
-    """Data generation parser creation"""
+    """Data generation parser creation."""
     return create_nullpol_parser(top_level=False)
 
 
 def main():
-    """Data generation main logic"""
+    """Data generation main logic."""
     args, unknown_args = parse_args(sys.argv[1:], create_generation_parser())
     log_version_information()
     data = DataGenerationInput(args, unknown_args)

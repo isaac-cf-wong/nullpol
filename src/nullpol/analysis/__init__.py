@@ -1,22 +1,26 @@
+"""Analysis package."""
+
 from __future__ import annotations
 
 # Core analysis modules - likelihood is the most important
-from . import likelihood  # Core likelihood implementations
-from . import null_stream  # Null stream projections & calculations
-from . import clustering  # Time-frequency clustering
-from . import result  # Result handling (single module)
-from . import tf_transforms  # Time-frequency transforms (wavelets, STFT)
-from . import antenna_patterns  # Antenna pattern functions (base patterns + conditioning + processor)
-from . import data_context  # Data management and signal processing functions
-from . import prior  # Prior distributions for polarization analysis
+from . import (
+    antenna_patterns,  # Antenna pattern functions (base patterns + conditioning + processor)
+    clustering,  # Time-frequency clustering
+    data_context,  # Data management and signal processing functions
+    likelihood,  # Core likelihood implementations
+    null_stream,  # Null stream projections & calculations
+    prior,  # Prior distributions for polarization analysis
+    result,  # Result handling (single module)
+    tf_transforms,  # Time-frequency transforms (wavelets, STFT)
+)
 
 __all__ = [
+    "antenna_patterns",
+    "clustering",
+    "data_context",
     "likelihood",
     "null_stream",
-    "clustering",
+    "prior",
     "result",
     "tf_transforms",
-    "antenna_patterns",
-    "data_context",
-    "prior",
 ]

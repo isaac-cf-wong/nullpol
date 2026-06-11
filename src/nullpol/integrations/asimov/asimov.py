@@ -6,8 +6,8 @@ import glob
 import os
 import subprocess
 import time
-
 from importlib.resources import files
+
 from asimov import config  # pylint: disable=import-error
 from asimov.pipeline import Pipeline, PipelineException, PipelineLogger  # pylint: disable=import-error
 from asimov.pipelines.bilby import Bilby  # pylint: disable=import-error
@@ -16,8 +16,7 @@ from .pesummary import PESummaryPipeline
 
 
 class Nullpol(Bilby):
-    """
-    The nullpol pipeline.
+    """The nullpol pipeline.
 
     Args:
         production (asimov.Production): The production object.
@@ -26,23 +25,23 @@ class Nullpol(Bilby):
     """
 
     name = "nullpol"
-    STATUS = {"wait", "stuck", "stopped", "running", "finished"}
+    STATUS = frozenset({"wait", "stuck", "stopped", "running", "finished"})
 
     @property
     def config_template(self):
+        """Config Template."""
         return str(files("nullpol.integrations.asimov.templates") / "nullpol.ini")
 
     def __init__(self, production, category=None):
+        """Initialize the instance."""
         Pipeline.__init__(self, production=production, category=category)
         self.logger.info("Using the nullpol pipeline")
 
         if not production.pipeline.lower() == "nullpol":
-            raise PipelineException(f"Pipeline {production.pipeline.lower()} " "is not recognized.")
+            raise PipelineException(f"Pipeline {production.pipeline.lower()} is not recognized.")
 
     def detect_completion(self):
-        """
-        Check for the production of the posterior file to signal that the job has completed.
-        """
+        """Check for the production of the posterior file to signal that the job has completed."""
         self.logger.info("Checking if the nullpol job has completed")
         results_dir = glob.glob(f"{self.production.rundir}/result")
         # config = self.read_ini(self.config_file_path)
@@ -65,20 +64,15 @@ class Nullpol(Bilby):
         return False
 
     def subrun_samples(self, subrun_label, absolute=False):
-        """
-        Collect the combined samples file for PESummary.
-        """
-
-        if absolute:
-            rundir = os.path.abspath(self.production.rundir)
-        else:
-            rundir = self.production.rundir
+        """Collect the combined samples file for PESummary."""
+        rundir = os.path.abspath(self.production.rundir) if absolute else self.production.rundir
         self.logger.info(f"Rundir for samples: {rundir}")
         return glob.glob(os.path.join(rundir, "result", f"*_{subrun_label}_merge*_result.hdf5")) + glob.glob(
             os.path.join(rundir, "result", f"*_{subrun_label}_merge*_result.json")
         )
 
     def after_completion(self):
+        """After Completion."""
         post_pipeline = PESummaryPipeline(production=self.production)
         self.logger.info("Job has completed. Running PE Summary.")
         cluster = post_pipeline.submit_dag()
@@ -102,23 +96,20 @@ class Nullpol(Bilby):
         return ini
 
     def build_dag(self, psds=None, user=None, clobber_psd=False, dryrun=False):  # pylint: disable=unused-argument
-        """
-        Construct a DAG file in order to submit a production to the
-        condor scheduler using nullpol_pipe.
+        """Construct a DAG file in order to submit a production to the condor scheduler.
 
         Args:
             production (str): The production name.
-        psds (dict, optional): The PSDs which should be used for this DAG. If no PSDs are
-           provided the PSD files specified in the ini file will be used
-           instead.
-        user (str): The user accounting tag which should be used to run the job.
-        dryrun (bool): If set to true the commands will not be run, but will be printed to
-           standard output. Defaults to False.
+            psds (dict, optional): The PSDs which should be used for this DAG. If no PSDs are
+                provided the PSD files specified in the ini file will be used instead.
+            user (str): The user accounting tag which should be used to run the job.
+            clobber_psd (bool): Whether to overwrite existing PSD files.
+            dryrun (bool): If set to true the commands will not be run, but will be printed to
+                standard output. Defaults to False.
 
         Raises:
             PipelineException: Raised if the construction of the DAG fails.
         """
-
         cwd = os.getcwd()
 
         self.logger.info(f"Working in {cwd}")
@@ -133,10 +124,7 @@ class Nullpol(Bilby):
             )
             self.production.rundir = rundir
 
-        if "job label" in self.production.meta:
-            job_label = self.production.meta["job label"]
-        else:
-            job_label = self.production.name
+        job_label = self.production.meta.get("job label", self.production.name)
 
         command = [
             os.path.join(config.get("pipelines", "environment"), "bin", "nullpol_pipe"),
@@ -164,7 +152,7 @@ class Nullpol(Bilby):
             return None
 
         self.logger.info(" ".join(command))
-        with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as pipe:
+        with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as pipe:  # noqa: S603
             out, err = pipe.communicate()
         self.logger.info(out)
 
@@ -173,7 +161,7 @@ class Nullpol(Bilby):
             self.production.status = "stuck"
             self.logger.error(err)
             raise PipelineException(
-                (f"DAG file could not be created.\n" f"{command}\n{out}\n\n{err}"),
+                (f"DAG file could not be created.\n{command}\n{out}\n\n{err}"),
                 production=self.production.name,
             )
         time.sleep(10)

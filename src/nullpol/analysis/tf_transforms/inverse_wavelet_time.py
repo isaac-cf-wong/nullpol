@@ -1,4 +1,4 @@
-"""functions for computing the inverse wavelet transform"""
+"""functions for computing the inverse wavelet transform."""
 
 from __future__ import annotations
 
@@ -186,8 +186,10 @@ def _pack_wave_time_helper(n: int, Nf: int, Nt: int, wave_in: np.ndarray, afins:
 
 @njit
 def _pack_wave_time_helper_compact(n: int, Nf: int, Nt: int, wave_in: np.ndarray, afins: np.ndarray) -> None:
-    """Helper for time domain transform to pack wavelet domain coefficients
-    in packed representation with odd and even coefficients in real and imaginary parts.
+    """Helper for time domain transform to pack wavelet domain coefficients.
+
+    Packs wavelet domain coefficients in a representation with odd and even
+    coefficients in real and imaginary parts.
 
     Args:
         n (int): Time index.

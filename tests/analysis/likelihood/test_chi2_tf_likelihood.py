@@ -8,19 +8,18 @@ from __future__ import annotations
 
 from unittest.mock import Mock
 
+import bilby
 import numpy as np
 import pytest
 import scipy.stats
-from tqdm import tqdm
-
-import bilby
 from bilby.core.utils import logger
 from bilby.gw.detector import InterferometerList
 from bilby.gw.source import lal_binary_black_hole
+from tqdm import tqdm
 
 from nullpol.analysis.clustering import run_time_frequency_clustering
-from nullpol.simulation.injection import create_injection
 from nullpol.analysis.likelihood.chi2_tf_likelihood import Chi2TimeFrequencyLikelihood
+from nullpol.simulation.injection import create_injection
 
 # Configure logging after imports
 logger.setLevel("CRITICAL")
@@ -50,23 +49,23 @@ def configuration() -> dict:
     time_padding = 0.1
     frequency_padding = 1
     skypoints = 10
-    parameters = dict(
-        mass_1=36.0,
-        mass_2=29.0,
-        a_1=0.0,
-        a_2=0.0,
-        tilt_1=0.0,
-        tilt_2=0.0,
-        phi_12=0.0,
-        phi_jl=0.0,
-        luminosity_distance=2000.0,
-        theta_jn=0.0,
-        psi=2.659,
-        phase=1.3,
-        geocent_time=geocent_time,
-        ra=1.375,
-        dec=-1.2108,
-    )
+    parameters = {
+        "mass_1": 36.0,
+        "mass_2": 29.0,
+        "a_1": 0.0,
+        "a_2": 0.0,
+        "tilt_1": 0.0,
+        "tilt_2": 0.0,
+        "phi_12": 0.0,
+        "phi_jl": 0.0,
+        "luminosity_distance": 2000.0,
+        "theta_jn": 0.0,
+        "psi": 2.659,
+        "phase": 1.3,
+        "geocent_time": geocent_time,
+        "ra": 1.375,
+        "dec": -1.2108,
+    }
 
     return {
         "seed": seed,
@@ -111,7 +110,7 @@ def time_frequency_filter(configuration: dict) -> np.ndarray:
     interferometers = InterferometerList(["H1", "L1", "V1"])
     noise_type = "zero_noise"
     frequency_domain_source_model = lal_binary_black_hole
-    waveform_arguments = dict(waveform_approximant="IMRPhenomPv2", reference_frequency=50)
+    waveform_arguments = {"waveform_approximant": "IMRPhenomPv2", "reference_frequency": 50}
     create_injection(
         interferometers=interferometers,
         parameters=parameters,
@@ -180,7 +179,7 @@ def test_noise_residual_energy(configuration: dict, time_frequency_filter: np.nd
             polarization_basis=polarization_basis,
             time_frequency_filter=time_frequency_filter,
         )
-        likelihood.parameters = dict(ra=0, dec=0, psi=0, geocent_time=geocent_time)
+        likelihood.parameters = {"ra": 0, "dec": 0, "psi": 0, "geocent_time": geocent_time}
         logL = likelihood.log_likelihood()
         logL_samples.append(logL)
 
@@ -244,7 +243,7 @@ def test_signal_residual_energy(configuration: dict, time_frequency_filter: np.n
             polarization_basis=polarization_basis,
             time_frequency_filter=time_frequency_filter,
         )
-        likelihood.parameters = dict(ra=ra, dec=dec, psi=psi, geocent_time=geocent_time)
+        likelihood.parameters = {"ra": ra, "dec": dec, "psi": psi, "geocent_time": geocent_time}
         logL = likelihood.log_likelihood()
         logL_samples.append(logL)
 
@@ -309,7 +308,7 @@ def test_signal_residual_energy_incorrect_parameters(configuration: dict, time_f
             polarization_basis=polarization_basis,
             time_frequency_filter=time_frequency_filter,
         )
-        likelihood.parameters = dict(ra=ra, dec=dec, psi=psi, geocent_time=geocent_time)
+        likelihood.parameters = {"ra": ra, "dec": dec, "psi": psi, "geocent_time": geocent_time}
         logL = likelihood.log_likelihood()
         logL_samples.append(logL)
 
@@ -323,9 +322,9 @@ def test_signal_residual_energy_incorrect_parameters(configuration: dict, time_f
     print(
         f"logL vs logpdf KS statistic = {result.statistic}, p-value = {result.pvalue}, mean logL = {np.mean(logL_samples):.3f}, mean logpdf = {np.mean(logpdf_samples):.3f}, DoF = {likelihood.DoF}"
     )
-    assert (
-        result.pvalue < 0.05
-    ), f"Log likelihoods should deviate from the expected logpdf distribution (p = {result.pvalue})"
+    assert result.pvalue < 0.05, (
+        f"Log likelihoods should deviate from the expected logpdf distribution (p = {result.pvalue})"
+    )
 
 
 @pytest.mark.integration
@@ -355,7 +354,7 @@ def test_signal_pc_c_residual_energy(configuration: dict, time_frequency_filter:
     logL_samples = []
     n_samples = 200
     frequency_domain_source_model = lal_binary_black_hole
-    waveform_arguments = dict(waveform_approximant="IMRPhenomPv2", reference_frequency=50)
+    waveform_arguments = {"waveform_approximant": "IMRPhenomPv2", "reference_frequency": 50}
     for _i in tqdm(range(n_samples), desc="test_signal_pc_p_residual_energy"):
         # Create a noise injection
         interferometers = InterferometerList(["H1", "L1", "V1"])
@@ -379,9 +378,14 @@ def test_signal_pc_c_residual_energy(configuration: dict, time_frequency_filter:
             polarization_basis=polarization_basis,
             time_frequency_filter=time_frequency_filter,
         )
-        likelihood.parameters = dict(
-            ra=ra, dec=dec, psi=psi, geocent_time=geocent_time, amplitude_cp=amplitude_cp, phase_cp=phase_cp
-        )
+        likelihood.parameters = {
+            "ra": ra,
+            "dec": dec,
+            "psi": psi,
+            "geocent_time": geocent_time,
+            "amplitude_cp": amplitude_cp,
+            "phase_cp": phase_cp,
+        }
         logL = likelihood.log_likelihood()
         logL_samples.append(logL)
 
@@ -428,7 +432,7 @@ def test_signal_pc_c_residual_energy_incorrect_parameters(
     logL_samples = []
     n_samples = 200
     frequency_domain_source_model = lal_binary_black_hole
-    waveform_arguments = dict(waveform_approximant="IMRPhenomPv2", reference_frequency=50)
+    waveform_arguments = {"waveform_approximant": "IMRPhenomPv2", "reference_frequency": 50}
     for _i in tqdm(range(n_samples), desc="test_signal_pc_p_residual_energy_incorrect_parameters"):
         # Create a noise injection
         interferometers = InterferometerList(["H1", "L1", "V1"])
@@ -452,9 +456,14 @@ def test_signal_pc_c_residual_energy_incorrect_parameters(
             polarization_basis=polarization_basis,
             time_frequency_filter=time_frequency_filter,
         )
-        likelihood.parameters = dict(
-            ra=ra, dec=dec, psi=psi, geocent_time=geocent_time, amplitude_cp=amplitude_cp, phase_cp=phase_cp
-        )
+        likelihood.parameters = {
+            "ra": ra,
+            "dec": dec,
+            "psi": psi,
+            "geocent_time": geocent_time,
+            "amplitude_cp": amplitude_cp,
+            "phase_cp": phase_cp,
+        }
         logL = likelihood.log_likelihood()
         logL_samples.append(logL)
 
@@ -468,9 +477,9 @@ def test_signal_pc_c_residual_energy_incorrect_parameters(
     print(
         f"logL vs logpdf KS statistic = {result.statistic}, p-value = {result.pvalue}, mean logL = {np.mean(logL_samples):.3f}, mean logpdf = {np.mean(logpdf_samples):.3f}, DoF = {likelihood.DoF}"
     )
-    assert (
-        result.pvalue < 0.05
-    ), f"Log likelihoods should deviate from the expected logpdf distribution (p = {result.pvalue})"
+    assert result.pvalue < 0.05, (
+        f"Log likelihoods should deviate from the expected logpdf distribution (p = {result.pvalue})"
+    )
 
 
 class TestChi2TimeFrequencyLikelihoodEdgeCases:

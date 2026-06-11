@@ -1,3 +1,5 @@
+"""Source module."""
+
 from __future__ import annotations
 
 from bilby.gw.source import _base_lal_cbc_fd_waveform
@@ -63,17 +65,17 @@ def lal_binary_black_hole_non_gr_simple_map(
         longitudinal scales h_cross. This is not physically motivated but serves
         as a phenomenological test.
     """
-    waveform_kwargs = dict(
-        waveform_approximant="IMRPhenomPv2",
-        reference_frequency=50.0,
-        minimum_frequency=20.0,
-        maximum_frequency=frequency_array[-1],
-        catch_waveform_errors=False,
-        pn_spin_order=-1,
-        pn_tidal_order=-1,
-        pn_phase_order=-1,
-        pn_amplitude_order=0,
-    )
+    waveform_kwargs = {
+        "waveform_approximant": "IMRPhenomPv2",
+        "reference_frequency": 50.0,
+        "minimum_frequency": 20.0,
+        "maximum_frequency": frequency_array[-1],
+        "catch_waveform_errors": False,
+        "pn_spin_order": -1,
+        "pn_tidal_order": -1,
+        "pn_phase_order": -1,
+        "pn_amplitude_order": 0,
+    }
     waveform_kwargs.update(kwargs)
     wf_dict = _base_lal_cbc_fd_waveform(
         frequency_array=frequency_array,

@@ -1,3 +1,5 @@
+"""Likelihood package."""
+
 from __future__ import annotations
 
 from .chi2_tf_likelihood import Chi2TimeFrequencyLikelihood

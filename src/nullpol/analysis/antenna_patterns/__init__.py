@@ -1,3 +1,5 @@
+"""Antenna Patterns package."""
+
 from __future__ import annotations
 
 from .base import (
@@ -22,11 +24,11 @@ from .encoding import (
 from .processor import AntennaPatternProcessor
 
 __all__ = [
-    "AntennaPatternProcessor",
     "POLARIZATION_DECODING",
     "POLARIZATION_ENCODING",
     "POLARIZATION_LONG_NAMES",
     "POLARIZATION_SHORT_NAMES",
+    "AntennaPatternProcessor",
     "compute_calibrated_whitened_antenna_pattern_matrix",
     "compute_whitened_antenna_pattern_matrix_masked",
     "encode_polarization",

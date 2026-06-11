@@ -1,3 +1,5 @@
+"""Pesummary module."""
+
 from __future__ import annotations
 
 import os
@@ -9,17 +11,12 @@ from asimov.pipeline import PostPipeline  # pylint: disable=import-error
 
 # pylint: disable=too-few-public-methods
 class PESummaryPipeline(PostPipeline):
-    """
-    A postprocessing pipeline add-in using PESummary.
-    """
+    """A postprocessing pipeline add-in using PESummary."""
 
     name = "PESummary"
 
     def submit_dag(self, dryrun=False):
-        """
-        Run PESummary on the results of this job.
-        """
-
+        """Run PESummary on the results of this job."""
         psds = {ifo: os.path.abspath(psd) for ifo, psd in self.production.psds.items()}
 
         polarization_modes = self.production.meta["likelihood"]["polarization modes"]
@@ -28,7 +25,7 @@ class PESummaryPipeline(PostPipeline):
 
         if "calibration" in self.production.meta["data"]:
             calibration = [
-                (os.path.abspath(os.path.join(self.production.repository.directory, cal)) if not cal[0] == "/" else cal)
+                (os.path.abspath(os.path.join(self.production.repository.directory, cal)) if cal[0] != "/" else cal)
                 for cal in self.production.meta["data"]["calibration"].values()
             ]
         else:
@@ -83,22 +80,22 @@ class PESummaryPipeline(PostPipeline):
         # Config file
         command += ["--config"]
         config_filename = os.path.join(self.production.event.repository.directory, self.category, configfile)
-        for i in range(number_of_subruns):
+        for _ in range(number_of_subruns):
             command += [config_filename]
         # Samples
         command += ["--samples"]
-        for i in range(number_of_subruns):
+        for _ in range(number_of_subruns):
             command += self.production.pipeline.subrun_samples(
                 subrun_label=f"{polarization_modes[i]}_{polarization_basis[i]}", absolute=True
             )
         # Calibration information
         if calibration:
             command += ["--calibration"]
-            for i in range(number_of_subruns):
+            for _ in range(number_of_subruns):
                 command += calibration
         # PSDs
         command += ["--psd"]
-        for i in range(number_of_subruns):
+        for _ in range(number_of_subruns):
             for key, value in psds.items():
                 command += [f"{key}:{value}"]
 
@@ -111,9 +108,11 @@ class PESummaryPipeline(PostPipeline):
                 else:
                     command += [f"{key}"]
 
-        with utils.set_directory(self.production.rundir):
-            with open(f"{self.production.name}_pesummary.sh", "w") as bash_file:
-                bash_file.write(f"{config.get('pesummary', 'executable')} " + " ".join(command))
+        with (
+            utils.set_directory(self.production.rundir),
+            open(f"{self.production.name}_pesummary.sh", "w") as bash_file,
+        ):
+            bash_file.write(f"{config.get('pesummary', 'executable')} " + " ".join(command))
 
         self.logger.info(f"PE summary command: {config.get('pesummary', 'executable')} {' '.join(command)}")
 
@@ -157,9 +156,8 @@ class PESummaryPipeline(PostPipeline):
         if not dryrun:
             hostname_job = htcondor.Submit(submit_description)
 
-            with utils.set_directory(self.production.rundir):
-                with open("pesummary.sub", "w") as subfile:
-                    subfile.write(str(hostname_job))
+            with utils.set_directory(self.production.rundir), open("pesummary.sub", "w") as subfile:
+                subfile.write(str(hostname_job))
 
             try:
                 # There should really be a specified submit node, and if there is, use it.

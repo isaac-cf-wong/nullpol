@@ -1,3 +1,5 @@
+"""Error module."""
+
 from __future__ import annotations
 
 
@@ -9,4 +11,5 @@ class NullpolError(Exception):
     """
 
     def __init__(self, message):
+        """Initialize the instance."""
         super().__init__(message)

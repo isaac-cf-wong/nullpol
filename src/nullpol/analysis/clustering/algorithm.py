@@ -1,3 +1,5 @@
+"""Algorithm module."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -93,7 +95,6 @@ def clustering(tf_filter, dt, df, padding_time=0.1, padding_freq=10):
         - If multiple clusters have the same maximum size, the first one found is selected
         - The function modifies a copy of the input and doesn't alter the original filter
     """
-
     # find clusters
     visited = np.zeros(tf_filter.shape, dtype=np.uint8)
     clusters = []

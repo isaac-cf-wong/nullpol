@@ -9,8 +9,8 @@ from __future__ import annotations
 import numpy as np
 
 from nullpol.analysis.antenna_patterns.conditioning import (
-    compute_whitened_antenna_pattern_matrix_masked,
     compute_calibrated_whitened_antenna_pattern_matrix,
+    compute_whitened_antenna_pattern_matrix_masked,
 )
 
 
@@ -161,9 +161,9 @@ class TestAntennaPatternConditioning:
         np.testing.assert_array_almost_equal(result, expected, decimal=6)
 
         # Check output shape matches input
-        assert (
-            result.shape == whitened_matrix.shape
-        ), f"Output shape {result.shape} doesn't match input shape {whitened_matrix.shape}"
+        assert result.shape == whitened_matrix.shape, (
+            f"Output shape {result.shape} doesn't match input shape {whitened_matrix.shape}"
+        )
 
     def test_compute_calibrated_whitened_antenna_pattern_matrix_unity_calibration(self):
         """Test calibration with unity calibration errors (no effect)."""
@@ -277,9 +277,9 @@ class TestAntennaPatternConditioning:
         )
 
         # Output should match input dtype for whitening
-        assert (
-            result_whitened.dtype == antenna_pattern_matrix.dtype
-        ), f"Whitened output dtype {result_whitened.dtype} doesn't match input {antenna_pattern_matrix.dtype}"
+        assert result_whitened.dtype == antenna_pattern_matrix.dtype, (
+            f"Whitened output dtype {result_whitened.dtype} doesn't match input {antenna_pattern_matrix.dtype}"
+        )
 
         # Test calibration with complex calibration errors
         calibration_error_matrix = np.array([[1.0 + 0.1j]], dtype=np.complex64)
@@ -289,6 +289,6 @@ class TestAntennaPatternConditioning:
         )
 
         # Output should match calibration error dtype when complex
-        assert (
-            result_calibrated.dtype == calibration_error_matrix.dtype
-        ), f"Calibrated output dtype {result_calibrated.dtype} doesn't match calibration {calibration_error_matrix.dtype}"
+        assert result_calibrated.dtype == calibration_error_matrix.dtype, (
+            f"Calibrated output dtype {result_calibrated.dtype} doesn't match calibration {calibration_error_matrix.dtype}"
+        )

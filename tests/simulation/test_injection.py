@@ -20,23 +20,23 @@ def basic_injection_parameters():
     Returns:
         dict: Standard BBH parameters for testing
     """
-    return dict(
-        mass_1=36.0,
-        mass_2=29.0,
-        a_1=0.4,
-        a_2=0.3,
-        tilt_1=0.5,
-        tilt_2=1.0,
-        phi_12=1.7,
-        phi_jl=0.3,
-        luminosity_distance=2000.0,
-        theta_jn=0.4,
-        psi=2.659,
-        phase=1.3,
-        geocent_time=1126259642.413,
-        ra=1.375,
-        dec=-1.2108,
-    )
+    return {
+        "mass_1": 36.0,
+        "mass_2": 29.0,
+        "a_1": 0.4,
+        "a_2": 0.3,
+        "tilt_1": 0.5,
+        "tilt_2": 1.0,
+        "phi_12": 1.7,
+        "phi_jl": 0.3,
+        "luminosity_distance": 2000.0,
+        "theta_jn": 0.4,
+        "psi": 2.659,
+        "phase": 1.3,
+        "geocent_time": 1126259642.413,
+        "ra": 1.375,
+        "dec": -1.2108,
+    }
 
 
 @pytest.fixture
@@ -62,7 +62,7 @@ def test_create_injection_zero_noise(interferometers, basic_injection_parameters
     start_time = basic_injection_parameters["geocent_time"] - 4
     noise_type = "zero_noise"
     frequency_domain_source_model = lal_binary_black_hole
-    waveform_arguments = dict(waveform_approximant="IMRPhenomPv2", reference_frequency=50)
+    waveform_arguments = {"waveform_approximant": "IMRPhenomPv2", "reference_frequency": 50}
     create_injection(
         interferometers=interferometers,
         parameters=basic_injection_parameters,
@@ -88,7 +88,7 @@ def test_create_injection_gaussian(interferometers, basic_injection_parameters):
     start_time = basic_injection_parameters["geocent_time"] - 4
     noise_type = "gaussian"
     frequency_domain_source_model = lal_binary_black_hole
-    waveform_arguments = dict(waveform_approximant="IMRPhenomPv2", reference_frequency=50)
+    waveform_arguments = {"waveform_approximant": "IMRPhenomPv2", "reference_frequency": 50}
     create_injection(
         interferometers=interferometers,
         parameters=basic_injection_parameters,

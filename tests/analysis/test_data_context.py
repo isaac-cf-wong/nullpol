@@ -15,10 +15,10 @@ from bilby.gw.detector import InterferometerList
 from scipy.stats import kstest
 
 from nullpol.analysis.data_context import (
-    compute_whitened_frequency_domain_strain_array,
+    TimeFrequencyDataContext,
     compute_time_shifted_frequency_domain_strain,
     compute_time_shifted_frequency_domain_strain_array,
-    TimeFrequencyDataContext,
+    compute_whitened_frequency_domain_strain_array,
 )
 
 
@@ -158,14 +158,14 @@ def test_compute_time_shifted_frequency_domain_strain_basic():
     expected_phase_shift = np.exp(1.0j * 2 * np.pi * test_frequency * time_delay)
     expected_value = frequency_domain_strain[test_freq_bin] * expected_phase_shift
 
-    assert np.isclose(
-        shifted_strain[test_freq_bin], expected_value, rtol=1e-8
-    ), f"Expected {expected_value}, got {shifted_strain[test_freq_bin]}"
+    assert np.isclose(shifted_strain[test_freq_bin], expected_value, rtol=1e-8), (
+        f"Expected {expected_value}, got {shifted_strain[test_freq_bin]}"
+    )
 
     # Test that amplitude is preserved (time shift only changes phase)
-    assert np.isclose(
-        abs(shifted_strain[test_freq_bin]), abs(frequency_domain_strain[test_freq_bin]), rtol=1e-8
-    ), "Amplitude should be preserved during time shift"
+    assert np.isclose(abs(shifted_strain[test_freq_bin]), abs(frequency_domain_strain[test_freq_bin]), rtol=1e-8), (
+        "Amplitude should be preserved during time shift"
+    )
 
 
 def test_compute_time_shifted_frequency_domain_strain_array():
@@ -202,9 +202,9 @@ def test_compute_time_shifted_frequency_domain_strain_array():
         expected_phase_factor = np.exp(1.0j * 2 * np.pi * test_frequency * time_delay)
         expected_value = strain_array[i, test_freq_bin] * expected_phase_factor
 
-        assert np.isclose(
-            shifted_array[i, test_freq_bin], expected_value, rtol=1e-8
-        ), f"Detector {i}: Expected {expected_value}, got {shifted_array[i, test_freq_bin]}"
+        assert np.isclose(shifted_array[i, test_freq_bin], expected_value, rtol=1e-8), (
+            f"Detector {i}: Expected {expected_value}, got {shifted_array[i, test_freq_bin]}"
+        )
 
     # Test that relative phase differences are correct
     # Detector 1 vs Detector 0 should have additional phase of 2π * f * 0.1
@@ -225,9 +225,9 @@ def test_compute_time_shifted_frequency_domain_strain_array():
     while expected_relative_phase < -np.pi:
         expected_relative_phase += 2 * np.pi
 
-    assert (
-        abs(actual_relative_phase - expected_relative_phase) < 0.01
-    ), f"Expected relative phase {expected_relative_phase:.3f}, got {actual_relative_phase:.3f}"
+    assert abs(actual_relative_phase - expected_relative_phase) < 0.01, (
+        f"Expected relative phase {expected_relative_phase:.3f}, got {actual_relative_phase:.3f}"
+    )
 
 
 @pytest.mark.integration
@@ -251,20 +251,20 @@ class TestTimeFrequencyDataContext:
 
         # Test basic properties match expected values
         assert context.duration == duration, f"Expected duration {duration}, got {context.duration}"
-        assert (
-            context.sampling_frequency == sampling_frequency
-        ), f"Expected sampling_frequency {sampling_frequency}, got {context.sampling_frequency}"
-        assert len(context.interferometers) == len(
-            ifos
-        ), f"Expected {len(ifos)} interferometers, got {len(context.interferometers)}"
+        assert context.sampling_frequency == sampling_frequency, (
+            f"Expected sampling_frequency {sampling_frequency}, got {context.sampling_frequency}"
+        )
+        assert len(context.interferometers) == len(ifos), (
+            f"Expected {len(ifos)} interferometers, got {len(context.interferometers)}"
+        )
         assert context.wavelet_frequency_resolution == wavelet_frequency_resolution
         assert context.wavelet_nx == wavelet_nx
 
         # Test derived properties follow known formulas
         expected_freq_resolution = 1.0 / duration
-        assert (
-            abs(context.frequency_resolution - expected_freq_resolution) < 1e-10
-        ), f"Expected frequency_resolution {expected_freq_resolution}, got {context.frequency_resolution}"
+        assert abs(context.frequency_resolution - expected_freq_resolution) < 1e-10, (
+            f"Expected frequency_resolution {expected_freq_resolution}, got {context.frequency_resolution}"
+        )
         assert len(context.frequency_array) == len(ifos[0].frequency_array)
         assert len(context.frequency_mask) == len(frequency_mask)
         assert context.power_spectral_density_array.shape == (len(ifos), len(ifos[0].frequency_array))
@@ -393,9 +393,9 @@ class TestTimeFrequencyDataContext:
             ra=parameters_overhead["ra"], dec=parameters_overhead["dec"], time=parameters_overhead["geocent_time"]
         )
 
-        assert (
-            abs(time_delays[0] - individual_delay) < 1e-10
-        ), f"Expected delay {individual_delay}, got {time_delays[0]}"
+        assert abs(time_delays[0] - individual_delay) < 1e-10, (
+            f"Expected delay {individual_delay}, got {time_delays[0]}"
+        )
 
         # Test case 2: Known extreme case - source at horizon should give larger delays
         parameters_horizon = {
@@ -461,7 +461,8 @@ class TestTimeFrequencyDataContext:
 
         ifos2 = InterferometerList(["L1"])
         ifos2.set_strain_data_from_power_spectral_densities(
-            sampling_frequency=512, duration=4  # Different sampling frequency -> different delta_f
+            sampling_frequency=512,
+            duration=4,  # Different sampling frequency -> different delta_f
         )
 
         # Try to combine interferometers with different frequency resolutions
@@ -502,5 +503,7 @@ class TestTimeFrequencyDataContext:
         assert context.wavelet_nx == wavelet_nx
 
         # Test that time-frequency dimensions are positive integers
-        assert isinstance(context.tf_Nt, int) and context.tf_Nt > 0
-        assert isinstance(context.tf_Nf, int) and context.tf_Nf > 0
+        assert isinstance(context.tf_Nt, int)
+        assert context.tf_Nt > 0
+        assert isinstance(context.tf_Nf, int)
+        assert context.tf_Nf > 0

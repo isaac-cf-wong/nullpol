@@ -1,4 +1,6 @@
 # pylint: disable=duplicate-code  # Legitimate argument parsing patterns shared across modules
+"""Chi2 Tf Likelihood module."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -31,14 +33,15 @@ class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
         time_frequency_filter=None,
         **kwargs,
     ):
+        """Initialize the instance."""
         super().__init__(
+            *args,
             interferometers=interferometers,
             wavelet_frequency_resolution=wavelet_frequency_resolution,
             wavelet_nx=wavelet_nx,
             polarization_modes=polarization_modes,
             polarization_basis=polarization_basis,
             time_frequency_filter=time_frequency_filter,
-            *args,
             **kwargs,
         )
 

@@ -1,145 +1,66 @@
 [build-system]
-requires = ["flit_core >=3.12.0,<4"]
-build-backend = "flit_core.buildapi"
+requires = ["hatchling", "uv-dynamic-versioning"]
+build-backend = "hatchling.build"
 
 [project]
 name = "nullpol"
 description = "A package to perform model-independent polarization test of gravitational-wave signals."
 authors = [
-    { name = "Isaac C.F. Wong", email = "chunfung.wong@kuleuven.be" },
-    { name = "Thomas Ng", email = "thomas.ng@nikhef.nl" },
-    { name = "Balázs Cirok" },
+  { name = "Isaac C.F. Wong", email = "chunfung.wong@kuleuven.be" },
+  { name = "Thomas Ng", email = "thomas.ng@nikhef.nl" },
+  { name = "Balázs Cirok" },
 ]
 readme = "README.md"
+license = { text = "GPL-3.0-or-later" }
 classifiers = [
-    "Development Status :: 3 - Alpha",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
 ]
-requires-python = ">=3.10,<3.12"
+requires-python = ">=3.12"
 dynamic = ["version"]
 dependencies = [
-    "matplotlib",
-    "numpy",
-    "bilby",
-    "bilby_pipe<=1.8.0",
-    "gwpy",
-    "numba>=0.65.0",
-    "rocket-fft",
-    "scipy",
-    "ConfigArgParse",
-    "pycbc",
-    "healpy",
-    "h5py",
-    "pandas",
+  "matplotlib>=3.10.9",
+  "numpy>=2.3.5,<2.4",
+  "bilby>=2.8.0",
+  "bilby_pipe>=1.9.0",
+  "gwpy>=4.0.1",
+  "numba>=0.65.0",
+  "rocket-fft>=0.3.1",
+  "scipy>=1.16.3,<1.17.0",
+  "ConfigArgParse>=1.7.5",
+  "pycbc>=2.11.0",
+  "healpy>=1.19.0",
+  "h5py>=3.16.0",
+  "pandas>=3.0.3",
 ]
 
 [project.optional-dependencies]
-asimov = ["asimov", "cbcflow"]
-spark = ["pyspark>=4.1.1"]
-test = [
-    "check-manifest==0.51",
-    "black==26.5.1",
-    "pytest==9.0.3",
-    "pytest-cov==7.1.0",
-    "pre-commit==4.6.0",
-    "pytest-mock<3.15.2",
-    "pytest-github-actions-annotate-failures",
-    "ruff==0.15.15",
+asimov = ["asimov>=0.6.1", "cbcflow>=0.6.3"]
+
+[dependency-groups]
+dev = [
+  "ruff>=0.15.16",
+  "prek>=0.4.4",
+  "pytest-github-actions-annotate-failures>=0.4.0",
+  "pytest-cov>=7.1.0",
+  "pytest-mock>=3.15.1",
+  "pytest>=9.0.3",
 ]
+docs = ["zensical>=0.0.44", "mkdocstrings-python>=2.0.4"]
+build = ["hatch>=1.17.0"]
+release = ["git-cliff>=2.13.1"]
 
 [project.urls]
-Documentation = "https://git.ligo.org/bayesian-null-stream/nullpol/docs"
-Source = "https://git.ligo.org/bayesian-null-stream/nullpol"
-Tracker = "https://git.ligo.org/bayesian-null-stream/nullpol/-/issues"
-
-[tool.flit.module]
-name = "nullpol"
-
-[tool.black]
-line-length = 120
-fast = true
-
-[tool.ruff]
-exclude = ["docs"]
-line-length = 120
-
-[tool.flake8]
-max-line-length = 120
-exclude = ["docs"]
-
-[tool.pylint.format]
-max-line-length = 120
-
-[tool.pylint.messages_control]
-# Disable specific pylint checks that are not suitable for this codebase
-disable = [
-    # Documentation requirements
-    "missing-module-docstring",       # C0114 - Allow modules without docstrings
-    "missing-class-docstring",        # C0115 - Allow classes without docstrings
-    "missing-function-docstring",     # C0111 - Allow functions without docstrings
-
-    # Variable naming and usage
-    "invalid-name",                   # C0103 - Allow single-letter and short variable names
-
-    # Code complexity limits
-    "too-many-locals",                # R0914 - Allow functions with many local variables
-    "too-many-arguments",             # R0913 - Allow functions with many parameters
-    "too-many-branches",              # R0912 - Allow functions with many conditional branches
-    "too-many-statements",            # R0915 - Allow functions with many statements
-    "too-many-positional-arguments",  # R0917 - Allow functions with many positional parameters
-
-    # Formatting and style preferences
-    "line-too-long",                  # C0301 - Disable line length checking (handled by black)
-    "use-dict-literal",               # R1735 - Allow dict() calls instead of requiring {} literals
-    "logging-fstring-interpolation",  # W1203 - Allow f-strings in logging (more readable than % formatting)
-
-    # Testing patterns
-    "redefined-outer-name",           # W0621 - Allow pytest fixture name reuse in different scopes
-    "protected-access",               # W0212 - Allow access to protected members in tests and internal APIs
-
-    # File handling
-    "unspecified-encoding",           # W1514 - Allow open() without explicit encoding for compatibility
-]
-
-# Ignore duplicate code violations in test files only
-[tool.pylint.similarities]
-ignore-paths = ["tests/"]
-
-[tool.coverage.run]
-branch = true
-
-[tool.coverage.report]
-fail_under = 10
-
-[tool.pyright]
-include = ["src"]
-exclude = ["**/node_modules", "**/__pycache__"]
-
-reportMissingImports = true
-reportMissingTypeStubs = false
-
-pythonVersion = "3.10"
-pythonPlatform = "Linux"
-
-executionEnvironments = [{ root = "src" }]
-
-[tool.pytest.ini_options]
-addopts = "--cov-report xml:coverage.xml --cov src --cov-fail-under 0 --cov-append -m 'not integration'"
-pythonpath = ["src"]
-testpaths = "tests"
-junit_family = "xunit2"
-markers = [
-    "integration: marks as integration test",
-    "notebooks: marks as notebook test",
-    "gpu: marks as gpu test",
-    "spark: marks tests which need Spark",
-    "slow: marks tests as slow",
-    "unit: fast offline tests",
-]
+Documentation = "https://isaac-cf-wong.github.io/nullpol/"
+Source = "https://github.com/isaac-cf-wong/nullpol"
+Tracker = "https://github.com/isaac-cf-wong/nullpol/issues"
+Home = "https://github.com/isaac-cf-wong/nullpol"
+"Release Notes" = "https://github.com/isaac-cf-wong/nullpol/releases"
 
 [project.scripts]
 nullpol_create_injection = "nullpol.cli.create_injection:main"
@@ -158,3 +79,98 @@ tgrflow = 'nullpol.integrations.asimov.tgrflow:Collector'
 
 [project.entry-points.'asimov.hooks.applicator']
 tgrflow = 'nullpol.integrations.asimov.tgrflow:Applicator'
+
+[tool.uv-dynamic-versioning]
+vcs = "git"      # default
+style = "semver" # or pep440, semver, etc.
+
+[tool.hatch.version]
+source = "uv-dynamic-versioning"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/nullpol"]
+
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.report]
+fail_under = 0
+
+[tool.pytest.ini_options]
+addopts = "--cov-report xml:coverage.xml --cov src --cov-append -m 'not integration' --cov-report=term-missing"
+pythonpath = ["src"]
+testpaths = "tests"
+junit_family = "xunit2"
+markers = [
+  "integration: marks as integration test",
+  "notebooks: marks as notebook test",
+  "gpu: marks as gpu test",
+  "spark: marks tests which need Spark",
+  "slow: marks tests as slow",
+  "unit: fast offline tests",
+]
+
+[tool.ruff]
+line-length = 120 # Matches Black's default
+target-version = "py312" # Align with CI (3.12–3.14) and requires-python (>=3.12)
+lint.extend-select = [
+  "E",
+  "F",
+  "W",   # pycodestyle errors and warnings
+  "I",   # isort rules
+  "UP",  # pyupgrade rules
+  "C90", # McCabe complexity
+  "N",   # PEP8 naming
+  "B",   # Bugbear (opinionated checks)
+  "A",   # Flake8-builtins
+  "C4",  # Flake8-comprehensions
+  "PT",  # Flake8-pytest
+  "RUF", # Ruff-specific rules
+  "PL",  # Add pylint rules for fuller coverage
+  "SIM", # Similarities
+  "T10", # Debugger statements
+  "DOC", # Docstring
+  "D",   # Doc style
+  "S",   # Security
+]
+lint.ignore = [
+  "E501",    # Line length (handled by formatter)
+  "C901",    # Disable overly strict complexity checks (optional, adjust as needed)
+  "N802",    # Scientific function names (e.g. tf_Nt, DoF)
+  "N803",    # Scientific argument names (e.g. Nf, Nt)
+  "N806",    # Scientific variable names (e.g. F_matrix, wavelet_Nt)
+  "PLR0912", # Too many branches in scientific algorithms
+  "PLR0913", # Too many arguments in scientific APIs
+  "PLR0915", # Too many statements in complex analysis code
+]
+fix = true # Enable autofix
+lint.unfixable = [] # List rules that should not be autofixed, if any
+
+[tool.ruff.format]
+quote-style = "double"       # Use double quotes for strings
+indent-style = "space"       # Use spaces for indentation
+docstring-code-format = true # Format code in docstrings
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+# Ignore specific rules in the tests directory
+"tests/*" = [
+  "S101",
+  "ARG001",
+  "PLC0415",
+  "PLR2004",
+  "PT017",
+  "PT011",
+  "PT018",
+  "RUF043",
+  "S110",
+]
+# S101: allow assert statements
+# ARG001: allow unused function arguments (common in fixtures)
+# PLC0415: allow import statements not at the top level
+# PLR2004: allow magic values in the unit tests
+"docs/source/conf.py" = ["A001"]
+"src/nullpol/analysis/result.py" = ["PLC0415", "S301"]
+"scripts/*" = ["SIM102", "PLC0415", "PLR2004"]

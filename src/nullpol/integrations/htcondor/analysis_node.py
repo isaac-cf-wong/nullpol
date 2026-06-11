@@ -1,3 +1,5 @@
+"""Analysis Node module."""
+
 from __future__ import annotations
 
 import os
@@ -35,6 +37,7 @@ class AnalysisNode(Node):
     def __init__(
         self, inputs, generation_node, detectors, sampler, parallel_idx, dag, polarization_modes, polarization_basis
     ):
+        """Initialize the instance."""
         super().__init__(inputs=inputs, retry=3)
         self.polarization_modes = polarization_modes
         self.polarization_basis = polarization_basis
@@ -64,19 +67,14 @@ class AnalysisNode(Node):
 
         if self.inputs.transfer_files or self.inputs.osg:
             data_dump_file = generation_node.data_dump_file
-            input_files_to_transfer = (
-                [
-                    str(data_dump_file),
-                    str(self.inputs.complete_ini_file),
-                ]
-                + touch_checkpoint_files(
-                    os.path.join(inputs.outdir, "result"),
-                    self.job_name,
-                    inputs.sampler,
-                    inputs.result_format,
-                )
-                + inputs.additional_transfer_paths
-            )
+            input_files_to_transfer = [
+                str(data_dump_file),
+                str(self.inputs.complete_ini_file),
+                *touch_checkpoint_files(
+                    os.path.join(inputs.outdir, "result"), self.job_name, inputs.sampler, inputs.result_format
+                ),
+                *inputs.additional_transfer_paths,
+            ]
             self.extra_lines.extend(
                 self._condor_file_transfer_lines(
                     input_files_to_transfer,
@@ -103,6 +101,7 @@ class AnalysisNode(Node):
 
     @property
     def polarization_modes(self):
+        """Polarization Modes."""
         return self._polarization_modes
 
     @polarization_modes.setter
@@ -111,6 +110,7 @@ class AnalysisNode(Node):
 
     @property
     def polarization_basis(self):
+        """Polarization Basis."""
         return self._polarization_basis
 
     @polarization_basis.setter
@@ -119,6 +119,7 @@ class AnalysisNode(Node):
 
     @property
     def executable(self):
+        """Executable."""
         if self.inputs.use_mpi:
             return self._get_executable_path("mpiexec")
         if self.inputs.analysis_executable:
@@ -127,18 +128,21 @@ class AnalysisNode(Node):
 
     @property
     def request_memory(self):
+        """Request Memory."""
         return self.inputs.request_memory
 
     @property
     def log_directory(self):
+        """Log Directory."""
         return self.inputs.data_analysis_log_directory
 
     @property
     def result_file(self):
+        """Result File."""
         return f"{self.inputs.result_directory}/{self.job_name}_result.{self.inputs.result_format}"
 
     @property
     def slurm_walltime(self):
-        """Default wall-time for base-name"""
+        """Default wall-time for base-name."""
         # Seven days
         return self.inputs.scheduler_analysis_time

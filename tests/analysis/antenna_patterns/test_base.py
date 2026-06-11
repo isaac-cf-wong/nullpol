@@ -217,18 +217,18 @@ def test_relative_amplification_factor_simple_case():
     expected_bp = 2.0 * np.exp(1j * 0.0)  # = 2.0 + 0j
     expected_bc = 0.5 * np.exp(1j * np.pi / 2)  # = 0 + 0.5j
 
-    assert np.isclose(
-        amplification_factors[0, 0], expected_bp
-    ), f"Expected bp factor {expected_bp}, got {amplification_factors[0, 0]}"
-    assert np.isclose(
-        amplification_factors[0, 1], expected_bc
-    ), f"Expected bc factor {expected_bc}, got {amplification_factors[0, 1]}"
+    assert np.isclose(amplification_factors[0, 0], expected_bp), (
+        f"Expected bp factor {expected_bp}, got {amplification_factors[0, 0]}"
+    )
+    assert np.isclose(amplification_factors[0, 1], expected_bc), (
+        f"Expected bc factor {expected_bc}, got {amplification_factors[0, 1]}"
+    )
 
     # Verify these are complex numbers with expected properties
     assert np.isreal(amplification_factors[0, 0]), "bp factor should be real (phase=0)"
-    assert np.iscomplex(amplification_factors[0, 1]) or np.isreal(
-        amplification_factors[0, 1]
-    ), "bc factor should be complex"
+    assert np.iscomplex(amplification_factors[0, 1]) or np.isreal(amplification_factors[0, 1]), (
+        "bc factor should be complex"
+    )
     assert np.abs(np.imag(amplification_factors[0, 1]) - 0.5) < 1e-10, "bc factor should have imaginary part 0.5"
 
 
@@ -308,24 +308,24 @@ def test_relative_amplification_factor_helper():
     polarization_basis = np.array([True, True, False, False, False, False])
     polarization_derived = np.array([False, False, True, True, True, True])
     parameters_map = relative_amplification_factor_map(polarization_basis, polarization_derived)
-    parameters = dict(
-        amplitude_bp=np.random.randn(),
-        phase_bp=np.random.randn(),
-        amplitude_bc=np.random.randn(),
-        phase_bc=np.random.randn(),
-        amplitude_lp=np.random.randn(),
-        phase_lp=np.random.randn(),
-        amplitude_lc=np.random.randn(),
-        phase_lc=np.random.randn(),
-        amplitude_xp=np.random.randn(),
-        phase_xp=np.random.randn(),
-        amplitude_xc=np.random.randn(),
-        phase_xc=np.random.randn(),
-        amplitude_yp=np.random.randn(),
-        phase_yp=np.random.randn(),
-        amplitude_yc=np.random.randn(),
-        phase_yc=np.random.randn(),
-    )
+    parameters = {
+        "amplitude_bp": np.random.randn(),
+        "phase_bp": np.random.randn(),
+        "amplitude_bc": np.random.randn(),
+        "phase_bc": np.random.randn(),
+        "amplitude_lp": np.random.randn(),
+        "phase_lp": np.random.randn(),
+        "amplitude_lc": np.random.randn(),
+        "phase_lc": np.random.randn(),
+        "amplitude_xp": np.random.randn(),
+        "phase_xp": np.random.randn(),
+        "amplitude_xc": np.random.randn(),
+        "phase_xc": np.random.randn(),
+        "amplitude_yp": np.random.randn(),
+        "phase_yp": np.random.randn(),
+        "amplitude_yc": np.random.randn(),
+        "phase_yc": np.random.randn(),
+    }
     output = relative_amplification_factor_helper(parameters_map, parameters)
     expected_output = np.array(
         [

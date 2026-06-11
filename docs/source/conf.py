@@ -1,3 +1,5 @@
+"""Conf module."""
+
 from __future__ import annotations
 
 import os
@@ -5,7 +7,7 @@ import sys
 
 import nullpol
 
-sys.path.insert(0, os.path.abspath('../../src/nullpol'))
+sys.path.insert(0, os.path.abspath("../../src/nullpol"))
 # Configuration file for the Sphinx documentation builder.
 #
 # For the full list of built-in configuration values, see the documentation:
@@ -14,9 +16,9 @@ sys.path.insert(0, os.path.abspath('../../src/nullpol'))
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'nullpol'
-copyright = '2025, Isaac C. F. Wong'
-author = 'Isaac C. F. Wong'
+project = "nullpol"
+copyright = "2025, Isaac C. F. Wong"
+author = "Isaac C. F. Wong"
 fullversion = nullpol.__version__
 version = nullpol.__version__
 release = fullversion
@@ -39,7 +41,7 @@ extensions = [
     "autoapi.extension",
 ]
 
-templates_path = ['_templates']
+templates_path = ["_templates"]
 exclude_patterns = ["build", ".DS_store", "requirements.txt"]
 
 pygments_style = "sphinx"
@@ -83,7 +85,7 @@ html_theme_options = {
 
 numpydoc_show_class_members = False
 
-html_static_path = ['_static']
+html_static_path = ["_static"]
 
 # Multiversion options
 # Whitelist pattern for tags (set to None to ignore all tags)

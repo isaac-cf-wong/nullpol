@@ -1,3 +1,5 @@
+"""Result module."""
+
 from __future__ import annotations
 
 import json
@@ -28,6 +30,7 @@ class PolarizationResult(Result):
     """
 
     def __init__(self, **kwargs):
+        """Initialize the instance."""
         super().__init__(**kwargs)
 
     def __get_from_nested_meta_data(self, *keys):
@@ -59,26 +62,26 @@ class PolarizationResult(Result):
 
     @property
     def sampling_frequency(self):
-        """Sampling frequency in Hertz"""
+        """Sampling frequency in Hertz."""
         return self.__get_from_nested_meta_data("likelihood", "sampling_frequency")
 
     @property
     def duration(self):
-        """Duration in seconds"""
+        """Duration in seconds."""
         return self.__get_from_nested_meta_data("likelihood", "duration")
 
     @property
     def start_time(self):
-        """Start time in seconds"""
+        """Start time in seconds."""
         return self.__get_from_nested_meta_data("likelihood", "start_time")
 
     @property
     def interferometers(self):
-        """List of interferometer names"""
+        """List of interferometer names."""
         return list(self.__get_from_nested_meta_data("likelihood", "interferometers"))
 
     def detector_injection_properties(self, detector):
-        """Returns a dictionary of the injection properties for each detector
+        """Returns a dictionary of the injection properties for each detector.
 
         The injection properties include the parameters injected, and
         information about the signal to noise ratio (SNR) given the noise
@@ -89,7 +92,7 @@ class PolarizationResult(Result):
         detector: str [H1, L1, V1]
             Detector name
 
-        Returns
+        Returns:
         =======
         injection_properties: dict
             A dictionary of the injection properties
@@ -118,7 +121,7 @@ class PolarizationResult(Result):
         cmap="cylon",
         load_pickle=False,
     ):
-        """Generate a fits file and sky map from a result
+        """Generate a fits file and sky map from a result.
 
         Code adapted from ligo.skymap.tool.ligo_skymap_from_samples and
         ligo.skymap.tool.plot_skymap. Note, the use of this additionally
@@ -201,10 +204,7 @@ class PolarizationResult(Result):
             safe_file_dump(skypost, default_obj_filename, "pickle")
 
         else:
-            if isinstance(load_pickle, str):
-                obj_filename = load_pickle
-            else:
-                obj_filename = default_obj_filename
+            obj_filename = load_pickle if isinstance(load_pickle, str) else default_obj_filename
             logger.info(f"Reading from pickle {obj_filename}")
             with open(obj_filename, "rb") as file:
                 skypost = pickle.load(file)
@@ -271,7 +271,7 @@ class PolarizationResult(Result):
             geojson_filename = os.path.join(os.path.dirname(plot.__file__), "ne_simplified_coastline.json")
             with open(geojson_filename) as geojson_file:
                 geoms = json.load(geojson_file)["geometries"]
-            verts = [coord for geom in geoms for coord in zip(*geom["coordinates"])]
+            verts = [coord for geom in geoms for coord in zip(*geom["coordinates"], strict=False)]
             plt.plot(*verts, color="0.5", linewidth=0.5, transform=ax.get_transform("world"))
 
         # Add a white outline to all text to make it stand out from the background.
@@ -288,7 +288,7 @@ class PolarizationResult(Result):
             if contour:
                 pp = np.round(contour).astype(int)
                 ii = np.round(np.searchsorted(np.sort(confidence_levels), contour) * deg2perpix).astype(int)
-                for i, p in zip(ii, pp):
+                for i, p in zip(ii, pp, strict=False):
                     text.append(f"{p:d}% area: {i:d} deg$^2$")
             ax.text(1, 1, "\n".join(text), transform=ax.transAxes, ha="right")
 

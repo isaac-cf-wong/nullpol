@@ -1,9 +1,11 @@
 # pylint: disable=duplicate-code  # Legitimate shared CLI argument patterns across scripts
+"""Create Injection module."""
+
 from __future__ import annotations
 
 import json
-from pathlib import Path
 from importlib.resources import files
+from pathlib import Path
 
 import numpy as np
 from bilby.gw.detector import InterferometerList, PowerSpectralDensity
@@ -19,6 +21,7 @@ from ..utils.json_utils import json_loads_with_none
 
 
 def main():
+    """Main."""
     default_config_file_path = str(files("nullpol.cli.templates") / "default_config_create_injection.ini")
     parser = ArgParser(default_config_files=[default_config_file_path])
     parser.add("-c", "--config", is_config_file=True, help="Path to custom config file.")
@@ -81,10 +84,7 @@ def main():
         frequency_domain_source_model = import_function(args.frequency_domain_source_model)
 
         # Load the waveform arguments
-        if args.waveform_arguments is not None:
-            waveform_arguments = json.loads(args.waveform_arguments)
-        else:
-            waveform_arguments = None
+        waveform_arguments = json.loads(args.waveform_arguments) if args.waveform_arguments is not None else None
 
         if args.parameter_conversion is not None:
             # Load the parameter conversion function
@@ -114,7 +114,7 @@ def main():
     if signal_parameters is not None and waveform_generator is not None:
         for i, signal_param in enumerate(signal_parameters):
             interferometers.inject_signal(parameters=signal_param, waveform_generator=waveform_generator)
-            logger.info(f"Signal {i+1}/{len(signal_parameters)} - Injected a signal with parameters: {signal_param}")
+            logger.info(f"Signal {i + 1}/{len(signal_parameters)} - Injected a signal with parameters: {signal_param}")
 
     # Load the signal files if they are not empty
     if args.signal_files is not None:

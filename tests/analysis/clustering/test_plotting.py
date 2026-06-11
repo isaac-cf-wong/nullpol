@@ -11,7 +11,7 @@ from unittest.mock import Mock, patch
 import numpy as np
 import pytest
 
-from nullpol.analysis.clustering.plotting import plot_spectrogram, plot_reverse_cumulative_distribution
+from nullpol.analysis.clustering.plotting import plot_reverse_cumulative_distribution, plot_spectrogram
 
 
 class TestPlotSpectrogram:
@@ -33,9 +33,7 @@ class TestPlotSpectrogram:
     @patch("nullpol.analysis.clustering.plotting.get_shape_of_wavelet_transform")
     @patch("nullpol.analysis.clustering.plotting.Spectrogram")
     @patch("nullpol.analysis.clustering.plotting.plt")
-    def test_basic_spectrogram_plot(
-        self, mock_plt, mock_spectrogram_class, mock_get_shape, simple_spectrogram_data
-    ):  # pylint: disable=unused-argument
+    def test_basic_spectrogram_plot(self, mock_plt, mock_spectrogram_class, mock_get_shape, simple_spectrogram_data):  # pylint: disable=unused-argument
         """Test basic spectrogram plotting functionality."""
         # Mock the wavelet transform shape
         mock_get_shape.return_value = (4, 8)  # 4 time bins, 8 freq bins
@@ -200,7 +198,11 @@ class TestPlotSpectrogram:
 
         # Verify Spectrogram was created with defaults
         mock_spectrogram_class.assert_called_once_with(
-            simple_spectrogram_data, t0=0, dt=4.0 / 6, df=8.0, name=None  # Default t0  # duration / Nt  # Default title
+            simple_spectrogram_data,
+            t0=0,
+            dt=4.0 / 6,
+            df=8.0,
+            name=None,  # Default t0  # duration / Nt  # Default title
         )
 
         # Verify no savefig call
@@ -209,9 +211,7 @@ class TestPlotSpectrogram:
     @patch("nullpol.analysis.clustering.plotting.get_shape_of_wavelet_transform")
     @patch("nullpol.analysis.clustering.plotting.Spectrogram")
     @patch("nullpol.analysis.clustering.plotting.plt")
-    def test_spectrogram_dt_calculation(
-        self, mock_plt, mock_spectrogram_class, mock_get_shape
-    ):  # pylint: disable=unused-argument
+    def test_spectrogram_dt_calculation(self, mock_plt, mock_spectrogram_class, mock_get_shape):  # pylint: disable=unused-argument
         """Test that dt (time resolution) is calculated correctly."""
         # Create specific test data
         test_data = np.ones((8, 4))  # 8 time bins, 4 freq bins
@@ -272,7 +272,11 @@ class TestPlotSpectrogram:
         )
 
         mock_spectrogram_class.assert_called_once_with(
-            test_data, t0=1.5, dt=6.0 / 3, df=12.0, name="Complete Test"  # duration / Nt = 2.0
+            test_data,
+            t0=1.5,
+            dt=6.0 / 3,
+            df=12.0,
+            name="Complete Test",  # duration / Nt = 2.0
         )
 
         mock_ax.set_ylim.assert_called_once_with(50.0, 500.0)

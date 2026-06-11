@@ -1,3 +1,5 @@
+"""Simulation package."""
+
 from __future__ import annotations
 
 from .test_injection import (

@@ -1,3 +1,5 @@
+"""Integrations package."""
+
 from __future__ import annotations
 
 # External integrations

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Auto-generate __init__.py files for nullpol package.
+"""Auto-generate __init__.py files for nullpol package.
 
 This script automatically generates __init__.py files for leaf packages (directories
 that contain only .py files and no subdirectories). It imports all public functions,
@@ -14,16 +13,16 @@ untouched and should be manually maintained.
 import ast
 import sys
 from pathlib import Path
-from typing import Dict, List, Set
 
 
 class PublicApiExtractor(ast.NodeVisitor):
     """Extract public API elements from a Python module."""
 
     def __init__(self):
-        self.public_names: Set[str] = set()
+        """Initialize the instance."""
+        self.public_names: set[str] = set()
         self.has_all: bool = False
-        self.all_items: List[str] = []
+        self.all_items: list[str] = []
         self.depth: int = 0  # Track nesting depth
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
@@ -85,10 +84,10 @@ class PublicApiExtractor(ast.NodeVisitor):
         self.generic_visit(node)
 
 
-def extract_public_api(file_path: Path) -> Set[str]:
+def extract_public_api(file_path: Path) -> set[str]:
     """Extract public API from a Python file."""
     try:
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:
             content = f.read()
 
         tree = ast.parse(content)
@@ -107,8 +106,7 @@ def extract_public_api(file_path: Path) -> Set[str]:
 
 
 def is_leaf_package(directory: Path) -> bool:
-    """
-    Check if a directory is a leaf package for auto-generation purposes.
+    """Check if a directory is a leaf package for auto-generation purposes.
 
     A leaf package is one where we want to auto-generate __init__.py files.
     This includes directories that:
@@ -153,7 +151,7 @@ def is_leaf_package(directory: Path) -> bool:
     return has_python_files and not has_code_subdirectories
 
 
-def should_auto_generate(directory: Path, excluded_dirs: Set[str], root_dir: Path) -> bool:
+def should_auto_generate(directory: Path, excluded_dirs: set[str], root_dir: Path) -> bool:
     """Check if we should auto-generate __init__.py for this directory."""
     # Get relative path from the scan root directory
     try:
@@ -177,7 +175,7 @@ def generate_init_content(directory: Path) -> str:
         return "from __future__ import annotations\n\n"
 
     # Extract public API from all Python files
-    all_exports: Dict[str, Set[str]] = {}
+    all_exports: dict[str, set[str]] = {}
     for py_file in python_files:
         module_name = py_file.stem
         public_api = extract_public_api(py_file)
@@ -197,7 +195,7 @@ def generate_init_content(directory: Path) -> str:
             sorted_exports = sorted(exports)
 
             # Format imports based on length - use black-compatible formatting
-            imports_line = f'from .{module_name} import {", ".join(sorted_exports)}'
+            imports_line = f"from .{module_name} import {', '.join(sorted_exports)}"
 
             # If the line is too long (>88 chars, black's default), use multi-line format
             if len(imports_line) > 88:
@@ -235,7 +233,7 @@ def update_init_file(directory: Path, content: str) -> bool:
     existing_content = ""
     if init_file.exists():
         try:
-            with open(init_file, "r", encoding="utf-8") as f:
+            with open(init_file, encoding="utf-8") as f:
                 existing_content = f.read()
         except UnicodeDecodeError:
             pass
@@ -248,7 +246,7 @@ def update_init_file(directory: Path, content: str) -> bool:
     return False
 
 
-def find_python_packages(root_dir: Path) -> List[Path]:
+def find_python_packages(root_dir: Path) -> list[Path]:
     """Find all Python packages (directories with __init__.py) under root_dir."""
     packages = []
 
@@ -259,9 +257,10 @@ def find_python_packages(root_dir: Path) -> List[Path]:
     return packages
 
 
-def auto_generate_init_files(root_dir: Path, excluded_dirs: Set[str] = None, dry_run: bool = False) -> Dict[str, str]:
-    """
-    Auto-generate __init__.py files for leaf packages.
+def auto_generate_init_files(
+    root_dir: Path, excluded_dirs: set[str] | None = None, dry_run: bool = False
+) -> dict[str, str]:
+    """Auto-generate __init__.py files for leaf packages.
 
     Args:
         root_dir: Root directory to scan
@@ -300,7 +299,7 @@ def auto_generate_init_files(root_dir: Path, excluded_dirs: Set[str] = None, dry
                 existing_content = ""
                 if init_file.exists():
                     try:
-                        with open(init_file, "r", encoding="utf-8") as f:
+                        with open(init_file, encoding="utf-8") as f:
                             existing_content = f.read()
                     except UnicodeDecodeError:
                         pass
@@ -309,11 +308,10 @@ def auto_generate_init_files(root_dir: Path, excluded_dirs: Set[str] = None, dry
                     results[rel_path] = f"Would update with {len(content)} characters"
                 else:
                     results[rel_path] = "No change needed"
+            elif update_init_file(package_dir, content):
+                results[rel_path] = "Updated"
             else:
-                if update_init_file(package_dir, content):
-                    results[rel_path] = "Updated"
-                else:
-                    results[rel_path] = "No change needed"
+                results[rel_path] = "No change needed"
         else:
             results[rel_path] = "Excluded (manual maintenance)"
 
@@ -369,9 +367,8 @@ def main():
     if args.dry_run:
         if not args.quiet or updated_count > 0:
             print(f"\nDry run complete. Would update {updated_count} files.")
-    else:
-        if not args.quiet or updated_count > 0:
-            print(f"Updated {updated_count} __init__.py files.")
+    elif not args.quiet or updated_count > 0:
+        print(f"Updated {updated_count} __init__.py files.")
 
     # Exit with non-zero code if changes were made (useful for pre-commit)
     if updated_count > 0 and not args.dry_run:

@@ -1,3 +1,5 @@
+"""Parser module."""
+
 from __future__ import annotations
 
 import os
@@ -23,6 +25,7 @@ def write_to_file(
     exclude_default=False,
     comment=None,
 ):
+    """Write To File."""
     # This function needs to access argparse internals to write config files
     # pylint: disable=protected-access
     if os.path.isfile(filename) and not overwrite:
@@ -256,6 +259,7 @@ def create_nullpol_parser(top_level: bool = True) -> BilbyArgParser:
 
 
 def main():
+    """Main."""
     filename = sys.argv[1]
     if filename in ["-h", "--help"]:
         logger.info("Write a default config.ini file to the specified filename.")

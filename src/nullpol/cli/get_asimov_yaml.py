@@ -1,16 +1,18 @@
+"""Get Asimov Yaml module."""
+
 from __future__ import annotations
 
 import argparse
 import os
 import shutil
-from pathlib import Path
-
 from importlib.resources import files
+from pathlib import Path
 
 from ..utils import NullpolError, logger
 
 
 def main():
+    """Main."""
     # Initialize the parser
     parser = argparse.ArgumentParser(
         description="Copy asimov YAML files to the current directory or a specified location."

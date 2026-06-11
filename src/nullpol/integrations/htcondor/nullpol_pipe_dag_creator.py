@@ -1,3 +1,5 @@
+"""Nullpol Pipe Dag Creator module."""
+
 from __future__ import annotations
 
 import copy
@@ -80,7 +82,7 @@ def generate_dag(inputs):
     # Iterate over all generation nodes and store them in a list
     generation_node_list = []
     for idx, trigger_time in enumerate(trigger_times):
-        kwargs = dict(trigger_time=trigger_time, idx=idx, dag=dag)
+        kwargs = {"trigger_time": trigger_time, "idx": idx, "dag": dag}
         if idx > 0:
             # Make all generation nodes depend on the 0th generation node
             # Ensures any cached files (e.g. the distance-marginalization

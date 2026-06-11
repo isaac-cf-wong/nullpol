@@ -1,4 +1,6 @@
 # pylint: disable=duplicate-code  # Legitimate shared calibration configuration patterns
+"""Data Analysis module."""
+
 from __future__ import annotations
 
 import signal
@@ -22,8 +24,7 @@ from bilby_pipe.main import parse_args
 from bilby_pipe.utils import CHECKPOINT_EXIT_CODE
 
 from .. import log_version_information
-from ..analysis.antenna_patterns import encode_polarization
-from ..analysis.antenna_patterns import relative_amplification_factor_map
+from ..analysis.antenna_patterns import encode_polarization, relative_amplification_factor_map
 from ..analysis.result import PolarizationResult
 from ..utils import NullpolError, logger
 from .input import Input
@@ -35,6 +36,7 @@ bilby_pipe.utils.logger = logger
 
 
 def sighandler(signum, frame):  # pylint: disable=unused-argument
+    """Sighandler."""
     logger.info("Performing periodic eviction")
     sys.exit(CHECKPOINT_EXIT_CODE)
 
@@ -55,7 +57,7 @@ class DataAnalysisInput(BInput, Input):
         Input.__init__(self, args, unknown_args)
 
         # Generic initialization
-        self.meta_data = dict()
+        self.meta_data = {}
         self.result = None
 
         self.injection_parameters = None
@@ -112,6 +114,7 @@ class DataAnalysisInput(BInput, Input):
 
     @property
     def polarization_modes(self):
+        """Polarization Modes."""
         return getattr(self, "_polarization_modes", None)
 
     @polarization_modes.setter
@@ -122,12 +125,13 @@ class DataAnalysisInput(BInput, Input):
             if len(modes) == 1:
                 self._polarization_modes = modes[0]
             else:
-                raise NullpolError("Unsupported polarization-modes input: " f"{modes}")
+                raise NullpolError(f"Unsupported polarization-modes input: {modes}")
         else:
-            raise NullpolError("Unsupported polarization-modes input: " f"{modes}")
+            raise NullpolError(f"Unsupported polarization-modes input: {modes}")
 
     @property
     def polarization_basis(self):
+        """Polarization Basis."""
         return getattr(self, "_polarization_basis", None)
 
     @polarization_basis.setter
@@ -138,18 +142,16 @@ class DataAnalysisInput(BInput, Input):
             if len(modes) == 1:
                 self._polarization_basis = modes[0]
             else:
-                raise NullpolError("Unsupported polarization-basis input: " f"{modes}")
+                raise NullpolError(f"Unsupported polarization-basis input: {modes}")
         else:
-            raise NullpolError("Unsupported polarization-basis input: " f"{modes}")
+            raise NullpolError(f"Unsupported polarization-basis input: {modes}")
 
     def _validate_polarization_model_setting(self):
         supported_modes = ["b", "c", "b", "l", "x", "y"]
         # Check whether the modes are supported.
         for mode in self.polarization_modes:
             if mode not in supported_modes:
-                raise NullpolError(
-                    f"Unsupported mode `{mode}` in " "polarization-modes = " f"{self.polarization_modes}"
-                )
+                raise NullpolError(f"Unsupported mode `{mode}` in polarization-modes = {self.polarization_modes}")
         for mode in self.polarization_basis:
             if mode not in supported_modes:
                 raise NullpolError(f"Unsupported mode `{mode}` in polarization-basis = {self.polarization_basis}")
@@ -160,11 +162,11 @@ class DataAnalysisInput(BInput, Input):
 
     @property
     def result_class(self):
-        """The nullpol result class to store results in"""
+        """The nullpol result class to store results in."""
         return PolarizationResult
 
     def get_likelihood_and_priors(self) -> tuple:
-        """Read in the likelihood and prior from the data dump
+        """Read in the likelihood and prior from the data dump.
 
         This reads in the data dump values and reconstructs the likelihood and
         priors. Note, care must be taken to use the "search_priors" which differ
@@ -173,7 +175,6 @@ class DataAnalysisInput(BInput, Input):
         Returns:
             tuple: The bilby likelihood and priors
         """
-
         priors = self.data_dump.priors_class(self.data_dump.priors_dict)
         self.priors = priors.copy()
         self._add_default_relative_polarization_prior()
@@ -193,9 +194,9 @@ class DataAnalysisInput(BInput, Input):
         ).flatten()
         prior_remove_list = []
         for prior in self.priors:
-            if prior[:10] == "amplitude_" and prior[10:] not in relative_polarization_parameters:
-                prior_remove_list.append(prior)
-            elif prior[:6] == "phase_" and prior[6:] not in relative_polarization_parameters:
+            if (prior[:10] == "amplitude_" and prior[10:] not in relative_polarization_parameters) or (
+                prior[:6] == "phase_" and prior[6:] not in relative_polarization_parameters
+            ):
                 prior_remove_list.append(prior)
 
         # Remove the redundant parameters
@@ -225,6 +226,7 @@ class DataAnalysisInput(BInput, Input):
         self.priors.update(missing_priors)
 
     def run_sampler(self):
+        """Run Sampler."""
         if self.scheduler.lower() == "condor" and not self.run_local:
             signal.signal(signal.SIGALRM, handler=sighandler)
             signal.alarm(self.periodic_restart_time)
@@ -251,12 +253,12 @@ class DataAnalysisInput(BInput, Input):
 
 
 def create_analysis_parser():
-    """Data analysis parser creation"""
+    """Data analysis parser creation."""
     return create_nullpol_parser(top_level=False)
 
 
 def main():
-    """Data analysis main logic"""
+    """Data analysis main logic."""
     args, unknown_args = parse_args(
         sys.argv[1:],
         create_analysis_parser(),

@@ -9,12 +9,12 @@ from __future__ import annotations
 import numpy as np
 
 from nullpol.analysis.antenna_patterns import (
-    encode_polarization,
-    get_long_names,
-    POLARIZATION_ENCODING,
     POLARIZATION_DECODING,
+    POLARIZATION_ENCODING,
     POLARIZATION_LONG_NAMES,
     POLARIZATION_SHORT_NAMES,
+    encode_polarization,
+    get_long_names,
 )
 
 
@@ -22,7 +22,7 @@ def test_polarization_encoding_constants():
     """Test that polarization encoding constants are properly defined."""
     # Test encoding dictionary
     expected_encoding = {"p": 0, "c": 1, "b": 2, "l": 3, "x": 4, "y": 5}
-    assert POLARIZATION_ENCODING == expected_encoding
+    assert expected_encoding == POLARIZATION_ENCODING
 
     # Test decoding array
     expected_decoding = ["p", "c", "b", "l", "x", "y"]
@@ -37,7 +37,7 @@ def test_polarization_encoding_constants():
         "x": "vector_x",
         "y": "vector_y",
     }
-    assert POLARIZATION_LONG_NAMES == expected_long_names
+    assert expected_long_names == POLARIZATION_LONG_NAMES
 
     # Test short names (reverse mapping)
     expected_short_names = {
@@ -48,7 +48,7 @@ def test_polarization_encoding_constants():
         "vector_x": "x",
         "vector_y": "y",
     }
-    assert POLARIZATION_SHORT_NAMES == expected_short_names
+    assert expected_short_names == POLARIZATION_SHORT_NAMES
 
 
 def test_encode_polarization_specific_examples():
@@ -84,9 +84,9 @@ def test_encode_polarization_specific_examples():
 
     assert np.array_equal(modes_arr2, expected_modes2), f"Modes2: expected {expected_modes2}, got {modes_arr2}"
     assert np.array_equal(basis_arr2, expected_basis2), f"Basis2: expected {expected_basis2}, got {basis_arr2}"
-    assert np.array_equal(
-        derived_arr2, expected_derived2
-    ), f"Derived2: expected {expected_derived2}, got {derived_arr2}"
+    assert np.array_equal(derived_arr2, expected_derived2), (
+        f"Derived2: expected {expected_derived2}, got {derived_arr2}"
+    )
 
     # Example 3: All modes active, plus+cross as basis
     polarization_modes = ["p", "c", "b", "l", "x", "y"]
@@ -100,9 +100,9 @@ def test_encode_polarization_specific_examples():
 
     assert np.array_equal(modes_arr3, expected_modes3), f"Modes3: expected {expected_modes3}, got {modes_arr3}"
     assert np.array_equal(basis_arr3, expected_basis3), f"Basis3: expected {expected_basis3}, got {basis_arr3}"
-    assert np.array_equal(
-        derived_arr3, expected_derived3
-    ), f"Derived3: expected {expected_derived3}, got {derived_arr3}"
+    assert np.array_equal(derived_arr3, expected_derived3), (
+        f"Derived3: expected {expected_derived3}, got {derived_arr3}"
+    )
 
 
 def test_get_long_names_comprehensive():
@@ -168,9 +168,9 @@ def test_encoding_constants_values():
 
     for short, expected_long in expected_long_mappings:
         assert POLARIZATION_LONG_NAMES[short] == expected_long, f"Short name '{short}' should map to '{expected_long}'"
-        assert (
-            POLARIZATION_SHORT_NAMES[expected_long] == short
-        ), f"Long name '{expected_long}' should map back to '{short}'"
+        assert POLARIZATION_SHORT_NAMES[expected_long] == short, (
+            f"Long name '{expected_long}' should map back to '{short}'"
+        )
 
 
 def test_encoding_edge_cases():

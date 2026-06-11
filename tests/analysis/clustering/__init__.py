@@ -1,3 +1,5 @@
+"""Clustering package."""
+
 from __future__ import annotations
 
 from .test_algorithm import TestClusteringAlgorithm

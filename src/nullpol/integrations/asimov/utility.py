@@ -1,3 +1,5 @@
+"""Utility module."""
+
 from __future__ import annotations
 
 import configparser
@@ -7,15 +9,14 @@ import bilby_pipe
 
 
 def read_bilby_ini_file(file: str) -> dict:
-    """
-    Read a bilby ini file and return the contents as a dictionary
+    """Read a bilby ini file and return the contents as a dictionary.
 
     Parameters
     ==========
     file : str
         The path to the bilby ini file
 
-    Returns
+    Returns:
     =======
     dict
         The contents of the ini file as a dictionary
@@ -41,15 +42,14 @@ def _convert_string_to_dict(string):
 
 
 def fill_in_pol_specific_metadata(analysis, corresponding_analysis):  # pylint: disable=unused-argument
-    """
-    For pol analysis, fill in fields in metadata other than result list.
+    """For pol analysis, fill in fields in metadata other than result list.
 
     Parameters
     ==========
     analysis: Asimov production for given event
         corresponding_analysis - equivalent subanalysis as stored in cbcflow
 
-    Returns
+    Returns:
     =======
     analysis_output: dict
         Dictionary used to update cbcflow with new information.
@@ -62,15 +62,14 @@ def fill_in_pol_specific_metadata(analysis, corresponding_analysis):  # pylint: 
 
 def bilby_config_to_asimov(config_name):
     # pylint: disable=too-many-nested-blocks
-    """
-    Read a bilby ini file and return content in asimov ledger compatible form.
+    """Read a bilby ini file and return content in asimov ledger compatible form.
 
     Parameters
     ==========
     config_name : str
         The path to the bilby ini file
 
-    Returns
+    Returns:
     =======
     dict
         The contents of the ini file as a dictionary
@@ -91,12 +90,11 @@ def bilby_config_to_asimov(config_name):
     for freq in ["minimum-frequency", "maximum-frequency"]:
         freq_value = _convert_string_to_dict(config[freq])
         if isinstance(freq_value, dict):
-            if freq == "minimum-frequency":
-                if "waveform" in freq_value:
-                    waveform_freq = freq_value.pop("waveform")
+            if freq == "minimum-frequency" and "waveform" in freq_value:
+                waveform_freq = freq_value.pop("waveform")
             quality[freq.replace("-", " ")] = freq_value
         else:
-            quality[freq.replace("-", " ")] = {ifo: freq_value for ifo in ifos}
+            quality[freq.replace("-", " ")] = dict.fromkeys(ifos, freq_value)
     output_dict["quality"] = quality
 
     # fill in data
@@ -181,9 +179,8 @@ def bilby_config_to_asimov(config_name):
                 value = config[name_ini]
             else:
                 value = _convert_string_to_dict(config[name_ini])
-            if value is not None:
-                if name_ini != "mode-array" or value[0] is not None:
-                    waveform[name_asimov] = value
+            if value is not None and (name_ini != "mode-array" or value[0] is not None):
+                waveform[name_asimov] = value
     for name_asimov in [
         "pn amplitude order",
         "pn phase order",
@@ -275,6 +272,7 @@ def bilby_config_to_asimov(config_name):
 
 
 def deep_update(mapping, *updating_mappings):
+    """Deep Update."""
     # updates dict recursively
     updated_mapping = mapping.copy()
     for updating_mapping in updating_mappings:

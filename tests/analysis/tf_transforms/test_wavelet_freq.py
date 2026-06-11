@@ -13,9 +13,9 @@ import numpy as np
 from nullpol.analysis.tf_transforms.wavelet_freq import (
     _phitilde_vec,
     _phitilde_vec_norm,
-    _tukey,
     _transform_wavelet_freq_helper,
     _transform_wavelet_freq_quadrature_helper,
+    _tukey,
 )
 
 
@@ -372,12 +372,12 @@ class TestWaveletFreqHelpers:
         output_energy_quad = np.sum(result_quad**2) * time_domain_length / (Nt * Nf)
 
         # Energy should be approximately conserved (within numerical precision and wavelet properties)
-        assert np.isclose(
-            input_energy, output_energy, rtol=0.1
-        ), f"Energy not conserved: {input_energy} vs {output_energy}"
-        assert np.isclose(
-            input_energy, output_energy_quad, rtol=0.1
-        ), f"Quadrature energy not conserved: {input_energy} vs {output_energy_quad}"
+        assert np.isclose(input_energy, output_energy, rtol=0.1), (
+            f"Energy not conserved: {input_energy} vs {output_energy}"
+        )
+        assert np.isclose(input_energy, output_energy_quad, rtol=0.1), (
+            f"Quadrature energy not conserved: {input_energy} vs {output_energy_quad}"
+        )
 
     def test_complex_signal_processing(self):
         """Test wavelet frequency helpers with complex signals."""
