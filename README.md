@@ -1,173 +1,155 @@
 # nullpol
 
-[![PyPI version](https://badge.fury.io/py/nullpol.svg)](https://pypi.org/project/nullpol/)
-[![License: GPL-3.0-or-later](https://img.shields.io/badge/License-GPL--3.0--or--later-blue.svg)](LICENSE)
 [![CI](https://github.com/isaac-cf-wong/nullpol/actions/workflows/ci.yml/badge.svg)](https://github.com/isaac-cf-wong/nullpol/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/isaac-cf-wong/nullpol/branch/main/graph/badge.svg)](https://codecov.io/gh/isaac-cf-wong/nullpol)
-[![Python Version](https://img.shields.io/pypi/pyversions/nullpol)](https://pypi.org/project/nullpol/)
-[![Security: bandit](https://img.shields.io/badge/security-bandit-yellow.svg)](https://github.com/PyCQA/bandit)
-[![Documentation](https://img.shields.io/badge/documentation-online-brightgreen)](https://isaac-cf-wong.github.io/nullpol/)
-[![DOI](https://zenodo.org/badge/ID.svg)](https://doi.org/DOI)
+[![Documentation Status](https://github.com/isaac-cf-wong/nullpol/actions/workflows/documentation.yml/badge.svg)](https://isaac-cf-wong.github.io/nullpol/)
+[![codecov](https://codecov.io/gh/isaac-cf-wong/nullpol/graph/badge.svg?token=8QEBHUQXH8)](https://codecov.io/gh/isaac-cf-wong/nullpol)
+[![PyPI Version](https://img.shields.io/pypi/v/nullpol)](https://pypi.org/project/nullpol/)
+[![Python Versions](https://img.shields.io/pypi/pyversions/nullpol)](https://pypi.org/project/nullpol/)
+[![License: GPL-3.0-or-later](https://img.shields.io/badge/License-GPL--3.0--or--later-blue.svg)](LICENSE)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![SPEC 0 — Minimum Supported Dependencies](https://img.shields.io/badge/SPEC-0-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0000/)
 
-**A package to perform model-independent polarization test of gravitational-wave
-signals.**
+A Python package for model-independent polarization tests of gravitational-wave
+(GW) signals. Built on [bilby](https://lscsoft.docs.ligo.org/bilby/) and
+[bilby_pipe](https://lscsoft.docs.ligo.org/bilby_pipe/master/index.html),
+nullpol automates reproducible parameter-estimation workflows for testing
+alternative GW polarizations.
 
-`nullpol` is a Python package designed to facilitate model-agnostic tests of
-gravitational-wave polarizations. Built upon the robust parameter estimation
-capabilities of the [bilby](https://git.ligo.org/lscsoft/bilby) framework,
-nullpol seamlessly integrates with
-[bilby_pipe](https://git.ligo.org/lscsoft/bilby_pipe) to automate the workflow,
-enabling efficient and reproducible analyses.
+## Features
+
+- **Model-agnostic polarization tests**: Framework for scalar-tensor and related
+  polarization hypotheses
+- **bilby integration**: Extends bilby and bilby_pipe for likelihood-based
+  inference
+- **Injection workflows**: Tools for generating and studying simulated signals
+- **Time-frequency filtering**: Sample-based filter construction for analysis
+- **HTCondor support**: DAG generation for batch submission on compute clusters
+- **Asimov integration**: Optional pipeline hooks for LIGO workflow automation
+- **CLI**: Command-line tools for injections, filtering, and end-to-end
+  pipelines
 
 ## Installation
 
-### From PyPI (recommended)
+We recommend using `uv` to manage virtual environments for installing nullpol.
+
+If you don't have `uv` installed, you can install it with pip. See the project
+pages for more details:
+
+- Install via pip: `pip install --upgrade pip && pip install uv`
+- Project pages: [uv on PyPI](https://pypi.org/project/uv/) |
+  [uv on GitHub](https://github.com/astral-sh/uv)
+- Full documentation and usage guide: [uv docs](https://docs.astral.sh/uv/)
+
+**Note:** The package is built and tested against Python 3.12–3.14. When
+creating a virtual environment with `uv`, specify the Python version to ensure
+compatibility: `uv venv --python 3.12`.
+
+### From PyPI
 
 ```bash
-pip install nullpol
+# Create a virtual environment (recommended with uv)
+uv venv --python 3.12
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+uv pip install nullpol
 ```
 
-### From source
+Optional [Asimov](https://asimov.docs.ligo.org/) integration:
+
+```bash
+uv pip install nullpol[asimov]
+```
+
+### From Source
 
 ```bash
 git clone https://github.com/isaac-cf-wong/nullpol.git
 cd nullpol
-pip install .
+# Create a virtual environment (recommended with uv)
+uv venv --python 3.12
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+uv sync
 ```
 
-### Development installation
+For development, install all dependency groups:
 
 ```bash
-git clone https://github.com/isaac-cf-wong/nullpol.git
-cd nullpol
-pip install -e .[test]
+uv sync --all-groups
 ```
-
-## Requirements
-
-- Python 3.10 or higher
-- Key dependencies: bilby, bilby_pipe, gwpy, numpy, scipy, matplotlib
-- Full list available in `pyproject.toml`
 
 ## Quick Start
 
-### Command Line Interface
+### Command Line
 
-The package provides several command-line tools:
+Write an ini configuration file and run the main pipeline:
 
 ```bash
-# Create injection files
+# Generate a default configuration template
+nullpol_pipe_write_default_ini --outdir ./config
+
+# Build (and optionally submit) the analysis DAG
+nullpol_pipe config.ini
+nullpol_pipe config.ini --submit
+```
+
+Other command-line tools:
+
+```bash
 nullpol_create_injection --help
-
-# Create time-frequency filters
 nullpol_create_time_frequency_filter_from_sample --help
-
-# Main pipeline interface
-nullpol_pipe --help
-
-# Data analysis pipeline
 nullpol_pipe_analysis --help
-
-# Data generation pipeline
 nullpol_pipe_generation --help
-
-# Generate default configuration
-nullpol_pipe_write_default_ini --help
-
-# Asimov integration
 nullpol_get_asimov_yaml --help
 ```
 
-### Python API
+See the `examples/` directory for scalar-tensor injection studies and template
+configurations.
 
-```python
-import nullpol
+## Configuration
 
-# Example usage will be added based on the API
-```
+nullpol uses INI configuration files in the bilby_pipe style. A typical workflow
+starts with `nullpol_pipe_write_default_ini`, then edits the generated template
+before passing it to `nullpol_pipe`.
+
+Key workflow stages:
+
+| Stage         | Tool                       | Purpose                                           |
+| ------------- | -------------------------- | ------------------------------------------------- |
+| Injection     | `nullpol_create_injection` | Generate simulated signals for polarization tests |
+| Generation    | `nullpol_pipe_generation`  | Produce strain data for analysis                  |
+| Analysis      | `nullpol_pipe_analysis`    | Run parameter estimation on generated data        |
+| Orchestration | `nullpol_pipe`             | Build and submit the full HTCondor DAG            |
+
+See the [documentation](https://isaac-cf-wong.github.io/nullpol/) for injection
+setups, priors, and polarization-specific options.
 
 ## Documentation
 
-- **Documentation**:
-  [https://isaac-cf-wong.github.io/nullpol/](https://isaac-cf-wong.github.io/nullpol/)
-- **Source Code**:
-  [https://github.com/isaac-cf-wong/nullpol](https://github.com/isaac-cf-wong/nullpol)
-- **Issue Tracker**:
-  [https://github.com/isaac-cf-wong/nullpol/issues](https://github.com/isaac-cf-wong/nullpol/issues)
-
-## Examples
-
-The `examples/` directory contains various usage examples:
-
-- **Injection studies**: Scalar-tensor polarization tests
-- **Time-frequency filtering**: Sample analysis workflows
-- **Configuration files**: Template setups for different scenarios
-
-## Optional Dependencies
-
-Install additional features:
-
-```bash
-# For Asimov integration
-pip install nullpol[asimov]
-
-# For Spark support
-pip install nullpol[spark]
-
-# For development and testing
-pip install nullpol[test]
-```
+Full documentation is available at
+[https://isaac-cf-wong.github.io/nullpol/](https://isaac-cf-wong.github.io/nullpol/).
 
 ## Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md)
-and [Code of Conduct](CODE_OF_CONDUCT.md).
-
-### Development Setup
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) and
+[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
 1. Fork the repository
-2. Clone your fork
-3. Install development dependencies: `pip install -e .[test]`
-4. Install pre-commit hooks: `pre-commit install`
-5. Make your changes
-6. Run tests: `pytest`
-7. Submit a pull request
-
-### Code Quality
-
-We use:
-
-- **Black** for code formatting (line length: 120)
-- **Ruff** for linting
-- **pytest** for testing
-- **pre-commit** for automated checks
+2. Create a feature branch
+3. Make your changes and add tests
+4. Run `uv run pytest`
+5. Submit a pull request
 
 ## Testing
 
 Run the test suite:
 
 ```bash
-# Run all tests
-pytest
-
-# Run with coverage
-pytest --cov=src --cov-report=html
-
-# Run specific test categories
-pytest -m "not integration"  # Skip integration tests
-pytest -m "unit"             # Run only unit tests
+uv run pytest
 ```
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
-for details.
-
-## Authors
-
-- **Isaac C.F. Wong** - <chunfung.wong@kuleuven.be>
-- **Thomas Ng** - <thomas.ng@nikhef.nl>
-- **Balázs Cirok**
+This project is licensed under **GPL-3.0-or-later**. See the [LICENSE](LICENSE)
+file for the full license text.
 
 ## Citation
 
@@ -182,15 +164,8 @@ If you use nullpol in your research, please cite:
 }
 ```
 
-## Acknowledgments
+## Support
 
-- Built on the [bilby](https://git.ligo.org/lscsoft/bilby) framework
-- Integrates with [bilby_pipe](https://git.ligo.org/lscsoft/bilby_pipe) for
-  workflow automation
-- Part of the LIGO Scientific Collaboration software ecosystem
-
----
-
-For more information, visit our
-[documentation](https://isaac-cf-wong.github.io/nullpol/) or open an
-[issue](https://github.com/isaac-cf-wong/nullpol/issues).
+For questions or issues, please open an issue on
+[GitHub](https://github.com/isaac-cf-wong/nullpol/issues) or contact the
+maintainers.

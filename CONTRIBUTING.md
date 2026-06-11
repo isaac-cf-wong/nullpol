@@ -1,111 +1,170 @@
 # Contributing to nullpol
 
-Thank you for considering contributing to nullpol! We welcome contributions from
-the community and are excited to work with you. To ensure a smooth contribution
-process, please follow the guidelines below.
+🎉 Thank you for your interest in contributing to nullpol! 🌌📊 Your ideas,
+fixes, and improvements are welcome and appreciated as we work to enhance this
+package for generating simulated gravitational-wave (GW) data.
+
+Whether you’re fixing a typo, reporting a bug, suggesting a feature, or
+submitting a merge request—this guide will help you get started.
 
 ## How to Contribute
 
-### 1. Getting Started
+<!-- prettier-ignore-start -->
 
-#### 1. Fork the Repository:
+1. Open an Issue
 
-- Click the "Fork" button at the top right of this page to create a copy of this
-  repository under your Git account.
+    - isaac-cf-wong/nullpol/issues/new) and describe your idea clearly,
+    including its relevance to generating simulated GW data.
+    - Check for existing issues before opening a new one.
 
-#### 2. Clone Your Fork:
+2. Fork and Clone the Repository
 
-- Clone the forked repository to your local machine:
+    ```shell
+    git clone <GIT URL of your forked repository>
+    cd nullpol
+    ```
 
-```bash
-git clone git@git.ligo.org:bayesian-null-stream/nullpol.git
+3. Set Up Your Environment
+
+    We recommend using `uv` to manage virtual environments for installing nullpol.
+
+    If you don't have `uv` installed, you can install it with pip. See the project pages for more details:
+
+    - Install via pip: `pip install --upgrade pip && pip install uv`
+    - Project pages: [uv on PyPI](https://pypi.org/project/uv/) | [uv on GitHub](https://github.com/astral-sh/uv)
+    - Full documentation and usage guide: [uv docs](https://docs.astral.sh/uv/)
+
+    ```shell
+    uv venv
+    source .venv/bin/activate # on Windows: .venv\Scripts\activate
+    uv sync --group dev
+    ```
+
+4. Set Up Prek Hooks
+
+    We use **prek** to ensure code quality and consistency.
+    After installing Python dependencies, install the Git hooks:
+
+    ```shell
+    uv run prek install
+    ```
+
+    This ensures automatic checks for code formatting, linting, and hygiene on every commit.
+
+5. Create a New Branch
+
+    Give it a meaningful name like fix-gw-signal-generation or feature-add-noise-model.
+
+6. Make Changes
+
+    - Write clear, concise, and well-documented code, ensuring it aligns with the goal of the package.
+    - **Follow PEP 8 style conventions strictly**—linting rules are enforced via prek and in CI/CD.
+    - **Keep changes atomic and focused**: one type of change per commit (e.g., do not mix refactoring with feature addition).
+
+7. Run Tests
+
+    Ensure that all tests pass before opening a merge request:
+
+    ```shell
+    uv run pytest
+    ```
+
+8. Open a Pull Request
+
+    Clearly describe the motivation and scope of your change, especially how it impacts GW data simulation.
+    Link it to the relevant issue if applicable. Ensure the title of the pull request follow the guidelines in
+    "Commit Message Guidelines" below.
+
+<!-- prettier-ignore-end -->
+
+## Commit Message Guidelines
+
+**Why this matters:** Our changelog is automatically generated from commit
+messages using git-cliff. Commit messages must follow the Conventional Commits
+format and adhere to strict rules. Since we use squash commits, the pull request
+title will automatically become the commit message on the main branch.
+
+### Rules
+
+<!-- prettier-ignore-start -->
+
+1. **One type of change per pull request**
+
+    - Do not mix different types of changes (e.g., bug fixes, features, refactoring) in a single pull request.
+    - Example: if you refactor code AND add a feature, make two separate pull requests.
+
+2. **Descriptive and meaningful messages**
+
+    - Describe _what_ changed and _why_, not just _what_ was edited.
+    - Avoid vague messages like "fix bug" or "update code"; instead use "fix: prevent signal saturation in noise
+    simulation" or "feat: add support for multi-detector frame merging".
+
+3. **Follow Conventional Commits format**
+
+    - All pull request titles must follow the [Conventional Commits](https://www.conventionalcommits.org/) standard.
+    - Format: `<type>(<scope>): <subject>`
+    - Allowed types:
+        - build: Changes that affect the build system or external dependencies
+        - ci: Changes to our CI configuration files and scripts
+        - docs: Documentation only changes
+        - feat: A new feature
+        - fix: A bug fix
+        - perf: A code change that improves performance
+        - refactor: A code change that neither fixes a bug nor adds a feature
+        - style: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc.)
+        - test: Adding missing tests or correcting existing tests
+    - Example:
+
+        ```text
+        feat(signal): add BBH waveform generation for aligned-spin systems
+
+        This commit introduces support for aligned-spin binary black hole
+        waveforms using PyCBC, enabling more realistic simulations.
+        ```
+
+    - Semantic pull request will validate your message format automatically.
+
+<!-- prettier-ignore-end -->
+
+### Examples
+
+✅ **Good pull request titles:**
+
+```text
+feat(noise): Implement colored noise with PSD shaping
+fix(cli): Resolve frame file path resolution on Windows
+docs(metadata): Clarify metadata JSON schema in README
+test(validate): Add edge case tests for boundary conditions
+refactor(simulator): Simplify noise factory registration
 ```
 
-- Navigate to the repository
+❌ **Bad pull request titles:**
 
-```bash
-cd nullpol
+```text
+fixed stuff
+wip: many changes
+update code
+more fixes (no type/scope)
 ```
 
-#### 3. Create an issue
+## 💡 Tips
 
-- Create an issue to explain the proposal of the code changes
-- Depending on the nature of the proposal, specify it as a prefix in the title
-  with the format: "<prefix>: <description>"
-    - A new feature: feature
-    - A bugfix: bugfix
-    - An optimization of the codes: optimize
+- Be kind and constructive in your communication.
+- Keep PRs focused and atomic—smaller changes are easier to review.
+- Document new features and update existing docs, especially for new GW
+  simulation parameters or methods.
+- Tag your PR with relevant labels if you can (e.g., `bug`, `enhancement`,
+  `documentation`).
 
-#### 3. Create a New Branch:
+## Licensing
 
-- Create a new branch for you changes:
+By contributing, you agree that your contributions will be licensed under the
+same terms as the project: **GPL-3.0-or-later** (see the repository `LICENSE`
+file).
 
-```bash
-git checkout -b <id of the issue>-<prefix>-<description>
-```
+---
 
-### 2. Making Changes
+Thanks again for being part of the nullpol community and helping advance
+gravitational-wave research!
 
-#### 1. Make Your Changes:
-
-- Implement your changes or new features in your branch.
-
-#### 2. Write Tests:
-
-- If applicable, write tests to cover your changes. Ensure that all tests pass.
-
-#### 3. Update Documentation:
-
-- Update the documentation if your changes affect it.
-
-#### 4. Commit Your Changes:
-
-- Commit your changes with a meaningful commit message:
-
-```bash
-git add .
-git commit -m "Add a descriptive commit message"
-```
-
-### 3. Submitting Your Changes
-
-#### 1. Push Your Branch:
-
-- Push your changes to your forked repository:
-
-```bash
-git push origin feature/your-feature-name
-```
-
-#### 2. Open a Pull Request:
-
-- Go to the Pull Requests tab on the main repository.
-- Click "New Pull Request".
-- Select the branch you created and click "Create Pull Request".
-- Provide a descriptive title and detailed description of your changes.
-
-#### 4. Review Process
-
-- Review: Your pull request will be reviewed by the maintainers. Be prepared to
-  respond to feedback and make additional changes if necessary.
-- Approval: Once approved, your changes will be merged into the release branch.
-
-## Code of Conduct
-
-Please adhere to our [Code of Conduct](CODE_OF_CONDUCT.md) to maintain a
-welcoming and respectful environment for all contributors.
-
-## Reporting Issues
-
-If you encounter any issues or bugs, please
-[report them](https://git.ligo.org/bayesian-null-stream/nullpol/-/issues) on our
-Git Issues page. Include relevant details and steps to reproduce the issue.
-
-## Contact
-
-For any questions or further assistance, please open an issue on Git.
-
-## Thank You!
-
-We appreciate your contributions to nullpol and look forward to your pull
-requests!
+---
