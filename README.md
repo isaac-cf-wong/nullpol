@@ -2,11 +2,11 @@
 
 [![PyPI version](https://badge.fury.io/py/nullpol.svg)](https://pypi.org/project/nullpol/)
 [![License: GPL-3.0-or-later](https://img.shields.io/badge/License-GPL--3.0--or--later-blue.svg)](LICENSE)
-[![Build](https://git.ligo.org/bayesian-null-stream/nullpol/badges/main/pipeline.svg)](https://git.ligo.org/bayesian-null-stream/nullpol/-/pipelines)
-[![codecov](https://codecov.io/gh/username/package_name/branch/main/graph/badge.svg)](https://codecov.io/gh/username/package_name)
+[![CI](https://github.com/isaac-cf-wong/nullpol/actions/workflows/ci.yml/badge.svg)](https://github.com/isaac-cf-wong/nullpol/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/isaac-cf-wong/nullpol/branch/main/graph/badge.svg)](https://codecov.io/gh/isaac-cf-wong/nullpol)
 [![Python Version](https://img.shields.io/pypi/pyversions/nullpol)](https://pypi.org/project/nullpol/)
 [![Security: bandit](https://img.shields.io/badge/security-bandit-yellow.svg)](https://github.com/PyCQA/bandit)
-[![Documentation Status](https://img.shields.io/badge/documentation-online-brightgreen)](https://git.ligo.org/bayesian-null-stream/nullpol/docs)
+[![Documentation](https://img.shields.io/badge/documentation-online-brightgreen)](https://isaac-cf-wong.github.io/nullpol/)
 [![DOI](https://zenodo.org/badge/ID.svg)](https://doi.org/DOI)
 
 **A package to perform model-independent polarization test of gravitational-wave
@@ -30,7 +30,7 @@ pip install nullpol
 ### From source
 
 ```bash
-git clone https://git.ligo.org/bayesian-null-stream/nullpol.git
+git clone https://github.com/isaac-cf-wong/nullpol.git
 cd nullpol
 pip install .
 ```
@@ -38,7 +38,7 @@ pip install .
 ### Development installation
 
 ```bash
-git clone https://git.ligo.org/bayesian-null-stream/nullpol.git
+git clone https://github.com/isaac-cf-wong/nullpol.git
 cd nullpol
 pip install -e .[test]
 ```
@@ -89,11 +89,11 @@ import nullpol
 ## Documentation
 
 - **Documentation**:
-  [https://git.ligo.org/bayesian-null-stream/nullpol/-/tree/main/docs](https://git.ligo.org/bayesian-null-stream/nullpol/-/tree/main/docs)
+  [https://isaac-cf-wong.github.io/nullpol/](https://isaac-cf-wong.github.io/nullpol/)
 - **Source Code**:
-  [https://git.ligo.org/bayesian-null-stream/nullpol](https://git.ligo.org/bayesian-null-stream/nullpol)
+  [https://github.com/isaac-cf-wong/nullpol](https://github.com/isaac-cf-wong/nullpol)
 - **Issue Tracker**:
-  [https://git.ligo.org/bayesian-null-stream/nullpol/-/issues](https://git.ligo.org/bayesian-null-stream/nullpol/-/issues)
+  [https://github.com/isaac-cf-wong/nullpol/issues](https://github.com/isaac-cf-wong/nullpol/issues)
 
 ## Examples
 
@@ -177,7 +177,7 @@ If you use nullpol in your research, please cite:
 @software{nullpol,
   title={nullpol: Model-independent polarization test of gravitational-wave signals},
   author={Wong, Isaac C.F. and Ng, Thomas and Cirok, Balázs},
-  url={https://git.ligo.org/bayesian-null-stream/nullpol},
+  url={https://github.com/isaac-cf-wong/nullpol},
   year={2025}
 }
 ```
@@ -192,5 +192,5 @@ If you use nullpol in your research, please cite:
 ---
 
 For more information, visit our
-[documentation](https://git.ligo.org/bayesian-null-stream/nullpol/-/tree/main/docs)
-or open an [issue](https://git.ligo.org/bayesian-null-stream/nullpol/-/issues).
+[documentation](https://isaac-cf-wong.github.io/nullpol/) or open an
+[issue](https://github.com/isaac-cf-wong/nullpol/issues).

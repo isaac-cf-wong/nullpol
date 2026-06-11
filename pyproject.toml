@@ -171,6 +171,5 @@ convention = "google"
 # ARG001: allow unused function arguments (common in fixtures)
 # PLC0415: allow import statements not at the top level
 # PLR2004: allow magic values in the unit tests
-"docs/source/conf.py" = ["A001"]
 "src/nullpol/analysis/result.py" = ["PLC0415", "S301"]
 "scripts/*" = ["SIM102", "PLC0415", "PLR2004"]
