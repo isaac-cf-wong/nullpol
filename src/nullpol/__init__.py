@@ -13,8 +13,7 @@ from . import (
 # from . import cli          # Command-line interface (import when needed)
 # from . import integrations # External integrations (asimov, htcondor, etc.)
 from .utils import logger
-
-__version__ = "0.1.0"
+from .version import __version__
 
 
 def get_version_information() -> str:
@@ -32,6 +31,7 @@ def log_version_information():
 
 
 __all__ = [
+    "__version__",
     "analysis",
     "get_version_information",
     "log_version_information",
