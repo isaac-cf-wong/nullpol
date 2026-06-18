@@ -147,7 +147,7 @@ class DataAnalysisInput(BInput, Input):
             raise NullpolError(f"Unsupported polarization-basis input: {modes}")
 
     def _validate_polarization_model_setting(self):
-        supported_modes = ["b", "c", "b", "l", "x", "y"]
+        supported_modes = ["b", "c", "p", "l", "x", "y"]
         # Check whether the modes are supported.
         for mode in self.polarization_modes:
             if mode not in supported_modes:
