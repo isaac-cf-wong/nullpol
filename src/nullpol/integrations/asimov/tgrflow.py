@@ -166,12 +166,12 @@ class Collector:
         analysis_output["Notes"] = []
 
         if analysis.comment is not None and (
-            corresponding_analysis is None or analysis.comment not in corresponding_analysis["Notes"]
+            corresponding_analysis is None or analysis.comment not in corresponding_analysis.get("Notes", [])
         ):
             # We only want to add the comment to the notes if it doesn't already exist
             analysis_output["Notes"].append(analysis.comment)
 
-        if analysis.review.status:
+        if analysis.review is not None and analysis.review.status:
             if analysis.review.status.lower() == "approved":
                 analysis_output["ReviewStatus"] = "pass"
             elif analysis.review.status.lower() == "rejected":
@@ -181,7 +181,7 @@ class Collector:
             messages = sorted(analysis.review.messages, key=lambda k: k.timestamp)
             if len(messages) > 0 and (
                 corresponding_analysis is None
-                or f"{messages[0].timestamp:%Y-%m-%d}: {messages[0].message}" in corresponding_analysis["Notes"]
+                or f"{messages[0].timestamp:%Y-%m-%d}: {messages[0].message}" in corresponding_analysis.get("Notes", [])
             ):
                 analysis_output["Notes"].append(f"{messages[0].timestamp:%Y-%m-%d}: {messages[0].message}")
 
@@ -285,6 +285,69 @@ class Collector:
         return {}
 
 
+def validate_gr_pe_result(result: dict) -> bool:
+    """Validate whether a PE result is suitable as the basis for a TGR analysis.
+
+    The result must be complete, non-deprecated, and not an online or
+    exploratory run.
+
+    Parameters
+    ----------
+    result : dict
+        Metadata for the result to be validated.
+
+    Returns:
+    -------
+    bool
+        Validity of the result.
+    """
+    uid = result["UID"].lower()
+    if uid == "online" or uid.startswith("exp") or uid.startswith("detchar"):
+        return False
+    if result.get("RunStatus") != "complete":
+        return False
+    if result.get("ReviewStatus") != "pass":
+        return False
+    if result.get("Deprecated", False):
+        return False
+    # Ensure required files are present for actual PE results
+    if "ResultFile" not in result or "ConfigFile" not in result:
+        return False
+    return "PESummaryResultFile" in result
+
+
+def identify_basis_production(metadata) -> dict:
+    """Identify the PE result that will be used as the basis for TGR analyses.
+
+    The IllustrativeResult is tried first. If it passes full validation
+    (complete, non-deprecated, not online/exp*/detchar*, and has all required
+    files) it is returned. If it is not available or does not pass, the function
+    falls back to the first result that passes the full validation. Returns an
+    empty dict if no valid result is found.
+
+    Parameters
+    ----------
+    metadata :
+        CBCFlow superevent metadata.
+
+    Returns:
+    -------
+    dict
+        Result metadata for the basis production, or empty dict if none found.
+    """
+    illustrative_result_name = metadata.data["ParameterEstimation"].get("IllustrativeResult", None)
+    if illustrative_result_name is not None:
+        for result in metadata.data["ParameterEstimation"]["Results"]:
+            if result["UID"] == illustrative_result_name and validate_gr_pe_result(result):
+                return result
+
+    for result in metadata.data["ParameterEstimation"]["Results"]:
+        if validate_gr_pe_result(result):
+            return result
+
+    return {}
+
+
 # Functionality for information which flows from cbcflow into Asimov
 # pylint: disable=too-few-public-methods
 class Applicator:
@@ -369,6 +432,8 @@ class Applicator:
                 ligo["preferred event"] = event["UID"]
                 ligo["false alarm rate"] = event["FAR"]
                 event_time = event["GPSTime"]
+        if event_time is None:
+            raise ValueError(f"No preferred GraceDB event found for {sid}. Cannot determine event time.")
         ligo["sname"] = sid
 
         # also add the sampling rate to the output
@@ -387,22 +452,22 @@ class Applicator:
             "event time": event_time,
         }
 
-        metadata_pe_results = metadata.data["ParameterEstimation"]["Results"]
-        illustrative_prod = metadata.data["ParameterEstimation"]["IllustrativeResult"]
-        gr_pe = {"available": False}
-        for result in metadata_pe_results:
-            if result["UID"] == illustrative_prod and result["RunStatus"] == "complete":
-                gr_pe = {
-                    "available": True,
-                    "UID GR PE": result["UID"],
-                    "result file path": "/" + result["ResultFile"]["Path"].split(":/")[-1],
-                    "config file path": "/" + result["ConfigFile"]["Path"].split(":/")[-1],
-                    "pesummary result path": "/" + result["PESummaryResultFile"]["Path"].split(":/")[-1],
-                }
-                if "WaveformApproximant" in result:
-                    quality["waveform approximant"] = result["WaveformApproximant"]
-        if gr_pe["available"] is False:
-            raise AttributeError("IllustrativeResult not in the library or the PE run is incomplete.")
+        basis_result = identify_basis_production(metadata)
+        if not basis_result:
+            raise AttributeError(
+                "No valid GR PE result found in the library. The IllustrativeResult "
+                "(if set) and all other results either have incomplete run status, "
+                "are deprecated, or are excluded by UID."
+            )
+        gr_pe = {
+            "available": True,
+            "UID GR PE": basis_result["UID"],
+            "result file path": "/" + basis_result["ResultFile"]["Path"].split(":/")[-1],
+            "config file path": "/" + basis_result["ConfigFile"]["Path"].split(":/")[-1],
+            "pesummary result path": "/" + basis_result["PESummaryResultFile"]["Path"].split(":/")[-1],
+        }
+        if "WaveformApproximant" in basis_result:
+            quality["waveform approximant"] = basis_result["WaveformApproximant"]
 
         # now, we need to read in the information from the config file
         # we need the reference frequency, the psd dict and the calibration dict
@@ -410,8 +475,10 @@ class Applicator:
         bilby_config = bilby_config_to_asimov(config_file)
 
         # read in the psd information if present
-        if "psds" in bilby_config:
+        if bilby_config.get("psds") is not None:
             gr_pe["psds"] = bilby_config.pop("psds")
+        elif "psds" in bilby_config:
+            bilby_config.pop("psds")
         output["gr pe info"] = gr_pe.copy()
         output["gr pe info"]["approximant"] = bilby_config["waveform"]["approximant"]
         # config file and cbcflow can disagree about which data to use (for example, preferred frame was updated)
