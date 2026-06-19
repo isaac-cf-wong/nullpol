@@ -337,7 +337,7 @@ def identify_basis_production(metadata) -> dict:
     """
     illustrative_result_name = metadata.data["ParameterEstimation"].get("IllustrativeResult", None)
     if illustrative_result_name is not None:
-        for result in metadata.data["ParameterEstimation"]["Results"]:
+        for result in metadata.data["ParameterEstimation"].get("Results", []):
             if result["UID"] == illustrative_result_name and validate_gr_pe_result(result):
                 return result
 
