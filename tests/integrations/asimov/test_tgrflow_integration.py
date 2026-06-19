@@ -185,6 +185,7 @@ class TestApplicatorRun:
             app.run("S1234")
         # Nothing should have been written to the ledger.
         app.ledger_mock.add_event.assert_not_called()
+        app.ledger_mock.update_event.assert_not_called()
 
     def test_no_valid_basis_result_raises(self, applicator_factory):
         """When no PE result passes validation, AttributeError is raised."""
@@ -200,6 +201,7 @@ class TestApplicatorRun:
         with pytest.raises(AttributeError, match="No valid GR PE result"):
             app.run("S1234")
         app.ledger_mock.add_event.assert_not_called()
+        app.ledger_mock.update_event.assert_not_called()
 
     def test_falls_back_from_invalid_illustrative(self, applicator_factory):
         """An invalid IllustrativeResult falls back to another valid result."""
