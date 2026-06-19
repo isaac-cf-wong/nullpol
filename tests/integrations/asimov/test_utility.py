@@ -51,7 +51,7 @@ class TestConvertStringToDict:
         assert asimov_libs.convert_string_to_dict("None") is None
 
     @pytest.mark.parametrize("raw", ["H1:L1", "a-b-c", "just_a_word", "true"])
-    def test_unparseable_strings_returned_as_is(self, asimov_libs, raw):
+    def test_unparsable_strings_returned_as_is(self, asimov_libs, raw):
         """Strings that neither bilby_pipe nor literal_eval can parse are returned unchanged."""
         result = asimov_libs.convert_string_to_dict(raw)
         assert result == raw
