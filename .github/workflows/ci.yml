@@ -34,3 +34,27 @@ jobs:
               uses: codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac # v5
               with:
                   token: ${{ secrets.CODECOV_TOKEN }}
+
+    integration:
+        # Runs the @pytest.mark.integration suite once (not in the matrix) to
+        # keep the fast unit-test matrix cheap while still gating on the
+        # heavier integration tests. Installs the optional `asimov` extra so
+        # real asimov/cbcflow paths can be exercised now and in the future.
+        needs: test
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+
+            - name: Install uv
+              uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+              with:
+                  python-version: '3.13'
+                  enable-cache: 'true'
+
+            - name: Install dependencies (with asimov extra)
+              run: uv sync --group dev --extra asimov --frozen
+
+            - name: Run integration tests
+              # Clear the default addopts (which selects `-m 'not integration'`)
+              # and explicitly select the integration marker instead.
+              run: uv run --frozen pytest -o addopts="" -m integration --cov src --cov-report=term-missing
