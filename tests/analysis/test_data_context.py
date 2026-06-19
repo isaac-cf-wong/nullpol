@@ -479,7 +479,7 @@ class TestTimeFrequencyDataContext:
         # Create filter with wrong shape
         wrong_filter = np.random.rand(10, 20)  # Wrong dimensions
 
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError, match="does not match the time frequency filter"):
             TimeFrequencyDataContext(
                 interferometers=ifos,
                 wavelet_frequency_resolution=2.0,
