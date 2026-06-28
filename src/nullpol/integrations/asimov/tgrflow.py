@@ -302,11 +302,8 @@ def validate_gr_pe_result(result: dict) -> bool:
     bool
         Validity of the result.
     """
-    uid = result.get("UID", "")
-    if not uid:
-        return False
-    uid = uid.lower()
-    if uid == "online" or uid.startswith("exp") or uid.startswith("detchar"):
+    uid = result.get("UID", "").lower()
+    if not uid or uid == "online" or uid.startswith("exp") or uid.startswith("detchar"):
         return False
     if result.get("RunStatus") != "complete":
         return False

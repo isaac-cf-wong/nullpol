@@ -106,6 +106,12 @@ class TestValidateGrPeResult:
         # "exp" is not a prefix of "PROD_exp" -> should not be rejected on UID grounds.
         assert asimov_libs.validate_gr_pe_result(_valid_result(uid="PROD_exp")) is True
 
+    def test_missing_uid_rejected(self, asimov_libs):
+        """A result without a UID key is rejected."""
+        result = _valid_result()
+        result.pop("UID")
+        assert asimov_libs.validate_gr_pe_result(result) is False
+
 
 # ---------------------------------------------------------------------------
 # identify_basis_production
@@ -225,6 +231,22 @@ class TestCollectorReviewGuards:
         collector = self._collector(asimov_libs)
         analysis = _mock_analysis(review=None, comment="looks good")
         out = collector._get_pe_result_from_production(analysis, {"Notes": ["looks good"]})
+        assert out["Notes"] == []
+
+    def test_review_message_not_duplicated_when_present(self, asimov_libs):
+        """A review message already in Notes is not appended again."""
+        collector = self._collector(asimov_libs)
+
+        msg = mock.MagicMock()
+        msg.timestamp = __import__("datetime").datetime(2024, 1, 2, 3, 4, 5)
+        msg.message = "approved"
+
+        review = mock.MagicMock()
+        review.status = "approved"
+        review.messages = [msg]
+        analysis = _mock_analysis(review=review, comment=None)
+
+        out = collector._get_pe_result_from_production(analysis, {"Notes": ["2024-01-02: approved"]})
         assert out["Notes"] == []
 
     def test_review_messages_with_corresponding_missing_notes(self, asimov_libs):
