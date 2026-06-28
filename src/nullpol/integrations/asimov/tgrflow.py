@@ -181,7 +181,8 @@ class Collector:
             messages = sorted(analysis.review.messages, key=lambda k: k.timestamp)
             if len(messages) > 0 and (
                 corresponding_analysis is None
-                or f"{messages[0].timestamp:%Y-%m-%d}: {messages[0].message}" not in corresponding_analysis.get("Notes", [])
+                or f"{messages[0].timestamp:%Y-%m-%d}: {messages[0].message}"
+                not in corresponding_analysis.get("Notes", [])
             ):
                 analysis_output["Notes"].append(f"{messages[0].timestamp:%Y-%m-%d}: {messages[0].message}")
 
