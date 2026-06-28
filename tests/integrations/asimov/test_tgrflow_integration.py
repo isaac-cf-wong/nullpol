@@ -188,7 +188,7 @@ class TestApplicatorRun:
         app.ledger_mock.update_event.assert_not_called()
 
     def test_no_valid_basis_result_raises(self, applicator_factory):
-        """When no PE result passes validation, AttributeError is raised."""
+        """When no PE result passes validation, ValueError is raised."""
         metadata = _fake_metadata(
             results=[
                 _pe_result("online"),
@@ -198,7 +198,7 @@ class TestApplicatorRun:
             illustrative="PROD1",
         )
         app = applicator_factory(metadata=metadata)
-        with pytest.raises(AttributeError, match="No valid GR PE result"):
+        with pytest.raises(ValueError, match="No valid GR PE result"):
             app.run("S1234")
         app.ledger_mock.add_event.assert_not_called()
         app.ledger_mock.update_event.assert_not_called()

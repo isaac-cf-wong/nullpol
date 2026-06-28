@@ -181,7 +181,7 @@ class Collector:
             messages = sorted(analysis.review.messages, key=lambda k: k.timestamp)
             if len(messages) > 0 and (
                 corresponding_analysis is None
-                or f"{messages[0].timestamp:%Y-%m-%d}: {messages[0].message}" in corresponding_analysis.get("Notes", [])
+                or f"{messages[0].timestamp:%Y-%m-%d}: {messages[0].message}" not in corresponding_analysis.get("Notes", [])
             ):
                 analysis_output["Notes"].append(f"{messages[0].timestamp:%Y-%m-%d}: {messages[0].message}")
 
@@ -301,7 +301,10 @@ def validate_gr_pe_result(result: dict) -> bool:
     bool
         Validity of the result.
     """
-    uid = result["UID"].lower()
+    uid = result.get("UID", "")
+    if not uid:
+        return False
+    uid = uid.lower()
     if uid == "online" or uid.startswith("exp") or uid.startswith("detchar"):
         return False
     if result.get("RunStatus") != "complete":
@@ -454,7 +457,7 @@ class Applicator:
 
         basis_result = identify_basis_production(metadata)
         if not basis_result:
-            raise AttributeError(
+            raise ValueError(
                 "No valid GR PE result found in the library. The IllustrativeResult "
                 "(if set) and all other results either have incomplete run status, "
                 "are deprecated, or are excluded by UID."

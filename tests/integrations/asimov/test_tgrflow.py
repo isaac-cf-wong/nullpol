@@ -232,8 +232,7 @@ class TestCollectorReviewGuards:
 
         Before the fix, ``corresponding_analysis["Notes"]`` raised ``KeyError``;
         the ``.get("Notes", [])`` fallback now evaluates cleanly. The message is
-        not appended here because the existing append logic only adds a message
-        when ``corresponding_analysis is None`` *or* the note is already listed.
+        appended because the note does not yet appear in the (empty) Notes list.
         """
         collector = self._collector(asimov_libs)
 
@@ -249,7 +248,7 @@ class TestCollectorReviewGuards:
         # corresponding_analysis lacks a "Notes" key -- this is the crash scenario
         out = collector._get_pe_result_from_production(analysis, {})
         assert out["ReviewStatus"] == "pass"
-        assert out["Notes"] == []
+        assert out["Notes"] == ["2024-01-02: approved"]
 
     def test_review_message_appended_when_corresponding_none(self, asimov_libs):
         """When there is no corresponding analysis, the review message is appended."""
