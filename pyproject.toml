@@ -24,14 +24,14 @@ classifiers = [
 requires-python = ">=3.12"
 dynamic = ["version"]
 dependencies = [
-  "matplotlib>=3.10.9",
-  "numpy>=2.3.5,<2.4",
+  "matplotlib>=3.11.0",
+  "numpy>=2.5.0,<2.6",
   "bilby>=2.8.0",
   "bilby_pipe>=1.9.0",
   "gwpy>=4.0.1",
-  "numba>=0.65.0",
+  "numba>=0.65.1",
   "rocket-fft>=0.3.1",
-  "scipy>=1.16.3,<1.17.0",
+  "scipy>=1.18.0,<1.18.1",
   "ConfigArgParse>=1.7.5",
   "pycbc>=2.11.0",
   "healpy>=1.19.0",
@@ -44,14 +44,14 @@ asimov = ["asimov>=0.6.1", "cbcflow>=0.6.3"]
 
 [dependency-groups]
 dev = [
-  "ruff>=0.15.16",
-  "prek>=0.4.4",
-  "pytest-github-actions-annotate-failures>=0.4.0",
+  "ruff>=0.15.20",
+  "prek>=0.4.5",
+  "pytest-github-actions-annotate-failures>=0.4.2",
   "pytest-cov>=7.1.0",
   "pytest-mock>=3.15.1",
-  "pytest>=9.0.3",
+  "pytest>=9.1.1",
 ]
-docs = ["zensical>=0.0.44", "mkdocstrings-python>=2.0.4"]
+docs = ["zensical>=0.0.46", "mkdocstrings-python>=2.0.5"]
 build = ["hatch>=1.17.0"]
 release = ["git-cliff>=2.13.1"]
 
