@@ -36,7 +36,9 @@ def test_analysis_config_forwards_keyword_only_parameters(monkeypatch, tmp_path)
     """A configured analysis forwards its normalized basis to the likelihood."""
     config_file = tmp_path / "analysis.ini"
     config_file.write_text(
-        "polarization-modes = pc\npolarization-basis = p\n",
+        "polarization-modes = pc\n"
+        "polarization-basis = p\n"
+        "extra-likelihood-kwargs = {'regularization_constant': 0.99}\n",
         encoding="utf-8",
     )
     args, unknown_args = parse_args([str(config_file)], create_nullpol_parser(top_level=False))
@@ -72,4 +74,4 @@ def test_analysis_config_forwards_keyword_only_parameters(monkeypatch, tmp_path)
     assert likelihood.polarization_modes == "pc"
     assert likelihood.polarization_basis == "p"
     assert likelihood.time_frequency_filter is time_frequency_filter
-    assert likelihood.extra_kwargs == {}
+    assert likelihood.extra_kwargs == {"regularization_constant": 0.99}

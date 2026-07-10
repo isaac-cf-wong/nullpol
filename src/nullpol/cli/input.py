@@ -113,15 +113,16 @@ class Input(BilbyInput):
             "time_frequency_filter": self.meta_data["time_frequency_filter"],  # pylint: disable=no-member
             "priors": self.search_priors,
         }
+        extra_likelihood_kwargs = self.extra_likelihood_kwargs
         if self.likelihood_type == "Chi2TimeFrequencyLikelihood":
             Likelihood = Chi2TimeFrequencyLikelihood
-            likelihood_kwargs.update(self.extra_likelihood_kwargs)
+            likelihood_kwargs.update(extra_likelihood_kwargs)
         elif "." in self.likelihood_type:
             split_path = self.likelihood_type.split(".")
             module = ".".join(split_path[:-1])
             likelihood_class = split_path[-1]
             Likelihood = getattr(import_module(module), likelihood_class)
-            likelihood_kwargs.update(self.extra_likelihood_kwargs)
+            likelihood_kwargs.update(extra_likelihood_kwargs)
         else:
             raise ValueError(f"Unknown Likelihood class {self.likelihood_type}")
 
@@ -131,7 +132,14 @@ class Input(BilbyInput):
             for name, parameter in likelihood_signature.parameters.items()
             if parameter.kind in (inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY)
         }
-        likelihood_kwargs = {key: value for key, value in likelihood_kwargs.items() if key in accepted_keyword_names}
+        accepts_extra_kwargs = any(
+            parameter.kind == inspect.Parameter.VAR_KEYWORD for parameter in likelihood_signature.parameters.values()
+        )
+        likelihood_kwargs = {
+            key: value
+            for key, value in likelihood_kwargs.items()
+            if key in accepted_keyword_names or (accepts_extra_kwargs and key in extra_likelihood_kwargs)
+        }
 
         logger.debug(f"Initialise likelihood {Likelihood} with kwargs: \n{likelihood_kwargs}")
         likelihood = Likelihood(**likelihood_kwargs)
