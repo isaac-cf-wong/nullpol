@@ -125,11 +125,13 @@ class Input(BilbyInput):
         else:
             raise ValueError(f"Unknown Likelihood class {self.likelihood_type}")
 
-        likelihood_kwargs = {
-            key: value
-            for key, value in likelihood_kwargs.items()
-            if key in inspect.getfullargspec(Likelihood.__init__).args
+        likelihood_signature = inspect.signature(Likelihood.__init__)
+        accepted_keyword_names = {
+            name
+            for name, parameter in likelihood_signature.parameters.items()
+            if parameter.kind in (inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY)
         }
+        likelihood_kwargs = {key: value for key, value in likelihood_kwargs.items() if key in accepted_keyword_names}
 
         logger.debug(f"Initialise likelihood {Likelihood} with kwargs: \n{likelihood_kwargs}")
         likelihood = Likelihood(**likelihood_kwargs)
