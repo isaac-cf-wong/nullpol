@@ -7,8 +7,11 @@ from unittest.mock import Mock, PropertyMock, patch
 import numpy as np
 import pytest
 from bilby.gw.detector import InterferometerList
+from bilby.gw.source import lal_binary_black_hole
 
 from nullpol.analysis.lensing.calculator import LensingNullStreamCalculator
+from nullpol.analysis.tf_transforms import get_shape_of_wavelet_transform
+from nullpol.simulation.injection import create_injection
 
 
 @pytest.fixture
@@ -17,17 +20,18 @@ def mock_interferometers():
     return [[Mock(), Mock(), Mock()], [Mock(), Mock()]]
 
 
-def _configure_data_context(calculator, interferometers, frequencies, start_time_offset):
+def _configure_data_context(calculator, interferometers, frequencies, frequency_mask=None):
     """Configure the calculator's mocked data context."""
     n_detectors = sum(len(image_interferometers) for image_interferometers in interferometers)
+    if frequency_mask is None:
+        frequency_mask = np.ones(len(frequencies), dtype=bool)
     context_type = type(calculator.data_context)
     context_type.interferometers_1 = PropertyMock(return_value=interferometers[0])
     context_type.interferometers_2 = PropertyMock(return_value=interferometers[1])
-    context_type.inter_image_start_time_offset = PropertyMock(return_value=start_time_offset)
     context_type.frequency_array = PropertyMock(return_value=frequencies)
-    context_type.masked_frequency_array = PropertyMock(return_value=frequencies)
+    context_type.masked_frequency_array = PropertyMock(return_value=frequencies[frequency_mask])
     context_type.power_spectral_density_array = PropertyMock(return_value=np.ones((n_detectors, len(frequencies))))
-    context_type.frequency_mask = PropertyMock(return_value=np.ones(len(frequencies), dtype=bool))
+    context_type.frequency_mask = PropertyMock(return_value=frequency_mask)
 
 
 def _set_image_pattern_side_effect(calculator, interferometers, image_1_pattern, image_2_pattern):
@@ -56,6 +60,45 @@ def _make_interferometer_network(detectors, start_time):
         start_time=start_time,
     )
     return interferometers
+
+
+def _make_lensed_source_model(mu_rel, delta_n):
+    """Create a waveform model with the image-two amplitude and Morse phase."""
+
+    def lensed_lal_binary_black_hole(
+        frequency_array,
+        mass_1,
+        mass_2,
+        luminosity_distance,
+        a_1,
+        tilt_1,
+        phi_12,
+        a_2,
+        tilt_2,
+        phi_jl,
+        theta_jn,
+        phase,
+        **kwargs,
+    ):
+        polarizations = lal_binary_black_hole(
+            frequency_array,
+            mass_1,
+            mass_2,
+            luminosity_distance,
+            a_1,
+            tilt_1,
+            phi_12,
+            a_2,
+            tilt_2,
+            phi_jl,
+            theta_jn,
+            phase,
+            **kwargs,
+        )
+        lensing_factor = mu_rel * np.exp(-1j * np.pi * delta_n)
+        return {polarization: lensing_factor * waveform for polarization, waveform in polarizations.items()}
+
+    return lensed_lal_binary_black_hole
 
 
 class TestLensingNullStreamCalculator:
@@ -89,10 +132,10 @@ class TestLensingNullStreamCalculator:
 
     @patch("nullpol.analysis.lensing.calculator.AntennaPatternProcessor")
     @patch("nullpol.analysis.lensing.calculator.LensingTimeFrequencyDataContext")
-    def test_uses_each_image_time_and_correct_residual_phase(
+    def test_uses_each_image_time_and_correct_lensing_phase(
         self, mock_data_context_class, mock_antenna_class, mock_interferometers
     ):
-        """Evaluate image two at its arrival time and phase relative to FFT origins."""
+        """Evaluate image two at its arrival time and apply its lensing factor."""
         calculator = LensingNullStreamCalculator(
             interferometers=mock_interferometers,
             wavelet_frequency_resolution=4.0,
@@ -100,8 +143,7 @@ class TestLensingNullStreamCalculator:
             polarization_modes="pc",
         )
         frequencies = np.array([20.0, 30.0, 40.0])
-        start_time_offset = 0.08
-        _configure_data_context(calculator, mock_interferometers, frequencies, start_time_offset)
+        _configure_data_context(calculator, mock_interferometers, frequencies)
 
         image_1_pattern = np.full((len(frequencies), 3, 2), 2 + 1j)
         image_2_pattern = np.full((len(frequencies), 2, 2), 3 - 2j)
@@ -120,10 +162,7 @@ class TestLensingNullStreamCalculator:
 
         result = calculator._compute_calibrated_whitened_antenna_pattern_matrix(parameters)
 
-        residual_delay = parameters["delta_t"] - start_time_offset
-        lensing_factor = parameters["mu_rel"] * np.exp(
-            -1j * np.pi * (2 * residual_delay * frequencies[:, None, None] + parameters["delta_n"])
-        )
+        lensing_factor = parameters["mu_rel"] * np.exp(-1j * np.pi * parameters["delta_n"])
         expected = np.concatenate([image_1_pattern, image_2_pattern * lensing_factor], axis=1)
         np.testing.assert_allclose(result, expected)
         assert parameters == original_parameters
@@ -137,10 +176,10 @@ class TestLensingNullStreamCalculator:
 
     @patch("nullpol.analysis.lensing.calculator.AntennaPatternProcessor")
     @patch("nullpol.analysis.lensing.calculator.LensingTimeFrequencyDataContext")
-    def test_matching_segment_offset_removes_delay_phase(
+    def test_delay_is_not_applied_twice_after_data_alignment(
         self, mock_data_context_class, mock_antenna_class, mock_interferometers
     ):
-        """Do not add a delay phase when the image segments are offset by that delay."""
+        """Leave the delay phase to the data context's common-frame alignment."""
         calculator = LensingNullStreamCalculator(
             interferometers=mock_interferometers,
             wavelet_frequency_resolution=4.0,
@@ -149,7 +188,7 @@ class TestLensingNullStreamCalculator:
         )
         frequencies = np.array([20.0, 30.0])
         delta_t = 10.0
-        _configure_data_context(calculator, mock_interferometers, frequencies, start_time_offset=delta_t)
+        _configure_data_context(calculator, mock_interferometers, frequencies)
 
         image_1_pattern = np.ones((len(frequencies), 3, 2), dtype=complex)
         image_2_pattern = np.ones((len(frequencies), 2, 2), dtype=complex)
@@ -208,10 +247,7 @@ class TestLensingNullStreamCalculator:
             calculator.data_context.frequency_mask,
             image_2_parameters,
         )
-        residual_delay = parameters["delta_t"] - calculator.data_context.inter_image_start_time_offset
-        lensing_factor = np.exp(
-            -1j * np.pi * (2 * residual_delay * calculator.data_context.frequency_array[:, None, None])
-        )
+        lensing_factor = np.exp(-1j * np.pi * parameters["delta_n"])
         expected = np.concatenate([image_1_pattern, image_2_pattern * lensing_factor], axis=1)
         np.testing.assert_allclose(result, expected)
 
@@ -223,3 +259,75 @@ class TestLensingNullStreamCalculator:
             parameters,
         )
         assert not np.allclose(image_2_pattern, unshifted_image_2_pattern)
+
+
+@pytest.mark.integration
+def test_two_image_injection_is_null_in_a_common_time_frame():
+    """Verify non-aligned image segments use one TF-filter time reference."""
+    parameters = {
+        "mass_1": 36.0,
+        "mass_2": 29.0,
+        "a_1": 0.0,
+        "a_2": 0.0,
+        "tilt_1": 0.0,
+        "tilt_2": 0.0,
+        "phi_12": 0.0,
+        "phi_jl": 0.0,
+        "luminosity_distance": 500.0,
+        "theta_jn": 0.0,
+        "psi": 2.659,
+        "phase": 1.3,
+        "geocent_time": 1126259642.413,
+        "ra": 1.375,
+        "dec": -1.2108,
+        "mu_rel": 1.3,
+        "delta_t": 0.5,
+        "delta_n": 0.5,
+    }
+    duration = 4
+    sampling_frequency = 1024
+    wavelet_frequency_resolution = 16
+    wavelet_nx = 4
+    image_1_start_time = parameters["geocent_time"] - duration / 2
+    image_2_start_time = image_1_start_time + 0.25
+    image_1 = InterferometerList(["H1", "L1"])
+    image_2 = InterferometerList(["H1", "L1"])
+    for interferometers in (image_1, image_2):
+        for interferometer in interferometers:
+            interferometer.minimum_frequency = 20
+
+    create_injection(
+        interferometers=image_1,
+        duration=duration,
+        sampling_frequency=sampling_frequency,
+        start_time=image_1_start_time,
+        parameters=parameters,
+        noise_type="zero_noise",
+    )
+    create_injection(
+        interferometers=image_2,
+        duration=duration,
+        sampling_frequency=sampling_frequency,
+        start_time=image_2_start_time,
+        parameters={**parameters, "geocent_time": parameters["geocent_time"] + parameters["delta_t"]},
+        noise_type="zero_noise",
+        frequency_domain_source_model=_make_lensed_source_model(parameters["mu_rel"], parameters["delta_n"]),
+    )
+    tf_nt, tf_nf = get_shape_of_wavelet_transform(duration, sampling_frequency, wavelet_frequency_resolution)
+    time_frequency_filter = np.zeros((tf_nt, tf_nf))
+    time_frequency_filter[tf_nt // 2 - 10 : tf_nt // 2 + 10, 4 : tf_nf - 8] = 1
+    calculator = LensingNullStreamCalculator(
+        interferometers=[image_1, image_2],
+        wavelet_frequency_resolution=wavelet_frequency_resolution,
+        wavelet_nx=wavelet_nx,
+        polarization_modes="pc",
+        time_frequency_filter=time_frequency_filter,
+    )
+
+    null_energy = calculator.compute_null_energy(parameters)
+    wrong_morse_phase_energy = calculator.compute_null_energy({**parameters, "delta_n": parameters["delta_n"] + 1})
+    wrong_delay_energy = calculator.compute_null_energy({**parameters, "delta_t": parameters["delta_t"] + 0.1})
+
+    assert null_energy < 1e-12
+    assert wrong_morse_phase_energy > 1
+    assert wrong_delay_energy > 1

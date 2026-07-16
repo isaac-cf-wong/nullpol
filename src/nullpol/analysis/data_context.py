@@ -170,10 +170,7 @@ class TimeFrequencyDataContext:
     ):
         """Initialize the data context."""
         # Load and validate interferometers
-        if isinstance(interferometers, bilby.gw.detector.networks.InterferometerList):
-            self._interferometers = interferometers
-        else:
-            self._interferometers = bilby.gw.detector.networks.InterferometerList(interferometers)
+        self._interferometers = self._create_interferometer_list(interferometers)
         self._validate_interferometers(self._interferometers)
 
         # Set up basic data properties
@@ -213,6 +210,16 @@ class TimeFrequencyDataContext:
         # Cached processed data
         self._whitened_frequency_domain_strain_array = None
         self._cached_whitened_frequency_domain_strain_array_at_geocenter = None
+
+    def _create_interferometer_list(self, interferometers):
+        """Create and validate the interferometer container.
+
+        Subclasses with a deliberately different network-validation policy can
+        override this protected hook. The default preserves the original
+        Bilby validation behaviour for every caller, including callers that
+        already provide an ``InterferometerList``.
+        """
+        return bilby.gw.detector.networks.InterferometerList(interferometers)
 
     @property
     def interferometers(self) -> bilby.gw.detector.networks.InterferometerList:

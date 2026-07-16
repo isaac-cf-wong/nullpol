@@ -47,6 +47,20 @@ def detector_setup():
     return (ifos, frequency_mask, sampling_frequency, duration, minimum_frequency)
 
 
+def test_existing_interferometer_list_is_revalidated():
+    """Do not bypass Bilby's network checks for an existing list instance."""
+    interferometers = InterferometerList(["H1", "L1"])
+    interferometers.set_strain_data_from_zero_noise(sampling_frequency=256, duration=2, start_time=0)
+    interferometers[1].set_strain_data_from_zero_noise(sampling_frequency=256, duration=2, start_time=1)
+
+    with pytest.raises(ValueError, match="start_time.*not the same"):
+        TimeFrequencyDataContext(
+            interferometers=interferometers,
+            wavelet_frequency_resolution=4,
+            wavelet_nx=16,
+        )
+
+
 @pytest.mark.integration
 def test_compute_whitened_frequency_domain_strain_array_statistical_properties(detector_setup):
     """Test whitened strain computation follows expected statistical properties.

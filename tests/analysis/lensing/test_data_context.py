@@ -49,6 +49,17 @@ def two_detector_sets():
     return [ifos_1, ifos_2]
 
 
+def _make_interferometer_network(detectors, sampling_frequency, duration, start_time):
+    """Create a small zero-noise network for constructor validation tests."""
+    interferometers = InterferometerList(detectors)
+    interferometers.set_strain_data_from_zero_noise(
+        sampling_frequency=sampling_frequency,
+        duration=duration,
+        start_time=start_time,
+    )
+    return interferometers
+
+
 class TestLensingTimeFrequencyDataContext:
     """Test class for LensingTimeFrequencyDataContext."""
 
@@ -65,6 +76,42 @@ class TestLensingTimeFrequencyDataContext:
         assert len(context.interferometers_2) == 2
         assert len(context.interferometers) == 5  # Combined
         assert context.inter_image_start_time_offset == 100
+
+    def test_rejects_mismatched_frequency_grids(self):
+        """Reject image data that cannot share a frequency-domain projection."""
+        image_1 = _make_interferometer_network(["H1"], sampling_frequency=256, duration=2, start_time=0)
+        image_2 = _make_interferometer_network(["L1"], sampling_frequency=512, duration=2, start_time=10)
+
+        with pytest.raises(ValueError, match="sampling_frequency"):
+            LensingTimeFrequencyDataContext(
+                interferometers=[image_1, image_2],
+                wavelet_frequency_resolution=4,
+                wavelet_nx=16,
+            )
+
+    def test_rejects_detector_epochs_that_are_not_sample_aligned(self):
+        """Do not accept Bilby's near-equal start times within one image."""
+        image_1 = _make_interferometer_network(["H1", "L1"], sampling_frequency=256, duration=2, start_time=0)
+        image_1[1].set_strain_data_from_zero_noise(sampling_frequency=256, duration=2, start_time=1e-6)
+        image_2 = _make_interferometer_network(["V1"], sampling_frequency=256, duration=2, start_time=10)
+
+        with pytest.raises(ValueError, match="within an image must have the same start_time"):
+            LensingTimeFrequencyDataContext(
+                interferometers=[image_1, image_2],
+                wavelet_frequency_resolution=4,
+                wavelet_nx=16,
+            )
+
+    def test_rejects_reused_detector_data(self):
+        """Ensure two image rows never refer to the same noise realization."""
+        image_1 = _make_interferometer_network(["H1"], sampling_frequency=256, duration=2, start_time=0)
+
+        with pytest.raises(ValueError, match="distinct interferometer data objects"):
+            LensingTimeFrequencyDataContext(
+                interferometers=[image_1, [image_1[0]]],
+                wavelet_frequency_resolution=4,
+                wavelet_nx=16,
+            )
 
     def test_interferometer_properties(self, two_detector_sets):
         """Test that interferometer properties are correctly separated."""
@@ -112,7 +159,7 @@ class TestLensingTimeFrequencyDataContext:
         assert np.all(np.isfinite(time_delays))
 
     def test_compute_time_delay_array_with_lensing_delay(self, two_detector_sets):
-        """Test that lensing time delay is applied to second set."""
+        """Test that image-two shifts include the common-frame alignment."""
         context = LensingTimeFrequencyDataContext(
             interferometers=two_detector_sets,
             wavelet_frequency_resolution=4.0,
@@ -134,10 +181,12 @@ class TestLensingTimeFrequencyDataContext:
             ifo.time_delay_from_geocenter(ra=parameters["ra"], dec=parameters["dec"], time=parameters["geocent_time"])
             for ifo in context.interferometers_1
         ]
+        relative_image_delay = lensing_delay - context.inter_image_start_time_offset
         expected_delays_2 = [
             ifo.time_delay_from_geocenter(
                 ra=parameters["ra"], dec=parameters["dec"], time=parameters["geocent_time"] + lensing_delay
             )
+            + relative_image_delay
             for ifo in context.interferometers_2
         ]
         expected_delays = np.concatenate([expected_delays_1, expected_delays_2])

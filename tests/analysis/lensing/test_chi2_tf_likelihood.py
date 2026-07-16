@@ -9,8 +9,10 @@ from unittest.mock import Mock, patch
 
 import numpy as np
 import pytest
+from bilby.gw.detector import InterferometerList
 
 from nullpol.analysis.lensing.chi2_tf_likelihood import LensingChi2TimeFrequencyLikelihood
+from nullpol.utils import NullpolError
 
 
 class TestLensingChi2TimeFrequencyLikelihood:
@@ -210,21 +212,20 @@ class TestLensingChi2TimeFrequencyLikelihood:
                 polarization_modes="pc",
             )
 
-    @patch("nullpol.analysis.lensing.chi2_tf_likelihood.LensingNullStreamCalculator")
-    def test_single_interferometer_per_set(self, mock_calculator_class):
-        """Test with single interferometer in each set."""
-        mock_ifos_1 = [Mock()]
-        mock_ifos_2 = [Mock()]
-        interferometers = [mock_ifos_1, mock_ifos_2]
+    def test_single_interferometer_per_set_is_rejected_for_two_basis_modes(self):
+        """Require at least one null degree of freedom across both images."""
+        interferometers_1 = InterferometerList(["H1"])
+        interferometers_2 = InterferometerList(["L1"])
+        interferometers_1.set_strain_data_from_zero_noise(sampling_frequency=256, duration=2, start_time=0)
+        interferometers_2.set_strain_data_from_zero_noise(sampling_frequency=256, duration=2, start_time=10)
 
-        likelihood = LensingChi2TimeFrequencyLikelihood(
-            interferometers=interferometers,
-            wavelet_frequency_resolution=4.0,
-            wavelet_nx=256,
-            polarization_modes="pc",
-        )
-
-        assert likelihood is not None
+        with pytest.raises(NullpolError, match="Number of detectors = 2 has to be greater"):
+            LensingChi2TimeFrequencyLikelihood(
+                interferometers=[interferometers_1, interferometers_2],
+                wavelet_frequency_resolution=4.0,
+                wavelet_nx=256,
+                polarization_modes="pc",
+            )
 
     @patch("nullpol.analysis.lensing.chi2_tf_likelihood.LensingNullStreamCalculator")
     def test_many_interferometers_per_set(self, mock_calculator_class):
@@ -261,23 +262,14 @@ class TestLensingChi2TimeFrequencyLikelihood:
         assert hasattr(likelihood, "noise_log_likelihood")
         assert hasattr(likelihood, "_calculate_noise_log_likelihood")
 
-    @patch("nullpol.analysis.lensing.chi2_tf_likelihood.LensingNullStreamCalculator")
-    def test_nested_list_structure(self, mock_calculator_class):
+    def test_nested_list_structure(self):
         """Test that deeply nested structures are rejected."""
-        # Nested list structure (not just two levels)
         interferometers = [[[Mock()]], [[Mock()]]]
 
-        # Should fail validation (elements are not lists of interferometers)
-        # This will pass the isinstance check but may cause issues later
-        try:
-            likelihood = LensingChi2TimeFrequencyLikelihood(
+        with pytest.raises(TypeError, match="not all Interferometer objects"):
+            LensingChi2TimeFrequencyLikelihood(
                 interferometers=interferometers,
                 wavelet_frequency_resolution=4.0,
                 wavelet_nx=256,
                 polarization_modes="pc",
             )
-            # If validation passes, calculator should handle it
-            assert likelihood is not None
-        except Exception:
-            # Acceptable to fail during initialization
-            pass

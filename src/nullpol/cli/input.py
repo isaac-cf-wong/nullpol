@@ -114,6 +114,12 @@ class Input(BilbyInput):
             "priors": self.search_priors,
         }
         extra_likelihood_kwargs = self.extra_likelihood_kwargs
+        if self.likelihood_type == "LensingChi2TimeFrequencyLikelihood" or self.likelihood_type.endswith(
+            ".LensingChi2TimeFrequencyLikelihood"
+        ):
+            raise NullpolError(
+                "LensingChi2TimeFrequencyLikelihood is a library-only likelihood and is not supported by the CLI."
+            )
         if self.likelihood_type == "Chi2TimeFrequencyLikelihood":
             Likelihood = Chi2TimeFrequencyLikelihood
             likelihood_kwargs.update(extra_likelihood_kwargs)

@@ -14,8 +14,14 @@ from .data_context import LensingTimeFrequencyDataContext
 class LensingNullStreamCalculator(NullStreamCalculator):
     """Null stream calculator with strong lensing modifications.
 
-    Extends NullStreamCalculator to apply a lensing factor (relative waveform
-    amplitude, time delay, and Morse phase) to antenna patterns.
+    Extends NullStreamCalculator to apply the relative waveform amplitude and
+    Morse phase to image-two antenna patterns. The data context accounts for
+    the relative time delay by aligning both images to one FFT time reference.
+
+    This is a library-only API for now; the command-line workflows do not
+    construct a two-image likelihood. Each parameter mapping must contain the
+    usual sky parameters plus ``mu_rel`` (positive relative waveform amplitude),
+    ``delta_t`` (seconds), and ``delta_n`` (Morse phase).
 
     Args:
         interferometers (list): List of two sublists of interferometers.
@@ -23,7 +29,10 @@ class LensingNullStreamCalculator(NullStreamCalculator):
         wavelet_nx (int): The number of points in the wavelet transform.
         polarization_modes (list): List of polarization modes.
         polarization_basis (list, optional): List of polarization basis.
-        time_frequency_filter (np.ndarray, optional): The time-frequency filter.
+        time_frequency_filter (np.ndarray, optional): A fixed time-frequency
+            filter in the common image-one reference frame. It should cover
+            the signal support and expected timing uncertainty without crossing
+            segment boundaries.
     """
 
     # pylint: disable=super-init-not-called
@@ -63,9 +72,9 @@ class LensingNullStreamCalculator(NullStreamCalculator):
 
         Evaluates each image's detector response at its own geocentric arrival
         time, then applies the image-two lensing factor
-        ``L(f) = mu_rel * exp(-1j * pi * (2 * dt * f + delta_n))``.
-        Here ``mu_rel`` is the relative waveform-amplitude factor, ``dt`` is
-        the inter-image delay relative to the two segment start times, and
+        ``L = mu_rel * exp(-1j * pi * delta_n)``. The data context has already
+        removed the frequency-dependent phase caused by different FFT origins.
+        Here ``mu_rel`` is the relative waveform-amplitude factor and
         ``delta_n`` is the Morse phase difference.
 
         Args:
@@ -98,15 +107,7 @@ class LensingNullStreamCalculator(NullStreamCalculator):
             )
         )
 
-        # The data context removes the detector-to-geocenter delay but retains the
-        # inter-image delay. Account for the different FFT time origins before
-        # applying image two's negative Fourier phase.
-        relative_image_delay = parameters["delta_t"] - self.data_context.inter_image_start_time_offset
-        lensing_factor = parameters["mu_rel"] * np.exp(
-            -1j
-            * np.pi
-            * (2 * relative_image_delay * self.data_context.frequency_array[:, None, None] + parameters["delta_n"])
-        )
+        lensing_factor = parameters["mu_rel"] * np.exp(-1j * np.pi * parameters["delta_n"])
         calibrated_whitened_antenna_pattern_matrix_image_2 *= lensing_factor
 
         return np.concatenate(

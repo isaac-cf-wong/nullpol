@@ -17,6 +17,11 @@ class LensingChi2TimeFrequencyLikelihood(Chi2TimeFrequencyLikelihood):
     Requires two sets of interferometers for two lensed images. Applies lensing
     modifications to antenna patterns when computing null stream energy.
 
+    This is a library-only API: the command-line workflows do not construct a
+    two-image likelihood. Each parameter mapping must provide the usual sky
+    parameters plus ``mu_rel`` (positive relative waveform amplitude),
+    ``delta_t`` (seconds), and ``delta_n`` (Morse phase).
+
     Args:
         interferometers (list): List of two sublists of interferometers.
         wavelet_frequency_resolution (float): The frequency resolution of the wavelet transform.

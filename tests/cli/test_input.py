@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import types
 
+import pytest
 from bilby_pipe.main import parse_args
 
 from nullpol.cli import input as input_module
 from nullpol.cli.data_analysis import DataAnalysisInput
 from nullpol.cli.parser import create_nullpol_parser
+from nullpol.utils import NullpolError
 
 
 class _KeywordOnlyLikelihood:
@@ -177,3 +179,18 @@ def test_dotted_path_forwards_keyword_only_parameters(monkeypatch, tmp_path):
     assert likelihood.polarization_basis == "p"
     assert likelihood.time_frequency_filter is time_frequency_filter
     assert likelihood.extra_kwargs == {"regularization_constant": 0.99}
+
+
+def test_lensing_likelihood_is_rejected_by_the_cli(tmp_path):
+    """The two-image library API must not enter the flat-network CLI flow."""
+    args = _parse_config(tmp_path, "polarization-modes = pc\npolarization-basis = p\n")
+    inputs = _build_inputs(
+        args,
+        interferometers=object(),
+        time_frequency_filter=object(),
+        priors=object(),
+        likelihood_type="nullpol.analysis.lensing.chi2_tf_likelihood.LensingChi2TimeFrequencyLikelihood",
+    )
+
+    with pytest.raises(NullpolError, match="library-only likelihood"):
+        input_module.Input.likelihood.fget(inputs)
