@@ -4,9 +4,7 @@ import sys
 
 import bilby
 import bilby_pipe.utils
-import h5py
 import numpy as np
-import pandas as pd
 from bilby_pipe.data_generation import \
     DataGenerationInput as BilbyDataGenerationInput
 from bilby_pipe.main import parse_args
@@ -130,6 +128,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
         self.time_frequency_clustering_method = args.time_frequency_clustering_method
         self.time_frequency_clustering_injection_parameters_filename = args.time_frequency_clustering_injection_parameters_filename
         self.time_frequency_clustering_pe_samples_filename = args.time_frequency_clustering_pe_samples_filename
+        self.time_frequency_filter_file = args.time_frequency_filter_file
         self.time_frequency_clustering_threshold = args.time_frequency_clustering_threshold
         self.time_frequency_clustering_threshold_type = args.time_frequency_clustering_threshold_type
         self.time_frequency_clustering_time_padding = args.time_frequency_clustering_time_padding
@@ -224,8 +223,12 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
 
     def run_time_frequency_clustering(self):
         logger.info(f"Running time-frequency clustering with method: {self.time_frequency_clustering_method}")
+        if self.time_frequency_filter_file is not None:
+            time_frequency_filter = np.load(self.time_frequency_filter_file, allow_pickle=False)
+            sky_maximized_spectrogram = None
+            logger.info(f"Loaded time-frequency filter from {self.time_frequency_filter_file}.")
         # Build the strain data for time-frequency clustering
-        if self.time_frequency_clustering_method in [
+        elif self.time_frequency_clustering_method in [
                 "data",
                 "injection",
                 "injection_parameters_file",
@@ -239,6 +242,12 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
                                                            "maxL",
                                                            "maP",
                                                            "random"]:
+                if self.time_frequency_clustering_method in [
+                        "injection", "injection_parameters_file"]:
+                    waveform_generator_class = self.waveform_generator_class
+                    frequency_domain_source_model = self.bilby_frequency_domain_source_model
+                    parameter_conversion = self.parameter_conversion
+                    waveform_arguments = self.get_injection_waveform_arguments()
                 if self.time_frequency_clustering_method == "injection":
                     parameters = self.meta_data["injection_parameters"]
                 elif self.time_frequency_clustering_method == "injection_parameters_file":
@@ -255,17 +264,25 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
                     if self.time_frequency_clustering_pe_samples_filename is None:
                         raise NullpolError(f"time-frequency-clustering-method = {self.time_frequency_clustering_method}, but time-frequency-clustering-pe-samples-filename is not provided.")
                     try:
-                        posterior = bilby.core.result.read_in_result(self.time_frequency_clustering_pe_samples_filename).posterior
-                    except:
-                        logger.warning(f"Trying to read the posterior as a .h5 file.")
-                        with h5py.File(self.time_frequency_clustering_pe_samples_filename, "r") as f:
-                            posterior = pd.DataFrame(f[list(f.keys())[0]]['posterior_samples'][()]) # Use the first waveform result
+                        pe_result = bilby.core.result.read_in_result(
+                            self.time_frequency_clustering_pe_samples_filename)
+                        posterior = pe_result.posterior
+                        pe_waveform = pe_result.meta_data["likelihood"]
+                        waveform_generator_class = pe_waveform["waveform_generator_class"]
+                        frequency_domain_source_model = pe_waveform["frequency_domain_source_model"]
+                        parameter_conversion = pe_waveform["parameter_conversion"]
+                        waveform_arguments = pe_waveform["waveform_arguments"]
+                    except Exception as exception:
+                        raise NullpolError(
+                            "Unable to recover the waveform metadata from the Bilby PE result. "
+                            "PE-driven time-frequency clustering requires a Bilby result with "
+                            "likelihood waveform metadata.") from exception
                     if self.time_frequency_clustering_method == "maxL":
                         parameters = posterior.loc[posterior["log_likelihood"].idxmax()].to_dict()
                     elif self.time_frequency_clustering_method == "maP":
                         parameters = posterior.loc[(posterior["log_likelihood"]+posterior["log_prior"]).idxmax()].to_dict()
                     elif self.time_frequency_clustering_method == "random":
-                        parameters = posterior.sample().to_dict()
+                        parameters = posterior.sample(n=1).iloc[0].to_dict()
                     else:
                         raise NullpolError(f"Unexpected error with time-frequency-clustering-method = {self.time_frequency_clustering_method}. Contact the developers.")
                     # Remove log_likelihood and log_prior from parameters
@@ -302,14 +319,13 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
                     duration=self.duration,
                     start_time=self.start_time
                 )
-                waveform_arguments = self.get_injection_waveform_arguments()
                 logger.info(f"Using waveform arguments: {waveform_arguments}")
-                waveform_generator = self.waveform_generator_class(
+                waveform_generator = waveform_generator_class(
                     duration=self.duration,
                     start_time=self.start_time,
                     sampling_frequency=self.sampling_frequency,
-                    frequency_domain_source_model=self.bilby_frequency_domain_source_model,
-                    parameter_conversion=self.parameter_conversion,
+                    frequency_domain_source_model=frequency_domain_source_model,
+                    parameter_conversion=parameter_conversion,
                     waveform_arguments=waveform_arguments,
                 )
                 ifos.inject_signal(
@@ -334,6 +350,9 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
                     skypoints=self.time_frequency_clustering_skypoints,
                     return_sky_maximized_spectrogram=True,
                     threshold_type=self.time_frequency_clustering_threshold_type)
+            time_frequency_filter_filename = f"{self.data_directory}/{self.label}_time_frequency_filter.npy"
+            np.save(time_frequency_filter_filename, time_frequency_filter, allow_pickle=False)
+            logger.info(f"Saved time-frequency filter to {time_frequency_filter_filename}.")
             # Generate the cumulative distribution of the spectrogram.
             reversed_cumulative_distribution_fig_fname = f"{self.data_directory}/{self.label}_reversed_cumulative_distribution_of_whitened_energy_pixels.png"
             plot_reverse_cumulative_distribution(spectrogram=sky_maximized_spectrogram,

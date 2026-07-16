@@ -196,8 +196,12 @@ def create_nullpol_parser(top_level=True):
                                 "provide the path to the injection parameters file."))
     clustering_parser.add("--time-frequency-clustering-pe-samples-filename",
                           type=nonestr,
-                          help=("If `maxL`, `maxP` or `random` is chosen in --time-frequency-clustering-method, "
+                          help=("If `maxL`, `maP` or `random` is chosen in --time-frequency-clustering-method, "
                                 "provide the path to the bilby result file."))
+    clustering_parser.add("--time-frequency-filter-file",
+                          type=nonestr,
+                          help=("Path to a previously saved NumPy time-frequency filter. When supplied, it "
+                                "takes precedence over time-frequency-clustering-method."))
     clustering_parser.add('--time-frequency-clustering-threshold',
                           type=float,
                           default=1.0,
