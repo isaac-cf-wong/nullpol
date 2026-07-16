@@ -42,6 +42,9 @@ class LensingNullStreamCalculator(NullStreamCalculator):
         a flat list of interferometers, but lensing requires two separate sets
         for the two lensed images. Instead, manually creates LensingTimeFrequencyDataContext.
         """
+        if polarization_basis is None:
+            polarization_basis = polarization_modes
+
         self.data_context = LensingTimeFrequencyDataContext(
             interferometers=interferometers,
             wavelet_frequency_resolution=wavelet_frequency_resolution,

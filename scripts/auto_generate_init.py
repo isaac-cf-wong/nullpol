@@ -226,7 +226,7 @@ def generate_init_content(directory: Path) -> str:
 
 
 def update_init_file(directory: Path, content: str) -> bool:
-    """Update or create __init__.py file if content has changed."""
+    """Update __init__.py file if content has changed."""
     init_file = directory / "__init__.py"
 
     # Check if content has changed
@@ -247,16 +247,12 @@ def update_init_file(directory: Path, content: str) -> bool:
 
 
 def find_python_packages(root_dir: Path) -> list[Path]:
-    """Find all Python packages (directories with __init__.py or that could be packages) under root_dir."""
+    """Find all Python packages (directories with __init__.py) under root_dir."""
     packages = []
 
     for item in root_dir.rglob("*"):
-        if item.is_dir():
-            # Include existing packages
-            if (item / "__init__.py").exists() or any(
-                f.suffix == ".py" for f in item.iterdir() if f.is_file() and f.name != "__init__.py"
-            ):
-                packages.append(item)
+        if item.is_dir() and (item / "__init__.py").exists():
+            packages.append(item)
 
     return packages
 
@@ -312,14 +308,10 @@ def auto_generate_init_files(
                     results[rel_path] = f"Would update with {len(content)} characters"
                 else:
                     results[rel_path] = "No change needed"
+            elif update_init_file(package_dir, content):
+                results[rel_path] = "Updated"
             else:
-                init_file = package_dir / "__init__.py"
-                was_created = not init_file.exists()
-
-                if update_init_file(package_dir, content):
-                    results[rel_path] = "Created" if was_created else "Updated"
-                else:
-                    results[rel_path] = "No change needed"
+                results[rel_path] = "No change needed"
         else:
             results[rel_path] = "Excluded (manual maintenance)"
 
@@ -357,15 +349,14 @@ def main():
     results = auto_generate_init_files(root_dir=root_dir, excluded_dirs=excluded_dirs, dry_run=args.dry_run)
 
     # Count changes first
-    changed_actions = ("Created", "Updated")
-    updated_count = sum(1 for action in results.values() if action in changed_actions or "Would update" in action)
+    updated_count = sum(1 for action in results.values() if "Updated" in action or "Would update" in action)
 
     # Output logic based on flags
     if args.quiet:
         # In quiet mode, only show output if there are changes
         if updated_count > 0:
             for path, action in sorted(results.items()):
-                if action in changed_actions or "Would update" in action:
+                if "Updated" in action or "Would update" in action:
                     print(f"{path}: {action}")
     elif args.verbose or args.dry_run:
         print(f"Scanning {root_dir}")

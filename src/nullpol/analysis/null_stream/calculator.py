@@ -1,4 +1,3 @@
-# pylint: disable=duplicate-code  # Calculator classes share initialization and method patterns by design
 """Null stream calculator for energy computations."""
 
 from __future__ import annotations
@@ -13,7 +12,7 @@ from .projections import compute_gw_projector, compute_null_projector, compute_n
 
 # pylint: disable=too-few-public-methods
 class NullStreamCalculator:
-    """Null stream calculation using direct projection approach.
+    """Modern null stream calculation using direct projection approach.
 
     This class manages data context and antenna pattern processing along with
     null stream computations.
@@ -84,6 +83,9 @@ class NullStreamCalculator:
 
     def _compute_filtered_null_stream(self, parameters):
         """Compute the filtered null stream in time-frequency domain.
+
+        This internal method performs the common computation steps shared by both
+        compute_null_energy and compute_principal_null_components methods.
 
         Args:
             parameters (dict): Dictionary of parameters containing sky location, polarization, etc.

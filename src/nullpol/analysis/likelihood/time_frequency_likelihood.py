@@ -56,6 +56,9 @@ class TimeFrequencyLikelihood(Likelihood):
         # Initialize the normalization constant
         self._noise_log_likelihood_value = None
 
+        # Marginalization
+        self._marginalized_parameters = []
+
     @property
     def data_context(self):
         """Access to the data context through null_stream_calculator.
