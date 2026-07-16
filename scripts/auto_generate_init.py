@@ -253,10 +253,9 @@ def find_python_packages(root_dir: Path) -> list[Path]:
     for item in root_dir.rglob("*"):
         if item.is_dir():
             # Include existing packages
-            if (item / "__init__.py").exists():
-                packages.append(item)
-            # Also include directories with .py files (potential packages)
-            elif any(f.suffix == ".py" for f in item.iterdir() if f.is_file() and f.name != "__init__.py"):
+            if (item / "__init__.py").exists() or any(
+                f.suffix == ".py" for f in item.iterdir() if f.is_file() and f.name != "__init__.py"
+            ):
                 packages.append(item)
 
     return packages
@@ -358,14 +357,15 @@ def main():
     results = auto_generate_init_files(root_dir=root_dir, excluded_dirs=excluded_dirs, dry_run=args.dry_run)
 
     # Count changes first
-    updated_count = sum(1 for action in results.values() if "Updated" in action or "Would update" in action)
+    changed_actions = ("Created", "Updated")
+    updated_count = sum(1 for action in results.values() if action in changed_actions or "Would update" in action)
 
     # Output logic based on flags
     if args.quiet:
         # In quiet mode, only show output if there are changes
         if updated_count > 0:
             for path, action in sorted(results.items()):
-                if "Updated" in action or "Would update" in action:
+                if action in changed_actions or "Would update" in action:
                     print(f"{path}: {action}")
     elif args.verbose or args.dry_run:
         print(f"Scanning {root_dir}")
