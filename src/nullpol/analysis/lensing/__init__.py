@@ -1,3 +1,5 @@
+"""Strong-lensing analysis components."""
+
 from __future__ import annotations
 
 from .calculator import LensingNullStreamCalculator

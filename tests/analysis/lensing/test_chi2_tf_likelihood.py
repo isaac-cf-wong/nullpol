@@ -5,9 +5,10 @@ This module tests the LensingChi2TimeFrequencyLikelihood class.
 
 from __future__ import annotations
 
+from unittest.mock import Mock, patch
+
 import numpy as np
 import pytest
-from unittest.mock import Mock, patch
 
 from nullpol.analysis.lensing.chi2_tf_likelihood import LensingChi2TimeFrequencyLikelihood
 
@@ -191,31 +192,23 @@ class TestLensingChi2TimeFrequencyLikelihood:
                 wavelet_nx=256,
                 polarization_modes="pc",
             )
-            assert False, "Should have raised ValueError"
+            pytest.fail("Should have raised ValueError")
         except ValueError as e:
             # Error message should be clear
             assert "interferometers must be a list of two lists" in str(e)
 
     @patch("nullpol.analysis.lensing.chi2_tf_likelihood.LensingNullStreamCalculator")
-    def test_edge_case_empty_sublists(self, mock_calculator_class):
-        """Test behavior with empty sublists."""
+    def test_initialization_validation_empty_sublists(self, mock_calculator_class):
+        """Reject empty detector networks."""
         interferometers = [[], []]  # Two empty lists
 
-        # This should pass validation (format is correct)
-        # but may fail in calculator initialization
-        try:
-            likelihood = LensingChi2TimeFrequencyLikelihood(
+        with pytest.raises(ValueError, match="non-empty"):
+            LensingChi2TimeFrequencyLikelihood(
                 interferometers=interferometers,
                 wavelet_frequency_resolution=4.0,
                 wavelet_nx=256,
                 polarization_modes="pc",
             )
-            # If it doesn't fail here, that's acceptable
-            # (calculator will handle empty lists)
-            assert likelihood is not None
-        except Exception:
-            # If it fails in calculator, that's also acceptable
-            pass
 
     @patch("nullpol.analysis.lensing.chi2_tf_likelihood.LensingNullStreamCalculator")
     def test_single_interferometer_per_set(self, mock_calculator_class):

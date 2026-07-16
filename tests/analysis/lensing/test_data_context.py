@@ -32,13 +32,19 @@ def two_detector_sets():
     ifos_1 = InterferometerList(["H1", "L1", "V1"])
     for ifo in ifos_1:
         ifo.minimum_frequency = minimum_frequency
-    ifos_1.set_strain_data_from_power_spectral_densities(sampling_frequency=sampling_frequency, duration=duration)
+    image_1_start_time = 1234567800
+    ifos_1.set_strain_data_from_power_spectral_densities(
+        sampling_frequency=sampling_frequency, duration=duration, start_time=image_1_start_time
+    )
 
     # Second set of detectors - subset of first set
     ifos_2 = InterferometerList(["H1", "L1"])
     for ifo in ifos_2:
         ifo.minimum_frequency = minimum_frequency
-    ifos_2.set_strain_data_from_power_spectral_densities(sampling_frequency=sampling_frequency, duration=duration)
+    image_2_start_time = image_1_start_time + 100
+    ifos_2.set_strain_data_from_power_spectral_densities(
+        sampling_frequency=sampling_frequency, duration=duration, start_time=image_2_start_time
+    )
 
     return [ifos_1, ifos_2]
 
@@ -58,6 +64,7 @@ class TestLensingTimeFrequencyDataContext:
         assert len(context.interferometers_1) == 3
         assert len(context.interferometers_2) == 2
         assert len(context.interferometers) == 5  # Combined
+        assert context.inter_image_start_time_offset == 100
 
     def test_interferometer_properties(self, two_detector_sets):
         """Test that interferometer properties are correctly separated."""

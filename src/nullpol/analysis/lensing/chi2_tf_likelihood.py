@@ -1,11 +1,14 @@
 # pylint: disable=duplicate-code  # Legitimate argument parsing patterns shared across modules
 """Chi-squared time-frequency likelihood for strongly lensed signals."""
+
 from __future__ import annotations
 
 from bilby.core.likelihood import Likelihood
 
-from ..likelihood.chi2_tf_likelihood import Chi2TimeFrequencyLikelihood
 from ..lensing.calculator import LensingNullStreamCalculator
+from ..likelihood.chi2_tf_likelihood import Chi2TimeFrequencyLikelihood
+
+NUMBER_OF_LENSED_IMAGES = 2
 
 
 class LensingChi2TimeFrequencyLikelihood(Chi2TimeFrequencyLikelihood):
@@ -41,13 +44,16 @@ class LensingChi2TimeFrequencyLikelihood(Chi2TimeFrequencyLikelihood):
         instead of the standard NullStreamCalculator. The parent initialization is bypassed
         to use the lensing-aware calculator that handles two detector sets.
         """
-        Likelihood.__init__(self, dict())  # pylint: disable=non-parent-init-called
+        Likelihood.__init__(self, {})  # pylint: disable=non-parent-init-called
         if not (
             isinstance(interferometers, list)
-            and len(interferometers) == 2
-            and all(isinstance(i, list) for i in interferometers)
+            and len(interferometers) == NUMBER_OF_LENSED_IMAGES
+            and all(
+                isinstance(image_interferometers, list) and image_interferometers
+                for image_interferometers in interferometers
+            )
         ):
-            raise ValueError("interferometers must be a list of two lists of interferometers")
+            raise ValueError("interferometers must be a list of two lists of non-empty interferometers")
 
         # Initialize LensingNullStreamCalculator
         self.null_stream_calculator = LensingNullStreamCalculator(

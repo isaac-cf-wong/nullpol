@@ -1,3 +1,5 @@
+"""Tests for strong-lensing analysis components."""
+
 from __future__ import annotations
 
 from .test_calculator import TestLensingNullStreamCalculator, mock_interferometers

@@ -5,17 +5,17 @@ from __future__ import annotations
 
 import numpy as np
 
-from ..null_stream.calculator import NullStreamCalculator
-from ..lensing.data_context import LensingTimeFrequencyDataContext
 from ..antenna_patterns import AntennaPatternProcessor
+from ..null_stream.calculator import NullStreamCalculator
+from .data_context import LensingTimeFrequencyDataContext
 
 
 # pylint: disable=too-few-public-methods
 class LensingNullStreamCalculator(NullStreamCalculator):
     """Null stream calculator with strong lensing modifications.
 
-    Extends NullStreamCalculator to apply lensing factor (amplification, time delay,
-    Morse phase) to antenna patterns.
+    Extends NullStreamCalculator to apply a lensing factor (relative waveform
+    amplitude, time delay, and Morse phase) to antenna patterns.
 
     Args:
         interferometers (list): List of two sublists of interferometers.
@@ -58,9 +58,12 @@ class LensingNullStreamCalculator(NullStreamCalculator):
     def _compute_calibrated_whitened_antenna_pattern_matrix(self, parameters):
         """Compute antenna pattern matrix with lensing factor applied.
 
-        Applies lensing factor L(f) = μ_rel × exp(i × π × (2 × Δt × f - Δn))
-        to the second image only, where μ_rel is relative magnification, Δt is time delay,
-        and Δn is the Morse phase difference.
+        Evaluates each image's detector response at its own geocentric arrival
+        time, then applies the image-two lensing factor
+        ``L(f) = mu_rel * exp(-1j * pi * (2 * dt * f + delta_n))``.
+        Here ``mu_rel`` is the relative waveform-amplitude factor, ``dt`` is
+        the inter-image delay relative to the two segment start times, and
+        ``delta_n`` is the Morse phase difference.
 
         Args:
             parameters (dict): Dictionary containing standard GW parameters plus
@@ -70,27 +73,40 @@ class LensingNullStreamCalculator(NullStreamCalculator):
             np.ndarray: Calibrated whitened antenna pattern matrix with lensing factor
                 applied to second image.
         """
-        calibrated_whitened_antenna_pattern_matrix = (
+        n_detectors_image_1 = len(self.data_context.interferometers_1)
+        calibrated_whitened_antenna_pattern_matrix_image_1 = (
             self.antenna_pattern_processor.compute_calibrated_whitened_antenna_pattern_matrix(
-                self.data_context.interferometers,
-                self.data_context.power_spectral_density_array,
+                self.data_context.interferometers_1,
+                self.data_context.power_spectral_density_array[:n_detectors_image_1],
                 self.data_context.masked_frequency_array,
                 self.data_context.frequency_mask,
                 parameters,
             )
         )
 
-        # Apply lensing factor only to second image detectors
-        n_detectors_image_1 = len(self.data_context.interferometers_1)
-        lensing_factor = parameters["mu_rel"] * np.exp(
-            1j
-            * np.pi
-            * (
-                2 * parameters["delta_t"] * self.data_context.masked_frequency_array[:, None, None]
-                - parameters["delta_n"]
+        image_2_parameters = {**parameters, "geocent_time": parameters["geocent_time"] + parameters["delta_t"]}
+        calibrated_whitened_antenna_pattern_matrix_image_2 = (
+            self.antenna_pattern_processor.compute_calibrated_whitened_antenna_pattern_matrix(
+                self.data_context.interferometers_2,
+                self.data_context.power_spectral_density_array[n_detectors_image_1:],
+                self.data_context.masked_frequency_array,
+                self.data_context.frequency_mask,
+                image_2_parameters,
             )
         )
 
-        calibrated_whitened_antenna_pattern_matrix[:, n_detectors_image_1:, :] *= lensing_factor
+        # The data context removes the detector-to-geocenter delay but retains the
+        # inter-image delay. Account for the different FFT time origins before
+        # applying image two's negative Fourier phase.
+        relative_image_delay = parameters["delta_t"] - self.data_context.inter_image_start_time_offset
+        lensing_factor = parameters["mu_rel"] * np.exp(
+            -1j
+            * np.pi
+            * (2 * relative_image_delay * self.data_context.frequency_array[:, None, None] + parameters["delta_n"])
+        )
+        calibrated_whitened_antenna_pattern_matrix_image_2 *= lensing_factor
 
-        return calibrated_whitened_antenna_pattern_matrix
+        return np.concatenate(
+            [calibrated_whitened_antenna_pattern_matrix_image_1, calibrated_whitened_antenna_pattern_matrix_image_2],
+            axis=1,
+        )

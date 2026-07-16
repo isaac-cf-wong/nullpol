@@ -7,11 +7,26 @@ from bilby.gw.detector.networks import InterferometerList
 
 from ..data_context import TimeFrequencyDataContext
 
+NUMBER_OF_LENSED_IMAGES = 2
+
+
+class _LensingInterferometerList(InterferometerList):
+    """Interferometer list that permits different start times for separate images."""
+
+    def _check_interferometers(self) -> None:
+        """Require matching frequency grids while allowing distinct epoch starts."""
+        for attribute in ("duration", "sampling_frequency"):
+            values = [getattr(interferometer.strain_data, attribute) for interferometer in self]
+            if values and not all(np.isclose(value, values[0]) for value in values[1:]):
+                raise ValueError(f"The {attribute} of all interferometers must be the same.")
+
 
 class LensingTimeFrequencyDataContext(TimeFrequencyDataContext):
     """Data context for strong lensing analysis with two images.
 
     Manages two sets of interferometers observing two lensed images of the same signal.
+    The image networks may have different segment start times, but must have matching
+    duration and sampling frequency so their frequency-domain data can be combined.
     Handles differential time delays between the two images.
 
     Args:
@@ -28,10 +43,21 @@ class LensingTimeFrequencyDataContext(TimeFrequencyDataContext):
         wavelet_nx,
         time_frequency_filter=None,
     ):
+        """Initialize the two-image data context."""
+        if not (
+            isinstance(interferometers, list)
+            and len(interferometers) == NUMBER_OF_LENSED_IMAGES
+            and all(
+                isinstance(image_interferometers, list) and image_interferometers
+                for image_interferometers in interferometers
+            )
+        ):
+            raise ValueError("interferometers must be a list of two lists of non-empty interferometers")
+
         self._interferometers_1 = InterferometerList(interferometers[0])
         self._interferometers_2 = InterferometerList(interferometers[1])
         super().__init__(
-            interferometers=self._interferometers_1 + self._interferometers_2,
+            interferometers=_LensingInterferometerList([*self._interferometers_1, *self._interferometers_2]),
             wavelet_frequency_resolution=wavelet_frequency_resolution,
             wavelet_nx=wavelet_nx,
             time_frequency_filter=time_frequency_filter,
@@ -55,8 +81,16 @@ class LensingTimeFrequencyDataContext(TimeFrequencyDataContext):
         """
         return self._interferometers_2
 
+    @property
+    def inter_image_start_time_offset(self) -> float:
+        """Difference between the second and first image segment start times."""
+        return self.interferometers_2[0].strain_data.start_time - self.interferometers_1[0].strain_data.start_time
+
     def compute_time_delay_array(self, parameters: dict) -> np.ndarray:
-        """Compute time delay array with lensing time delay applied to second set.
+        """Compute detector-to-geocenter delays at each image's arrival time.
+
+        The inter-image phase delay is applied by LensingNullStreamCalculator,
+        accounting for the difference between the two segment start times.
 
         Args:
             parameters (dict): Dictionary containing 'ra', 'dec', 'geocent_time', and 'delta_t'.
@@ -64,7 +98,6 @@ class LensingTimeFrequencyDataContext(TimeFrequencyDataContext):
         Returns:
             np.ndarray: Array of time delays.
         """
-
         time_delay_array_1 = [
             ifo.time_delay_from_geocenter(ra=parameters["ra"], dec=parameters["dec"], time=parameters["geocent_time"])
             for ifo in self.interferometers_1

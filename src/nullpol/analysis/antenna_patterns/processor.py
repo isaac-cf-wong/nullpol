@@ -35,7 +35,8 @@ class AntennaPatternProcessor:
 
     Args:
         polarization_modes (list): List of polarization modes.
-        polarization_basis (list, optional): List of polarization basis.
+        polarization_basis (list, optional): List of polarization basis. Defaults to
+            all active polarization modes.
         interferometers (list): List of interferometers for validation.
     """
 
@@ -46,6 +47,9 @@ class AntennaPatternProcessor:
         interferometers=None,
     ):
         """Initialize the antenna pattern processor."""
+        if polarization_basis is None:
+            polarization_basis = polarization_modes
+
         # Encode the polarization labels
         self._polarization_modes, self._polarization_basis, self._polarization_derived = encode_polarization(
             polarization_modes, polarization_basis
