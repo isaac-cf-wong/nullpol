@@ -132,6 +132,12 @@ def create_nullpol_parser(top_level=True):
     remove_argument(parser, "--default-prior")
     remove_argument(parser, "--version")
     add_argument_to_group(parser,
+                          "Job submission arguments",
+                          "--requirements",
+                          type=nonestr,
+                          default=None,
+                          help="Additional HTCondor requirements expression.")
+    add_argument_to_group(parser,
                           "Likelihood arguments",
                           "--likelihood-type",
                           default="FractionalProjectionTimeFrequencyLikelihood",

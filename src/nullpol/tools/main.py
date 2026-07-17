@@ -163,7 +163,7 @@ class MainInput(BilbyMainInput, Input):
                 self.check_injection()
 
         self.extra_lines = []
-        self.requirements = []
+        self.requirements = args.requirements
 
     @property
     def analysis_executable(self):
