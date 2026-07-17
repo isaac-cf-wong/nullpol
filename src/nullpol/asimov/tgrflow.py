@@ -560,6 +560,8 @@ class Applicator:
             output['psds'] = {}
             for key, value in gr_pe['psds'].items():
                 filename = os.path.join(copied_data_folder, f'{key}_psd.dat')
+                if os.path.exists(filename):
+                    os.chmod(filename, 0o644)
                 shutil.copy(value, filename)
                 output['psds'][key] = filename
         event = Event.from_dict(output)

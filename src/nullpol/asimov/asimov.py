@@ -12,9 +12,6 @@ from asimov import config
 from asimov.pipeline import Pipeline, PipelineException, PipelineLogger
 from asimov.pipelines.bilby import Bilby
 
-from .pesummary import PESummaryPipeline
-
-
 class Nullpol(Bilby):
     """
     The nullpol pipeline.
@@ -86,11 +83,31 @@ class Nullpol(Bilby):
         ) + glob.glob(os.path.join(rundir, "result", f"*_{subrun_label}_merge*_result.json"))
 
     def after_completion(self):
-        post_pipeline = PESummaryPipeline(production=self.production)
-        self.logger.info("Job has completed. Running PE Summary.")
-        cluster = post_pipeline.submit_dag()
-        self.production.meta["job id"] = int(cluster)
+        """Wait for the PEsummary node that is part of the analysis DAG."""
+        if self.detect_completion_processing():
+            self.after_processing()
+            return
+
+        self.logger.info("Analysis DAG completed; waiting for its PE summary.")
         self.production.status = "processing"
+        self.production.event.update_data()
+
+    def detect_completion_processing(self):
+        """Check for the combined PEsummary result produced by the DAG."""
+        result = os.path.join(
+            config.get("general", "webroot"),
+            self.production.event.name,
+            self.production.name,
+            "pesummary",
+            "samples",
+            "posterior_samples.h5",
+        )
+        return os.path.isfile(result)
+
+    def after_processing(self):
+        """Publish the completed DAG-contained PEsummary result."""
+        self.logger.info("DAG-contained PE summary is available.")
+        self.production.status = "uploaded"
         self.production.event.update_data()
 
     @property
