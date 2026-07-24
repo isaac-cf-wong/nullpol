@@ -11,7 +11,7 @@ def lal_binary_black_hole_non_gr_simple_map(
     **kwargs,
 ):
     waveform_kwargs = dict(
-        waveform_approximant='IMRPhenomPv2', reference_frequency=50.0,
+        waveform_approximant='IMRPhenomXPHM', reference_frequency=50.0,
         minimum_frequency=20.0, maximum_frequency=frequency_array[-1],
         catch_waveform_errors=False, pn_spin_order=-1, pn_tidal_order=-1,
         pn_phase_order=-1, pn_amplitude_order=0)

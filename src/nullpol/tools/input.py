@@ -192,7 +192,7 @@ class Input(BilbyInput):
 
         Defaults the injection-waveform-approximant to waveform-approximant, if
         no injection-waveform-approximant provided. Note that the default
-        waveform-approximant is `IMRPhenomPv2`.
+        waveform-approximant is `IMRPhenomXPHM`.
         """
         if self.injection_waveform_approximant is None:
             self.injection_waveform_approximant = self.waveform_approximant

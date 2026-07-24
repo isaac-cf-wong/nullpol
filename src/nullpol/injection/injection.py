@@ -4,7 +4,7 @@ from bilby.gw.conversion import convert_to_lal_binary_black_hole_parameters
 from bilby.gw.source import lal_binary_black_hole
 from bilby.gw.waveform_generator import WaveformGenerator
 
-DEFAULT_BBH_WAVEFORM_ARGUMENTS = {"waveform_approximant": "IMRPhenomPv2",
+DEFAULT_BBH_WAVEFORM_ARGUMENTS = {"waveform_approximant": "IMRPhenomXPHM",
                                   "reference_frequency": 50}
 
 
