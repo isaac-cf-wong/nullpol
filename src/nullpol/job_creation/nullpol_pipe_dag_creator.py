@@ -7,13 +7,14 @@ from bilby_pipe.job_creation.bilby_pipe_dag_creator import (
     get_parallel_list, get_trigger_time_list)
 from bilby_pipe.job_creation.dag import Dag
 from bilby_pipe.job_creation.nodes import (FinalResultNode, MergeNode,
-                                           PESummaryNode, PlotNode,
+                                           PlotNode,
                                            PostProcessAllResultsNode,
                                            PostProcessSingleResultsNode)
 from bilby_pipe.job_creation.overview import create_overview
 from bilby_pipe.utils import get_colored_string
 
 from ..utils import NullpolError, logger
+from .pe_summary_node import NullpolPESummaryNode as PESummaryNode
 from .analysis_node import AnalysisNode
 from .generation_node import GenerationNode
 
