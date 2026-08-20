@@ -40,7 +40,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-asimov = ["asimov>=0.6.1", "cbcflow>=0.6.3"]
+asimov = ["asimov>=0.7.0", "cbcflow>=0.6.3"]
 
 [dependency-groups]
 dev = [
