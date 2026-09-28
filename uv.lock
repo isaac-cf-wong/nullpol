@@ -2130,7 +2130,7 @@ release = [
 
 [package.metadata]
 requires-dist = [
-    { name = "asimov", marker = "extra == 'asimov'", specifier = ">=0.7.0" },
+    { name = "asimov", marker = "extra == 'asimov'", specifier = ">=0.7.1" },
     { name = "bilby", specifier = ">=2.8.0" },
     { name = "bilby-pipe", specifier = ">=1.9.0" },
     { name = "cbcflow", marker = "extra == 'asimov'", specifier = ">=0.6.3" },
