@@ -28,7 +28,6 @@ import nullpol
 
 # How you'd like to use the new feature
 result = nullpol.new_function(param="example")
-
 ```
 
 ## 🌈 Use Case & Benefits
