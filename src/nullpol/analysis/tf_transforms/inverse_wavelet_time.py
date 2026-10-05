@@ -28,7 +28,7 @@ def inverse_wavelet_time_helper_fast(wave_in: np.ndarray, phi: np.ndarray, Nf: i
 
     afins = np.zeros(2 * Nf, dtype=np.complex128)
 
-    for n in range(0, Nt):
+    for n in range(Nt):
         # old unpacked way, should still work but is necessarily slower,
         # might be more comparable if it could be written as an irfft instead
         # pack_wave_time_helper(n,Nf,Nt,wave_in,afins)
@@ -72,7 +72,7 @@ def _unpack_time_wave_helper(
     idxf = (-K // 2 + n * Nf + ND) % (2 * Nf)
     k = (-K // 2 + n * Nf) % ND
 
-    for k_ind in range(0, K):
+    for k_ind in range(K):
         res_loc = fft_fin_real[idxf]
         res[k] += phis[k_ind] * res_loc
         idxf += 1
@@ -104,7 +104,7 @@ def _unpack_time_wave_helper_compact(
     ND = Nf * Nt
     fft_fin_real = np.zeros(4 * Nf)
     fft_fin_imag = np.zeros(4 * Nf)
-    for itrf in range(0, 2 * Nf):
+    for itrf in range(2 * Nf):
         fft_fin_real[itrf] = np.real(fft_fin[itrf])
         fft_fin_real[itrf + 2 * Nf] = fft_fin_real[itrf]
         fft_fin_imag[itrf] = np.imag(fft_fin[(itrf + Nf) % (2 * Nf)])
@@ -113,7 +113,7 @@ def _unpack_time_wave_helper_compact(
     idxf1_base = (-K // 2 + n * Nf + ND) % (2 * Nf)
     k1_base = (-K // 2 + n * Nf) % ND
     for k_ind in range(0, K, 2 * Nf):
-        for idxf1_add in range(0, 2 * Nf):
+        for idxf1_add in range(2 * Nf):
             idxf1 = idxf1_base + idxf1_add  # k_ind%(2*Nf)
             k_ind_loc = k_ind + idxf1_add
             k1 = k1_base + k_ind_loc
@@ -167,7 +167,7 @@ def _pack_wave_time_helper(n: int, Nf: int, Nt: int, wave_in: np.ndarray, afins:
         afins[0] = 0.0
         afins[Nf] = 0.0
 
-    for idxm in range(0, Nf // 2 - 1):
+    for idxm in range(Nf // 2 - 1):
         if n % 2:
             afins[2 * idxm + 2] = 1j * wave_in[n, 2 * idxm + 2]
             afins[2 * Nf - 2 * idxm - 2] = -1j * wave_in[n, 2 * idxm + 2]
@@ -175,7 +175,7 @@ def _pack_wave_time_helper(n: int, Nf: int, Nt: int, wave_in: np.ndarray, afins:
             afins[2 * idxm + 2] = 1 * wave_in[n, 2 * idxm + 2]
             afins[2 * Nf - 2 * idxm - 2] = 1 * wave_in[n, 2 * idxm + 2]
 
-    for idxm in range(0, Nf // 2):
+    for idxm in range(Nf // 2):
         if n % 2:
             afins[2 * idxm + 1] = -1 * wave_in[n, 2 * idxm + 1]
             afins[2 * Nf - 2 * idxm - 1] = -1 * wave_in[n, 2 * idxm + 1]
