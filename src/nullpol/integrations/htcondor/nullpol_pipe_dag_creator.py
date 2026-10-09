@@ -19,6 +19,7 @@ from bilby_pipe.job_creation.overview import create_overview
 from bilby_pipe.utils import get_colored_string
 
 from ...utils import NullpolError, logger
+from ..slurm import Dag as SlurmDag
 from .analysis_node import AnalysisNode
 from .generation_node import GenerationNode
 
@@ -56,7 +57,7 @@ def generate_dag(inputs):
             - post-processing options
 
     Returns:
-        Dag: Complete DAG object ready for HTCondor submission with all nodes
+        Dag: Complete DAG object ready for scheduler submission with all nodes
             and dependencies properly configured.
 
     Raises:
@@ -70,7 +71,7 @@ def generate_dag(inputs):
         4. Post-processing nodes (plots, summaries) - depend on merge nodes
     """
     inputs = copy.deepcopy(inputs)
-    dag = Dag(inputs)
+    dag = SlurmDag(inputs) if inputs.scheduler.lower() == "slurm" else Dag(inputs)
     trigger_times = get_trigger_time_list(inputs)
     polarization_modes_list = inputs.polarization_modes
     polarization_basis_list = inputs.polarization_basis

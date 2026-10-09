@@ -4,11 +4,35 @@ from __future__ import annotations
 
 import types
 
+import pytest
 from bilby_pipe.main import parse_args
 
 from nullpol.cli import input as input_module
 from nullpol.cli.data_analysis import DataAnalysisInput
+from nullpol.cli.main import MainInput
 from nullpol.cli.parser import create_nullpol_parser
+
+
+@pytest.mark.parametrize("strict_cpu_request", [True, False])
+@pytest.mark.parametrize("scheduler", ["condor", "slurm"])
+def test_main_input_copies_scheduler_cpu_setting(tmp_path, scheduler, strict_cpu_request):
+    """Expose the CPU setting required by the shared job-creation code."""
+    config = tmp_path / "main.ini"
+    config.write_text(
+        f"outdir = {tmp_path / 'outdir'}\n"
+        f"scheduler = {scheduler}\n"
+        "polarization-modes = pc\n"
+        "polarization-basis = p\n"
+        "detectors = [H1, L1, V1]\n"
+        "request-cpus = 2\n"
+        f"htcondor-strict-cpu-request = {strict_cpu_request}\n",
+        encoding="utf-8",
+    )
+    args, unknown_args = parse_args([str(config)], create_nullpol_parser())
+
+    inputs = MainInput(args, unknown_args)
+
+    assert inputs.htcondor_strict_cpu_request is strict_cpu_request
 
 
 class _KeywordOnlyLikelihood:

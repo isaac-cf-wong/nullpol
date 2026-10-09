@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-# External integrations
-from . import htcondor  # HTCondor job creation (formerly job_creation)
+# Scheduler integrations
+from . import htcondor, slurm
 
 # Conditional asimov import
 try:
@@ -16,6 +16,7 @@ except ImportError:
 
 __all__ = [
     "htcondor",
+    "slurm",
 ]
 
 # Only export asimov if it's available
