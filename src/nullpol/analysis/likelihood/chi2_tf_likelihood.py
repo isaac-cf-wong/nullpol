@@ -60,10 +60,14 @@ class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
         time_frequency_filter_sum = np.sum(self.data_context.time_frequency_filter)
         return (len(self.interferometers) - polarization_basis_sum) * time_frequency_filter_sum
 
-    def log_likelihood(self):
-        """Compute the log likelihood using the projection approach."""
+    def log_likelihood(self, parameters):
+        """Compute the log likelihood using the supplied parameters.
+
+        Args:
+            parameters (dict): Proposal parameters supplied by the sampler.
+        """
         # Compute null energy using the parameters
-        null_energy = self.null_stream_calculator.compute_null_energy(self.parameters)
+        null_energy = self.null_stream_calculator.compute_null_energy(parameters)
 
         return scipy.stats.chi2.logpdf(null_energy, df=self.DoF)
 
