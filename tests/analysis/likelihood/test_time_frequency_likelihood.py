@@ -17,7 +17,7 @@ class TestTimeFrequencyLikelihoodSimple:
 
         # Test that log_likelihood raises NotImplementedError
         with pytest.raises(NotImplementedError):
-            likelihood.log_likelihood()
+            likelihood.log_likelihood({})
 
     def test_calculate_noise_log_likelihood_not_implemented_error(self):
         """Test that _calculate_noise_log_likelihood raises NotImplementedError in base class."""

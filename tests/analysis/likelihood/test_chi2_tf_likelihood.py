@@ -25,6 +25,47 @@ from nullpol.simulation.injection import create_injection
 logger.setLevel("CRITICAL")
 
 
+def _energy_likelihood():
+    """Build a likelihood whose null energy is the ``energy`` parameter."""
+    likelihood = Chi2TimeFrequencyLikelihood.__new__(Chi2TimeFrequencyLikelihood)
+    bilby.core.likelihood.Likelihood.__init__(likelihood)
+    likelihood.null_stream_calculator = Mock()
+    likelihood.null_stream_calculator.data_context.interferometers = [object(), object(), object()]
+    likelihood.null_stream_calculator.data_context.time_frequency_filter = np.ones((1, 2))
+    likelihood.null_stream_calculator.antenna_pattern_processor.polarization_basis = np.array([True])
+    likelihood.null_stream_calculator.compute_null_energy.side_effect = lambda parameters: parameters["energy"]
+    likelihood._noise_log_likelihood_value = -1.5
+    return likelihood
+
+
+@pytest.mark.parametrize("use_ratio", [False, True])
+def test_log_likelihood_uses_supplied_parameters(use_ratio):
+    """Each call must evaluate the proposal it is given, including likelihood ratios."""
+    likelihood = _energy_likelihood()
+    method = likelihood.log_likelihood_ratio if use_ratio else likelihood.log_likelihood
+
+    first = method(parameters={"energy": 2.0})
+    second = method(parameters={"energy": 8.0})
+
+    offset = 1.5 if use_ratio else 0.0
+    assert first == pytest.approx(scipy.stats.chi2.logpdf(2.0, df=4) + offset)
+    assert second == pytest.approx(scipy.stats.chi2.logpdf(8.0, df=4) + offset)
+    assert first != second
+
+
+def test_log_likelihood_without_parameters_falls_back(monkeypatch):
+    """Callers using Bilby's ``log_likelihood()`` contract, such as bilby_pipe reweighting, keep working."""
+    monkeypatch.setattr(bilby.core.likelihood, "PARAMETERS_AS_STATE", "WARN")
+    likelihood = _energy_likelihood()
+    with pytest.warns(FutureWarning):
+        likelihood.parameters = {"energy": 3.0}
+
+    with pytest.warns(FutureWarning):
+        log_l = likelihood.log_likelihood()
+
+    assert log_l == pytest.approx(scipy.stats.chi2.logpdf(3.0, df=4))
+
+
 @pytest.fixture(scope="module")
 def configuration() -> dict:
     """Configuration fixture for time-frequency likelihood tests.
@@ -179,8 +220,8 @@ def test_noise_residual_energy(configuration: dict, time_frequency_filter: np.nd
             polarization_basis=polarization_basis,
             time_frequency_filter=time_frequency_filter,
         )
-        likelihood.parameters = {"ra": 0, "dec": 0, "psi": 0, "geocent_time": geocent_time}
-        logL = likelihood.log_likelihood()
+        likelihood_parameters = {"ra": 0, "dec": 0, "psi": 0, "geocent_time": geocent_time}
+        logL = likelihood.log_likelihood(likelihood_parameters)
         logL_samples.append(logL)
 
     # Simulate chi2 random variables and compute their logpdfs
@@ -243,8 +284,8 @@ def test_signal_residual_energy(configuration: dict, time_frequency_filter: np.n
             polarization_basis=polarization_basis,
             time_frequency_filter=time_frequency_filter,
         )
-        likelihood.parameters = {"ra": ra, "dec": dec, "psi": psi, "geocent_time": geocent_time}
-        logL = likelihood.log_likelihood()
+        likelihood_parameters = {"ra": ra, "dec": dec, "psi": psi, "geocent_time": geocent_time}
+        logL = likelihood.log_likelihood(likelihood_parameters)
         logL_samples.append(logL)
 
     # Simulate chi2 random variables and compute their logpdfs
@@ -308,8 +349,8 @@ def test_signal_residual_energy_incorrect_parameters(configuration: dict, time_f
             polarization_basis=polarization_basis,
             time_frequency_filter=time_frequency_filter,
         )
-        likelihood.parameters = {"ra": ra, "dec": dec, "psi": psi, "geocent_time": geocent_time}
-        logL = likelihood.log_likelihood()
+        likelihood_parameters = {"ra": ra, "dec": dec, "psi": psi, "geocent_time": geocent_time}
+        logL = likelihood.log_likelihood(likelihood_parameters)
         logL_samples.append(logL)
 
     # Simulate chi2 random variables and compute their logpdfs
@@ -378,7 +419,7 @@ def test_signal_pc_c_residual_energy(configuration: dict, time_frequency_filter:
             polarization_basis=polarization_basis,
             time_frequency_filter=time_frequency_filter,
         )
-        likelihood.parameters = {
+        likelihood_parameters = {
             "ra": ra,
             "dec": dec,
             "psi": psi,
@@ -386,7 +427,7 @@ def test_signal_pc_c_residual_energy(configuration: dict, time_frequency_filter:
             "amplitude_cp": amplitude_cp,
             "phase_cp": phase_cp,
         }
-        logL = likelihood.log_likelihood()
+        logL = likelihood.log_likelihood(likelihood_parameters)
         logL_samples.append(logL)
 
     # Simulate chi2 random variables and compute their logpdfs
@@ -456,7 +497,7 @@ def test_signal_pc_c_residual_energy_incorrect_parameters(
             polarization_basis=polarization_basis,
             time_frequency_filter=time_frequency_filter,
         )
-        likelihood.parameters = {
+        likelihood_parameters = {
             "ra": ra,
             "dec": dec,
             "psi": psi,
@@ -464,7 +505,7 @@ def test_signal_pc_c_residual_energy_incorrect_parameters(
             "amplitude_cp": amplitude_cp,
             "phase_cp": phase_cp,
         }
-        logL = likelihood.log_likelihood()
+        logL = likelihood.log_likelihood(likelihood_parameters)
         logL_samples.append(logL)
 
     # Simulate chi2 random variables and compute their logpdfs

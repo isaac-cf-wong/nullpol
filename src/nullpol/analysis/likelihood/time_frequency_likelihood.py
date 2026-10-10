@@ -41,7 +41,7 @@ class TimeFrequencyLikelihood(Likelihood):
         **kwargs,  # pylint: disable=unused-argument
     ):
         """Initialize the instance."""
-        super().__init__({})
+        super().__init__()
 
         # Initialize null stream calculator with all components
         self.null_stream_calculator = NullStreamCalculator(
@@ -86,8 +86,11 @@ class TimeFrequencyLikelihood(Likelihood):
         """
         return self.null_stream_calculator.data_context.interferometers
 
-    def log_likelihood(self):
+    def log_likelihood(self, parameters=None):
         """Log likelihood.
+
+        Args:
+            parameters (dict, optional): Proposal parameters supplied by the sampler.
 
         Raises:
             NotImplementedError: This should be implemented in a subclass.
