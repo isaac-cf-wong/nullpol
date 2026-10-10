@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import numpy as np
 import scipy.stats
+from bilby.core.likelihood import _fallback_to_parameters
 
 from ..tf_transforms import transform_wavelet_freq
 from .time_frequency_likelihood import TimeFrequencyLikelihood
@@ -60,12 +61,14 @@ class Chi2TimeFrequencyLikelihood(TimeFrequencyLikelihood):
         time_frequency_filter_sum = np.sum(self.data_context.time_frequency_filter)
         return (len(self.interferometers) - polarization_basis_sum) * time_frequency_filter_sum
 
-    def log_likelihood(self, parameters):
+    def log_likelihood(self, parameters=None):
         """Compute the log likelihood using the supplied parameters.
 
         Args:
-            parameters (dict): Proposal parameters supplied by the sampler.
+            parameters (dict, optional): Proposal parameters supplied by the sampler.
+                If None, Bilby's deprecated fallback to ``self.parameters`` applies.
         """
+        parameters = _fallback_to_parameters(self, parameters)
         # Compute null energy using the parameters
         null_energy = self.null_stream_calculator.compute_null_energy(parameters)
 

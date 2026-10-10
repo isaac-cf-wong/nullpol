@@ -86,8 +86,11 @@ class TimeFrequencyLikelihood(Likelihood):
         """
         return self.null_stream_calculator.data_context.interferometers
 
-    def log_likelihood(self, parameters):
+    def log_likelihood(self, parameters=None):
         """Log likelihood.
+
+        Args:
+            parameters (dict, optional): Proposal parameters supplied by the sampler.
 
         Raises:
             NotImplementedError: This should be implemented in a subclass.

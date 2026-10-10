@@ -25,34 +25,45 @@ from nullpol.simulation.injection import create_injection
 logger.setLevel("CRITICAL")
 
 
-@pytest.mark.parametrize("use_ratio", [False, True])
-def test_sampler_uses_current_parameters(use_ratio):
-    """Bilby's sampler must evaluate each proposal, including likelihood ratios."""
+def _energy_likelihood():
+    """Build a likelihood whose null energy is the ``energy`` parameter."""
     likelihood = Chi2TimeFrequencyLikelihood.__new__(Chi2TimeFrequencyLikelihood)
     bilby.core.likelihood.Likelihood.__init__(likelihood)
-    likelihood.parameters = {"energy": 100.0}
     likelihood.null_stream_calculator = Mock()
     likelihood.null_stream_calculator.data_context.interferometers = [object(), object(), object()]
     likelihood.null_stream_calculator.data_context.time_frequency_filter = np.ones((1, 2))
     likelihood.null_stream_calculator.antenna_pattern_processor.polarization_basis = np.array([True])
     likelihood.null_stream_calculator.compute_null_energy.side_effect = lambda parameters: parameters["energy"]
     likelihood._noise_log_likelihood_value = -1.5
+    return likelihood
 
-    sampler = bilby.core.sampler.base_sampler.Sampler.__new__(bilby.core.sampler.base_sampler.Sampler)
-    sampler.likelihood = likelihood
-    sampler.parameters = {}
-    sampler._search_parameter_keys = ["energy"]
-    sampler.use_ratio = use_ratio
-    sampler.likelihood_benchmark = False
 
-    first = sampler.log_likelihood([2.0])
-    second = sampler.log_likelihood([8.0])
+@pytest.mark.parametrize("use_ratio", [False, True])
+def test_log_likelihood_uses_supplied_parameters(use_ratio):
+    """Each call must evaluate the proposal it is given, including likelihood ratios."""
+    likelihood = _energy_likelihood()
+    method = likelihood.log_likelihood_ratio if use_ratio else likelihood.log_likelihood
+
+    first = method(parameters={"energy": 2.0})
+    second = method(parameters={"energy": 8.0})
 
     offset = 1.5 if use_ratio else 0.0
     assert first == pytest.approx(scipy.stats.chi2.logpdf(2.0, df=4) + offset)
     assert second == pytest.approx(scipy.stats.chi2.logpdf(8.0, df=4) + offset)
     assert first != second
-    assert likelihood.parameters == {"energy": 100.0}
+
+
+def test_log_likelihood_without_parameters_falls_back(monkeypatch):
+    """Callers using Bilby's ``log_likelihood()`` contract, such as bilby_pipe reweighting, keep working."""
+    monkeypatch.setattr(bilby.core.likelihood, "PARAMETERS_AS_STATE", "WARN")
+    likelihood = _energy_likelihood()
+    with pytest.warns(FutureWarning):
+        likelihood.parameters = {"energy": 3.0}
+
+    with pytest.warns(FutureWarning):
+        log_l = likelihood.log_likelihood()
+
+    assert log_l == pytest.approx(scipy.stats.chi2.logpdf(3.0, df=4))
 
 
 @pytest.fixture(scope="module")
