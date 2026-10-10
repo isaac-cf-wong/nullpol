@@ -6,7 +6,6 @@ import copy
 
 import bilby_pipe.utils
 from bilby_pipe.job_creation.bilby_pipe_dag_creator import get_parallel_list, get_trigger_time_list
-from bilby_pipe.job_creation.dag import Dag
 from bilby_pipe.job_creation.nodes import (
     FinalResultNode,
     MergeNode,
@@ -19,7 +18,7 @@ from bilby_pipe.job_creation.overview import create_overview
 from bilby_pipe.utils import get_colored_string
 
 from ...utils import NullpolError, logger
-from ..slurm import Dag as SlurmDag
+from ..scheduler import create_dag
 from .analysis_node import AnalysisNode
 from .generation_node import GenerationNode
 
@@ -71,7 +70,7 @@ def generate_dag(inputs):
         4. Post-processing nodes (plots, summaries) - depend on merge nodes
     """
     inputs = copy.deepcopy(inputs)
-    dag = SlurmDag(inputs) if inputs.scheduler.lower() == "slurm" else Dag(inputs)
+    dag = create_dag(inputs)
     trigger_times = get_trigger_time_list(inputs)
     polarization_modes_list = inputs.polarization_modes
     polarization_basis_list = inputs.polarization_basis

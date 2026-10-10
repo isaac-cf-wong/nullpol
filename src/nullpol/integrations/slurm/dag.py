@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
-import shlex
+import os
 import subprocess
 
 from bilby_pipe.job_creation.dag import Dag as BilbyDag
 from bilby_pipe.job_creation.slurm import SubmitSLURM as BilbySubmitSLURM
 
-from ...utils import NullpolError
+from ...utils import NullpolError, logger
+
+GENERATION_EXECUTABLE = "nullpol_pipe_generation"
 
 
 class SubmitSLURM(BilbySubmitSLURM):
@@ -26,21 +28,40 @@ class SubmitSLURM(BilbySubmitSLURM):
     def run_local_generation(self):
         """Run every generation job and retain dependencies if one fails."""
         for node in list(self.dag.nodes):
-            if "_generation" in node.name:
-                subprocess.run([node.executable, *shlex.split(node.args[0].arg)], check=True)  # noqa: S603
-                for other_node in self.dag.nodes:
-                    if node in other_node.parents:
-                        other_node.parents.remove(node)
-                self.dag.nodes.remove(node)
+            # Match on the executable: node names start with the user's label.
+            if os.path.basename(node.executable) != GENERATION_EXECUTABLE:
+                continue
+            # Run the job's own Slurm script so modules, scheduler-env and quoting match the scheduled job.
+            script = self._write_individual_processes(node.name, node.executable, node.args[0].arg)
+            try:
+                subprocess.run(["/bin/bash", script], check=True)  # noqa: S603
+            except subprocess.CalledProcessError as error:
+                raise NullpolError(
+                    f"Local generation job {node.name} failed with exit code {error.returncode}: {script}"
+                ) from error
+            for other_node in self.dag.nodes:
+                if node in other_node.parents:
+                    other_node.parents.remove(node)
+            self.dag.nodes.remove(node)
 
 
 class Dag(BilbyDag):
     """Use upstream job creation with nullpol's Slurm submission adapter."""
 
     def __init__(self, inputs):
-        """Keep numeric CPU counts in the intermediate pycondor jobs."""
+        """Keep numeric CPU counts in the intermediate pycondor jobs.
+
+        This sets ``inputs.htcondor_strict_cpu_request`` on the object passed in,
+        because the job nodes read it from the same inputs. ``generate_dag``
+        passes a private copy.
+        """
         # HTCondor's dynamic CPU expression cannot describe a Slurm allocation.
-        inputs.htcondor_strict_cpu_request = True
+        if not inputs.htcondor_strict_cpu_request:
+            logger.warning(
+                "Ignoring htcondor-strict-cpu-request = False for scheduler = slurm: "
+                "Slurm jobs request exactly request-cpus cores."
+            )
+            inputs.htcondor_strict_cpu_request = True
         super().__init__(inputs)
 
     def build_slurm_submit(self):

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import os
-import subprocess
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -12,6 +11,7 @@ import pytest
 
 from nullpol.cli.main import main
 from nullpol.integrations.slurm.dag import SubmitSLURM
+from nullpol.utils import NullpolError
 
 
 def _build_workflow(tmp_path, monkeypatch, *, scheduler="slurm", strict_cpu_request=False, request_cpus=4):
@@ -83,44 +83,112 @@ def test_slurm_output_path(line):
     assert SubmitSLURM._output_name_from_dag(["output_other = ignored", line]) == "logs/job.out"
 
 
+def _generation_executable(tmp_path, body):
+    """Write a stand-in ``nullpol_pipe_generation`` executable."""
+    executable = tmp_path / "nullpol_pipe_generation"
+    executable.write_text(f"#!{sys.executable}\n{body}", encoding="utf-8")
+    executable.chmod(0o755)
+    return str(executable)
+
+
+def _submit_slurm(tmp_path, nodes, scheduler_env=None):
+    """Build a Slurm adapter around a stand-in DAG."""
+    slurm = object.__new__(SubmitSLURM)
+    slurm.dag = SimpleNamespace(nodes=nodes)
+    slurm.submit_dir = str(tmp_path)
+    slurm.scheduler_env = scheduler_env
+    slurm.scheduler_module = None
+    return slurm
+
+
 def test_local_generation_runs_all_nodes(tmp_path):
     """Multiple generation jobs all finish before their dependencies are removed."""
     marker = tmp_path / "generated"
-    script = tmp_path / "generate.py"
-    script.write_text(
-        f"with open({str(marker)!r}, 'a') as stream:\n    stream.write('generated\\n')\n", encoding="utf-8"
+    executable = _generation_executable(
+        tmp_path, "import sys\nwith open(sys.argv[1], 'a') as stream:\n    stream.write(sys.argv[2] + '\\n')\n"
     )
     generation_nodes = [
         SimpleNamespace(
-            name=f"test_generation_{index}",
-            executable=sys.executable,
-            args=[SimpleNamespace(arg=str(script))],
+            name=f"test_data{index}_generation",
+            executable=executable,
+            args=[SimpleNamespace(arg=f"'{marker}' 'config {index}.ini'")],
             parents=[],
         )
         for index in range(2)
     ]
-    analysis = SimpleNamespace(name="test_analysis", parents=list(generation_nodes))
-    slurm = object.__new__(SubmitSLURM)
-    slurm.dag = SimpleNamespace(nodes=[*generation_nodes, analysis])
+    analysis = SimpleNamespace(name="test_analysis", executable=sys.executable, parents=list(generation_nodes))
+    slurm = _submit_slurm(tmp_path, [*generation_nodes, analysis])
 
     slurm.run_local_generation()
 
-    assert marker.read_text().splitlines() == ["generated", "generated"]
+    assert marker.read_text().splitlines() == ["config 0.ini", "config 1.ini"]
     assert slurm.dag.nodes == [analysis]
     assert analysis.parents == []
 
 
-def test_local_generation_failure_keeps_dependencies():
+def test_local_generation_ignores_label_matches(tmp_path):
+    """A label containing ``_generation`` must not mark analysis jobs as generation jobs."""
+    marker = tmp_path / "ran"
+    analysis = SimpleNamespace(
+        name="test_generation_run_data0_analysis",
+        executable=sys.executable,
+        args=[SimpleNamespace(arg=f"-c \"open('{marker}', 'w')\"")],
+        parents=[],
+    )
+    slurm = _submit_slurm(tmp_path, [analysis])
+
+    slurm.run_local_generation()
+
+    assert not marker.exists()
+    assert slurm.dag.nodes == [analysis]
+
+
+def test_local_generation_failure_keeps_dependencies(tmp_path):
     """A failed generation job must prevent submission of its analysis jobs."""
     generation = SimpleNamespace(
-        name="test_generation", executable=sys.executable, args=[SimpleNamespace(arg='-c "raise SystemExit(1)"')]
+        name="test_data0_generation",
+        executable=_generation_executable(tmp_path, "raise SystemExit(3)\n"),
+        args=[SimpleNamespace(arg="config.ini")],
     )
-    analysis = SimpleNamespace(name="test_analysis", parents=[generation])
-    slurm = object.__new__(SubmitSLURM)
-    slurm.dag = SimpleNamespace(nodes=[generation, analysis])
+    analysis = SimpleNamespace(name="test_analysis", executable=sys.executable, parents=[generation])
+    slurm = _submit_slurm(tmp_path, [generation, analysis])
 
-    with pytest.raises(subprocess.CalledProcessError):
+    with pytest.raises(NullpolError, match="test_data0_generation failed with exit code 3"):
         slurm.run_local_generation()
 
     assert slurm.dag.nodes == [generation, analysis]
     assert analysis.parents == [generation]
+
+
+def test_local_generation_uses_scheduler_env(tmp_path):
+    """Local generation runs the job as its Slurm script does: scheduler-env sourced, executable run by python."""
+    marker = tmp_path / "generated"
+    environment = tmp_path / "activate"
+    environment.write_text(
+        f"export PATH={Path(sys.executable).parent}{os.pathsep}$PATH\nexport NULLPOL_TEST_ENV=activated\n",
+        encoding="utf-8",
+    )
+    executable = tmp_path / "nullpol_pipe_generation"
+    # The shebang is unusable, so the job only runs when invoked through the environment's python.
+    executable.write_text(
+        "#!/does/not/exist/python\nimport os, sys\nopen(sys.argv[1], 'w').write(os.environ['NULLPOL_TEST_ENV'])\n",
+        encoding="utf-8",
+    )
+    executable.chmod(0o755)
+    generation = SimpleNamespace(
+        name="test_data0_generation", executable=str(executable), args=[SimpleNamespace(arg=f"'{marker}'")], parents=[]
+    )
+    slurm = _submit_slurm(tmp_path, [generation], scheduler_env=str(environment))
+
+    slurm.run_local_generation()
+
+    assert marker.read_text() == "activated"
+    assert slurm.dag.nodes == []
+
+
+def test_slurm_overrides_loose_cpu_request(tmp_path, monkeypatch, caplog):
+    """Slurm forces numeric CPU requests and says so when the user asked otherwise."""
+    with caplog.at_level("WARNING"):
+        _build_workflow(tmp_path, monkeypatch, strict_cpu_request=False)
+
+    assert "Ignoring htcondor-strict-cpu-request = False" in caplog.text
