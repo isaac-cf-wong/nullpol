@@ -32,9 +32,10 @@ class SubmitSLURM(BilbySubmitSLURM):
             if os.path.basename(node.executable) != GENERATION_EXECUTABLE:
                 continue
             # Run the job's own Slurm script so modules, scheduler-env and quoting match the scheduled job.
+            # -e stops it when a setup step such as sourcing scheduler-env fails.
             script = self._write_individual_processes(node.name, node.executable, node.args[0].arg)
             try:
-                subprocess.run(["/bin/bash", script], check=True)  # noqa: S603
+                subprocess.run(["/bin/bash", "-e", script], check=True)  # noqa: S603
             except subprocess.CalledProcessError as error:
                 raise NullpolError(
                     f"Local generation job {node.name} failed with exit code {error.returncode}: {script}"

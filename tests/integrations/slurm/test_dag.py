@@ -186,6 +186,22 @@ def test_local_generation_uses_scheduler_env(tmp_path):
     assert slurm.dag.nodes == []
 
 
+def test_local_generation_stops_on_setup_failure(tmp_path):
+    """A scheduler-env that cannot be sourced fails the job even if the executable would succeed."""
+    marker = tmp_path / "generated"
+    executable = _generation_executable(tmp_path, "import sys\nopen(sys.argv[1], 'w').write('ran')\n")
+    generation = SimpleNamespace(
+        name="test_data0_generation", executable=executable, args=[SimpleNamespace(arg=f"'{marker}'")], parents=[]
+    )
+    slurm = _submit_slurm(tmp_path, [generation], scheduler_env=str(tmp_path / "missing_activate"))
+
+    with pytest.raises(NullpolError, match="test_data0_generation failed"):
+        slurm.run_local_generation()
+
+    assert not marker.exists()
+    assert slurm.dag.nodes == [generation]
+
+
 def test_slurm_overrides_loose_cpu_request(tmp_path, monkeypatch, caplog):
     """Slurm forces numeric CPU requests and says so when the user asked otherwise."""
     with caplog.at_level("WARNING"):
