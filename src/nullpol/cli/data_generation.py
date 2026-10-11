@@ -40,7 +40,11 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
 
     def __init__(self, args: Namespace, unknown_args: list, create_data: bool = True):
         """Initialize the instance."""
-        # pylint: disable=super-init-not-called  # Using Input.__init__ directly for clarity
+        # bilby_pipe's DataGenerationInput.__init__ cannot be called: it reads ROQ,
+        # marginalization and heterodyning options that the nullpol parser does not
+        # define. Every attribute it sets that bilby_pipe's data generation reads, and
+        # that the nullpol parser does define, is therefore set here or in Input.
+        # pylint: disable=super-init-not-called
         Input.__init__(self, args, unknown_args)
 
         # Generic initialization
@@ -55,6 +59,9 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
         # Admin arguments
         self.ini = args.ini
         self.transfer_files = args.transfer_files
+
+        # Global settings
+        self.cosmology = args.cosmology
 
         # Run index arguments
         self.idx = args.idx
@@ -77,6 +84,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
         self.ignore_gwpy_data_quality_check = args.ignore_gwpy_data_quality_check
         self.detectors = args.detectors
         self.channel_dict = args.channel_dict
+        self.fetch_open_data_kwargs = args.fetch_open_data_kwargs
         self.data_dict = args.data_dict
         self.data_format = args.data_format
         self.allow_tape = args.allow_tape
@@ -96,6 +104,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
         # Data duration arguments
         self.duration = args.duration
         self.post_trigger_duration = args.post_trigger_duration
+        self.segment_auto_gating_configuration = args.segment_auto_gating_configuration
 
         # Frequencies
         self.sampling_frequency = args.sampling_frequency
@@ -109,6 +118,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
         self.psd_fractional_overlap = args.psd_fractional_overlap
         self.psd_start_time = args.psd_start_time
         self.psd_method = args.psd_method
+        self.psd_auto_gating_configuration = args.psd_auto_gating_configuration
 
         # Calibration
         self.calibration_model = args.calibration_model
@@ -122,6 +132,9 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
         self.plot_data = args.plot_data
         self.plot_spectrogram = args.plot_spectrogram
         self.plot_injection = args.plot_injection
+
+        # Reweighting
+        self.reweighting_configuration = args.reweighting_configuration
 
         # Time-frequency clustering
         self.time_frequency_clustering_method = args.time_frequency_clustering_method
