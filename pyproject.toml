@@ -17,30 +17,29 @@ classifiers = [
   "Intended Audience :: Developers",
   "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
 ]
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 dynamic = ["version"]
 dependencies = [
-  "matplotlib>=3.11.2",
-  "numpy>=2.3.5,<2.4",
-  "bilby>=2.8.2",
-  "bilby_pipe>=1.10.1",
-  "gwpy>=4.0.2",
-  "numba>=0.68.0",
-  "rocket-fft>=0.3.1",
-  "scipy>=1.16.3,<1.17.0",
-  "ConfigArgParse>=1.8.0",
-  "pycbc>=2.11.0",
-  "healpy>=1.20.1",
-  "h5py>=3.16.0",
-  "pandas>=3.0.6",
+  "matplotlib>=3.10.0",
+  "numpy>=2.2.0,<2.4",
+  "bilby>=2.7.0",
+  "bilby_pipe>=1.9.0",
+  "gwpy>=4.0.0",
+  "numba>=0.61.2",
+  "rocket-fft>=0.3.0",
+  "scipy>=1.15.0,<1.17.0",
+  "ConfigArgParse>=1.7.1",
+  "pycbc>=2.10.0",
+  "healpy>=1.18.0",
+  "h5py>=3.13.0",
+  "pandas>=2.3.0",
 ]
 
 [project.optional-dependencies]
-asimov = ["asimov>=0.7.1", "cbcflow>=0.6.3"]
+asimov = ["asimov>=0.6.0", "cbcflow>=0.6.0"]
 
 [dependency-groups]
 dev = [
@@ -80,6 +79,13 @@ tgrflow = 'nullpol.integrations.asimov.tgrflow:Collector'
 [project.entry-points.'asimov.hooks.applicator']
 tgrflow = 'nullpol.integrations.asimov.tgrflow:Applicator'
 
+[tool.dependency-support-policy]
+# Rolling support floors (SPEC 0): runtime lower bounds are raised on a schedule
+# by the support_floor_update.yml workflow, not by Renovate. See renovate.json.
+policy = "spec0"
+groups = ["project", "optional"]
+lock = "minimal"
+
 [tool.uv-dynamic-versioning]
 vcs = "git"      # default
 style = "semver" # or pep440, semver, etc.
@@ -112,7 +118,7 @@ markers = [
 
 [tool.ruff]
 line-length = 120 # Matches Black's default
-target-version = "py312" # Align with CI (3.12–3.14) and requires-python (>=3.12)
+target-version = "py313" # Align with CI (3.13–3.14) and requires-python (>=3.13)
 lint.extend-select = [
   "E",
   "F",

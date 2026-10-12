@@ -40,15 +40,15 @@ pages for more details:
   [uv on GitHub](https://github.com/astral-sh/uv)
 - Full documentation and usage guide: [uv docs](https://docs.astral.sh/uv/)
 
-**Note:** The package is built and tested against Python 3.12–3.14. When
+**Note:** The package is built and tested against Python 3.13–3.14. When
 creating a virtual environment with `uv`, specify the Python version to ensure
-compatibility: `uv venv --python 3.12`.
+compatibility: `uv venv --python 3.13`.
 
 ### From PyPI
 
 ```bash
 # Create a virtual environment (recommended with uv)
-uv venv --python 3.12
+uv venv --python 3.13
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 uv pip install nullpol
 ```
@@ -65,7 +65,7 @@ uv pip install nullpol[asimov]
 git clone https://github.com/isaac-cf-wong/nullpol.git
 cd nullpol
 # Create a virtual environment (recommended with uv)
-uv venv --python 3.12
+uv venv --python 3.13
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 uv sync
 ```
