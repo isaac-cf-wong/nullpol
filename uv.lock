@@ -2209,17 +2209,17 @@ release = [
 [package.metadata]
 requires-dist = [
     { name = "asimov", marker = "extra == 'asimov'", specifier = ">=0.7.1" },
-    { name = "bilby", specifier = ">=2.8.0" },
-    { name = "bilby-pipe", specifier = ">=1.9.0" },
+    { name = "bilby", specifier = ">=2.8.2" },
+    { name = "bilby-pipe", specifier = ">=1.10.1" },
     { name = "cbcflow", marker = "extra == 'asimov'", specifier = ">=0.6.3" },
-    { name = "configargparse", specifier = ">=1.7.5" },
-    { name = "gwpy", specifier = ">=4.0.1" },
+    { name = "configargparse", specifier = ">=1.8.0" },
+    { name = "gwpy", specifier = ">=4.0.2" },
     { name = "h5py", specifier = ">=3.16.0" },
-    { name = "healpy", specifier = ">=1.19.0" },
-    { name = "matplotlib", specifier = ">=3.10.9" },
-    { name = "numba", specifier = ">=0.65.0" },
+    { name = "healpy", specifier = ">=1.20.1" },
+    { name = "matplotlib", specifier = ">=3.11.2" },
+    { name = "numba", specifier = ">=0.68.0" },
     { name = "numpy", specifier = ">=2.3.5,<2.4" },
-    { name = "pandas", specifier = ">=3.0.3" },
+    { name = "pandas", specifier = ">=3.0.6" },
     { name = "pycbc", specifier = ">=2.11.0" },
     { name = "rocket-fft", specifier = ">=0.3.1" },
     { name = "scipy", specifier = ">=1.16.3,<1.17.0" },
@@ -2227,20 +2227,20 @@ requires-dist = [
 provides-extras = ["asimov"]
 
 [package.metadata.requires-dev]
-build = [{ name = "hatch", specifier = ">=1.17.0" }]
+build = [{ name = "hatch", specifier = ">=1.18.1" }]
 dev = [
-    { name = "prek", specifier = ">=0.4.4" },
-    { name = "pytest", specifier = ">=9.0.3" },
+    { name = "prek", specifier = ">=0.5.5" },
+    { name = "pytest", specifier = ">=9.1.1" },
     { name = "pytest-cov", specifier = ">=7.1.0" },
-    { name = "pytest-github-actions-annotate-failures", specifier = ">=0.4.0" },
-    { name = "pytest-mock", specifier = ">=3.15.1" },
-    { name = "ruff", specifier = ">=0.15.16" },
+    { name = "pytest-github-actions-annotate-failures", specifier = ">=0.4.2" },
+    { name = "pytest-mock", specifier = ">=3.16.0" },
+    { name = "ruff", specifier = ">=0.16.10" },
 ]
 docs = [
-    { name = "mkdocstrings-python", specifier = ">=2.0.4" },
-    { name = "zensical", specifier = ">=0.0.44" },
+    { name = "mkdocstrings-python", specifier = ">=2.0.9" },
+    { name = "zensical", specifier = ">=0.0.69" },
 ]
-release = [{ name = "git-cliff", specifier = ">=2.13.1" }]
+release = [{ name = "git-cliff", specifier = ">=2.14.2" }]
 
 [[package]]
 name = "numba"
