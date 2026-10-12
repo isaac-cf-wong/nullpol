@@ -192,3 +192,6 @@ local_config.*
 
 # Spellcheck files
 !.ignore_words.txt
+
+# CodeGraph index
+.codegraph/
