@@ -278,7 +278,7 @@ class DataGenerationInput(BilbyDataGenerationInput, Input):
                         posterior = bilby.core.result.read_in_result(
                             self.time_frequency_clustering_pe_samples_filename
                         ).posterior
-                    except Exception:  # pylint: disable=broad-exception-caught
+                    except Exception:  # noqa: BLE001 - deliberate fallback
                         logger.warning("Trying to read the posterior as a .h5 file.")
                         with h5py.File(self.time_frequency_clustering_pe_samples_filename, "r") as f:
                             posterior = pd.DataFrame(
