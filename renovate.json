@@ -21,8 +21,16 @@
                 "project.dependencies",
                 "project.optional-dependencies"
             ],
+            "matchPackageNames": ["!numpy", "!scipy"],
             "description": "Runtime lower bounds are owned by the dependency-support-policy (SPEC 0) workflow.",
             "enabled": false
+        },
+        {
+            "matchManagers": ["pep621"],
+            "matchDepTypes": ["project.dependencies"],
+            "matchPackageNames": ["numpy", "scipy"],
+            "description": "Raise only the upper caps; widen keeps the SPEC 0 lower bounds untouched.",
+            "rangeStrategy": "widen"
         },
         {
             "matchManagers": ["pep621"],
