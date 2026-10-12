@@ -2047,11 +2047,11 @@ requires-dist = [
     { name = "healpy", specifier = ">=1.18.0" },
     { name = "matplotlib", specifier = ">=3.10.0" },
     { name = "numba", specifier = ">=0.61.2" },
-    { name = "numpy", specifier = ">=2.2.0,<2.4" },
+    { name = "numpy", specifier = ">=2.2.0,<2.6" },
     { name = "pandas", specifier = ">=2.3.0" },
     { name = "pycbc", specifier = ">=2.10.0" },
     { name = "rocket-fft", specifier = ">=0.3.0" },
-    { name = "scipy", specifier = ">=1.15.0,<1.17.0" },
+    { name = "scipy", specifier = ">=1.15.0,<1.19.0" },
 ]
 provides-extras = ["asimov"]
 
