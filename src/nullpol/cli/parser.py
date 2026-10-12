@@ -63,7 +63,7 @@ def write_to_file(
                     continue
                 self.write_comment_if_needed(hyphen_dest, ff)
                 self.write_line(hyphen_dest, value, ff)
-            print("", file=ff)
+            print(file=ff)
 
 
 BilbyArgParser.write_to_file = write_to_file
