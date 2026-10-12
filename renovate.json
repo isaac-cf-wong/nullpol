@@ -17,6 +17,15 @@
     "packageRules": [
         {
             "matchManagers": ["pep621"],
+            "matchDepTypes": [
+                "project.dependencies",
+                "project.optional-dependencies"
+            ],
+            "description": "Runtime lower bounds are owned by the dependency-support-policy (SPEC 0) workflow.",
+            "enabled": false
+        },
+        {
+            "matchManagers": ["pep621"],
             "matchUpdateTypes": ["patch", "minor"],
             "groupName": "runtime minor & patch",
             "minimumReleaseAge": "3 days",

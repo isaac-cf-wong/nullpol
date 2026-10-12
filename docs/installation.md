@@ -44,6 +44,6 @@ and documentation dependencies.
 
 ## Requirements
 
-- Python 3.12 or higher
+- Python 3.13 or higher
 - Key dependencies: bilby, bilby_pipe, gwpy, numpy, scipy, matplotlib
 - Full list available in `pyproject.toml`
