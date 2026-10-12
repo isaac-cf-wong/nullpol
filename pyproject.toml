@@ -104,7 +104,7 @@ fail_under = 0
 
 [tool.pytest.ini_options]
 addopts = "--cov-report xml:coverage.xml --cov src --cov-append -m 'not integration' --cov-report=term-missing"
-pythonpath = ["src"]
+pythonpath = ["src", "scripts"]
 testpaths = "tests"
 junit_family = "xunit2"
 markers = [
