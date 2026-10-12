@@ -163,7 +163,7 @@ class PESummaryPipeline(PostPipeline):
                 # There should really be a specified submit node, and if there is, use it.
                 schedulers = htcondor.Collector().locate(htcondor.DaemonTypes.Schedd, config.get("condor", "scheduler"))
                 schedd = htcondor.Schedd(schedulers)
-            except Exception:  # pylint: disable=broad-exception-caught
+            except Exception:  # noqa: BLE001 - deliberate fallback
                 # If you can't find a specified scheduler, use the first one you find
                 schedd = htcondor.Schedd()
             with schedd.transaction() as txn:

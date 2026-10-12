@@ -141,6 +141,7 @@ lint.ignore = [
   "N806",    # Scientific variable names (e.g. F_matrix, wavelet_Nt)
   "PLR0912", # Too many branches in scientific algorithms
   "PLR0913", # Too many arguments in scientific APIs
+  "PLR0917", # Too many positional arguments in scientific APIs
   "PLR0915", # Too many statements in complex analysis code
 ]
 fix = true # Enable autofix
@@ -166,11 +167,13 @@ convention = "google"
   "PT018",
   "RUF043",
   "S110",
+  "BLE001",
 ]
 # S101: allow assert statements
 # ARG001: allow unused function arguments (common in fixtures)
 # PLC0415: allow import statements not at the top level
 # PLR2004: allow magic values in the unit tests
+# BLE001: allow broad exception handlers in tolerance tests
 "src/nullpol/analysis/result.py" = ["PLC0415", "S301"]
 "scripts/*" = ["SIM102", "PLC0415", "PLR2004"]
 
