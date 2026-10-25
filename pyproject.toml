@@ -43,7 +43,7 @@ asimov = ["asimov>=0.6.0", "cbcflow>=0.6.0"]
 
 [dependency-groups]
 dev = [
-  "ruff>=0.17.1",
+  "ruff>=0.17.2",
   "prek>=0.5.7",
   "pytest-github-actions-annotate-failures>=0.4.2",
   "pytest-cov>=7.1.0",
